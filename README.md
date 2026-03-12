@@ -3,10 +3,13 @@
 [![Build](https://img.shields.io/github/actions/workflow/status/joaopssx/spike/build.yml?branch=main&label=build)](https://github.com/joaopssx/spike/actions)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![C++17](https://img.shields.io/badge/C%2B%2B-17-orange.svg)](CMakeLists.txt)
+[![Website](https://img.shields.io/badge/site-GitHub%20Pages-2ea44f)](https://joaopssx.github.io/spike/)
 
 Spike is a modern Portugol compiler written in C++ that transpiles Portugol into C and generates native executables.
 
 Created by Joao Pedro de Sena Santana. Named after the author's dog, Spike.
+
+Live website: `https://joaopssx.github.io/spike/`
 
 Portuguese readers can use `README.pt-BR.md` and the full translated documentation in `docs_pt/`.
 
@@ -138,9 +141,24 @@ Flags:
 - `docs/contributing.md` / `docs_pt/contributing.md` - contribution guide
 - `docs/changelog.md` / `docs_pt/changelog.md` - detailed release notes
 
+## Website and GitHub Pages
+
+- The static site lives in `website/`
+- Automatic deployment is configured in `.github/workflows/pages.yml`
+- After enabling GitHub Pages with GitHub Actions, the URL is `https://joaopssx.github.io/spike/`
+- The website is automatically updated on every push to `main`
+- English is the default website language, with a header button to switch to Portuguese
+
+Main pages:
+
+- `website/index.html` - landing page
+- `website/docs.html` - documentation overview
+- `website/tutorial.html` - step-by-step tutorial
+
 ## CI and Testing
 
 - GitHub Actions workflow in `.github/workflows/build.yml`
+- GitHub Pages deployment workflow in `.github/workflows/pages.yml`
 - CMake/CTest smoke tests built into `CMakeLists.txt`
 - Local test command:
 

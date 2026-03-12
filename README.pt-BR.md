@@ -3,10 +3,13 @@
 [![Build](https://img.shields.io/github/actions/workflow/status/joaopssx/spike/build.yml?branch=main&label=build)](https://github.com/joaopssx/spike/actions)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![C++17](https://img.shields.io/badge/C%2B%2B-17-orange.svg)](CMakeLists.txt)
+[![Site](https://img.shields.io/badge/site-GitHub%20Pages-2ea44f)](https://joaopssx.github.io/spike/)
 
 Spike e um compilador moderno de Portugol escrito em C++ que transpila Portugol para C e gera executaveis nativos.
 
 Criado por Joao Pedro de Sena Santana. O projeto foi nomeado em homenagem ao cachorro do autor, Spike.
+
+Site oficial: `https://joaopssx.github.io/spike/`
 
 ## Recursos
 
@@ -136,9 +139,24 @@ Flags:
 - `docs_pt/contributing.md` - guia de contribuicao
 - `docs_pt/changelog.md` - historico detalhado de releases
 
+## Site e GitHub Pages
+
+- o site estatico fica em `website/`
+- o deploy automatico esta em `.github/workflows/pages.yml`
+- depois de ativar o GitHub Pages com GitHub Actions, o site fica disponivel em `https://joaopssx.github.io/spike/`
+- o site e atualizado automaticamente a cada push na branch `main`
+- ingles e o idioma padrao do site, com um botao no cabecalho para alternar para portugues
+
+Paginas principais:
+
+- `website/index.html` - pagina inicial
+- `website/docs.html` - panorama da documentacao
+- `website/tutorial.html` - tutorial completo do projeto
+
 ## CI e Testes
 
 - workflow do GitHub Actions em `.github/workflows/build.yml`
+- deploy do site em `.github/workflows/pages.yml`
 - smoke tests com CMake/CTest definidos em `CMakeLists.txt`
 - comando local de teste:
 

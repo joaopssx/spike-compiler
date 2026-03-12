@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Spike is a modern Portugol compiler written in C++ that transpiles to C and generates native executables.">
-    <title>Spike - Portugol Compiler in C++</title>
-    <link rel="stylesheet" href="style.css">
+    <meta name="description" content="Spike e um compilador moderno de Portugol escrito em C++ que transpila para C e gera executaveis nativos.">
+    <title>Spike - Compilador de Portugol em C++</title>
+    <link rel="stylesheet" href="../style.css">
 </head>
 <body>
     <div class="site-shell">
@@ -16,14 +16,14 @@
             </a>
             <div class="nav-meta">
                 <div class="nav-links">
-                    <a class="nav-link active" href="index.html">Home</a>
+                    <a class="nav-link active" href="index.html">Inicio</a>
                     <a class="nav-link" href="docs.html">Docs</a>
                     <a class="nav-link" href="tutorial.html">Tutorial</a>
                     <a class="nav-link" href="https://github.com/joaopssx/spike">GitHub</a>
                 </div>
-                <div class="lang-switch" aria-label="Language switcher">
-                    <a class="lang-button active" href="index.html">EN</a>
-                    <a class="lang-button" href="pt/index.html">PT</a>
+                <div class="lang-switch" aria-label="Alternar idioma">
+                    <a class="lang-button" href="../index.html">EN</a>
+                    <a class="lang-button active" href="index.html">PT</a>
                 </div>
             </div>
         </nav>
@@ -31,18 +31,18 @@
         <section class="hero">
             <div class="hero-copy">
                 <div class="eyebrow">Learn Compilers with Spike</div>
-                <h1>Modern Portugol, clear pipeline, native executable.</h1>
-                <p>Spike is a modern Portugol compiler written in C++ with a lexer, recursive descent parser, AST, semantic analysis and C code generation. It is designed for serious compiler study and for growing into a strong open-source project.</p>
+                <h1>Portugol moderno, pipeline claro, executavel nativo.</h1>
+                <p>Spike e um compilador de Portugol escrito em C++ com lexer, parser recursive descent, AST, analise semantica e geracao de codigo C. Ele foi pensado para estudo serio de compiladores e para virar um projeto open-source forte no GitHub.</p>
                 <div class="pill-row">
                     <span class="pill">C++17</span>
                     <span class="pill">Portugol -> C</span>
-                    <span class="pill">AST + semantics</span>
+                    <span class="pill">AST + semantica</span>
                     <span class="pill">GitHub Pages</span>
                 </div>
                 <div class="hero-actions">
-                    <a class="button button-primary" href="tutorial.html">Start tutorial</a>
-                    <a class="button button-secondary" href="docs.html">Read the docs</a>
-                    <a class="button button-ghost" href="https://github.com/joaopssx/spike">Open repository</a>
+                    <a class="button button-primary" href="tutorial.html">Comecar tutorial</a>
+                    <a class="button button-secondary" href="docs.html">Ver documentacao</a>
+                    <a class="button button-ghost" href="https://github.com/joaopssx/spike">Abrir repositorio</a>
                 </div>
             </div>
 
@@ -74,74 +74,74 @@ $ spike run examples/hello.por
             <div class="stats-grid">
                 <article class="stat">
                     <strong>Lexer</strong>
-                    <p>Turns source text into tokens with line and column information.</p>
+                    <p>Quebra o fonte em tokens com linha e coluna.</p>
                 </article>
                 <article class="stat">
                     <strong>Parser</strong>
-                    <p>Builds the AST with recursive descent and correct operator precedence.</p>
+                    <p>Constroi a AST com recursive descent e precedencia correta.</p>
                 </article>
                 <article class="stat">
-                    <strong>Semantics</strong>
-                    <p>Validates symbols, types and conditions before code generation.</p>
+                    <strong>Semantica</strong>
+                    <p>Valida simbolos, tipos e condicoes antes do codegen.</p>
                 </article>
                 <article class="stat">
                     <strong>Codegen</strong>
-                    <p>Emits readable C and calls `gcc` or `clang` to build the binary.</p>
+                    <p>Emite C legivel e chama `gcc` ou `clang` para gerar o binario.</p>
                 </article>
             </div>
         </section>
 
         <section class="section panel">
             <div class="section-head">
-                <div class="eyebrow">Visual pipeline</div>
-                <h2>From a didactic language to a real executable.</h2>
-                <p>The Spike flow is intentionally transparent so the compiler is easy to learn, debug and evolve.</p>
+                <div class="eyebrow">Pipeline visual</div>
+                <h2>Da linguagem didatica ao executavel real.</h2>
+                <p>O fluxo do Spike e intencionalmente transparente para facilitar estudo, debug e evolucao do compilador.</p>
             </div>
             <div class="pipeline-grid">
                 <article class="pipeline-card">
                     <strong>1. Source</strong>
-                    <p>Reads the user `.por` file.</p>
+                    <p>Le o arquivo `.por` do usuario.</p>
                 </article>
                 <article class="pipeline-card">
                     <strong>2. Lexer</strong>
-                    <p>Transforms text into named tokens.</p>
+                    <p>Transforma texto em tokens nomeados.</p>
                 </article>
                 <article class="pipeline-card">
                     <strong>3. Parser</strong>
-                    <p>Converts tokens into an AST.</p>
+                    <p>Converte os tokens em AST.</p>
                 </article>
                 <article class="pipeline-card">
-                    <strong>4. Semantics</strong>
-                    <p>Checks variables, types and expressions.</p>
+                    <strong>4. Semantica</strong>
+                    <p>Checa variaveis, tipos e expressoes.</p>
                 </article>
                 <article class="pipeline-card">
                     <strong>5. C</strong>
-                    <p>Generates an intermediate `.c` file.</p>
+                    <p>Gera um arquivo `.c` intermediario.</p>
                 </article>
                 <article class="pipeline-card">
-                    <strong>6. Binary</strong>
-                    <p>Uses the C compiler to create the executable.</p>
+                    <strong>6. Binario</strong>
+                    <p>Usa o compilador C para criar o executavel.</p>
                 </article>
             </div>
         </section>
 
         <section class="section">
             <div class="section-head">
-                <div class="eyebrow">Why Spike?</div>
-                <h2>A clean project for learning real compiler construction.</h2>
+                <div class="eyebrow">Por que Spike?</div>
+                <h2>Um projeto bonito para estudar compiladores de verdade.</h2>
             </div>
             <div class="card-grid">
                 <article class="card">
-                    <h3>Educational without being shallow</h3>
-                    <p>The code favors clarity, but it already uses a real compiler architecture with separate AST, semantics and code generation stages.</p>
+                    <h3>Didatico sem ser simplista</h3>
+                    <p>O codigo privilegia clareza, mas ja usa uma arquitetura real de compilador com AST, semantica e codegen separados.</p>
                 </article>
                 <article class="card">
-                    <h3>Modern C++</h3>
-                    <p>`std::unique_ptr`, `std::vector`, `std::unordered_map` and CMake keep the project organized and portable across Linux, macOS and Windows.</p>
+                    <h3>Moderno em C++</h3>
+                    <p>`std::unique_ptr`, `std::vector`, `std::unordered_map` e CMake deixam o projeto organizado e portavel para Linux, macOS e Windows.</p>
                 </article>
                 <article class="card">
-                    <h3>Open-source ready</h3>
-                    <p>The repository already includes examples, docs, CI, a static website and deployment prepared for GitHub Pages.</p>
+                    <h3>Open source pronto</h3>
+                    <p>O repositorio ja tem exemplos, docs, CI, site estatico e deploy pensado para GitHub Pages.</p>
                 </article>
             </div>
         </section>
@@ -150,8 +150,8 @@ $ spike run examples/hello.por
             <div class="columns-2">
                 <article class="panel">
                     <div class="eyebrow">CLI</div>
-                    <h2>Short, practical and professional commands.</h2>
-                    <p>Spike exposes a compact CLI for compiling, running and debugging the pipeline step by step.</p>
+                    <h2>Comandos diretos e profissionais.</h2>
+                    <p>O Spike expoe uma CLI simples para compilar, executar e depurar o pipeline por etapas.</p>
                     <div class="command-grid">
                         <article class="command-card">
                             <h3>Build</h3>
@@ -171,19 +171,19 @@ spike ast examples/if.por</code></pre>
 
                 <article class="panel">
                     <div class="eyebrow">GitHub Pages</div>
-                    <h2>The website is ready to publish.</h2>
-                    <p>The static site was built to work directly on GitHub Pages, with automatic deployment through GitHub Actions and relative links between pages.</p>
+                    <h2>Site pronto para publicar.</h2>
+                    <p>O site estatico do Spike foi pensado para rodar direto no GitHub Pages, com deploy automatico por GitHub Actions e links relativos entre as paginas.</p>
                     <div class="mini-grid">
                         <article class="mini-card">
-                            <h3>Pages</h3>
-                            <p>Landing page, docs overview and a complete tutorial, all responsive.</p>
+                            <h3>Paginas</h3>
+                            <p>Inicio, docs e tutorial com layout responsivo.</p>
                         </article>
                         <article class="mini-card">
                             <h3>Deploy</h3>
-                            <p>A dedicated workflow publishes the contents of `website/` automatically.</p>
+                            <p>Um workflow dedicado publica o conteudo de `website/` automaticamente.</p>
                         </article>
                     </div>
-                    <p class="link-line">Use `Settings -> Pages -> Build and deployment -> GitHub Actions` in the repository.</p>
+                    <p class="link-line">Use `Settings -> Pages -> Build and deployment -> GitHub Actions` no repositorio.</p>
                 </article>
             </div>
         </section>
@@ -191,19 +191,19 @@ spike ast examples/if.por</code></pre>
         <section class="section">
             <div class="cta-banner">
                 <div class="section-head">
-                    <div class="eyebrow">Next step</div>
-                    <h2>Start with the tutorial and walk through the full pipeline.</h2>
-                    <p>The tutorial page shows build, tokens, AST, generated C and final execution in one continuous flow.</p>
+                    <div class="eyebrow">Proximo passo</div>
+                    <h2>Comece pelo tutorial e percorra o pipeline inteiro.</h2>
+                    <p>O tutorial da web mostra build, tokens, AST, C gerado e execucao final em um fluxo continuo.</p>
                 </div>
                 <div class="hero-actions">
-                    <a class="button button-primary" href="tutorial.html">Open full tutorial</a>
-                    <a class="button button-secondary" href="docs.html">Explore docs</a>
+                    <a class="button button-primary" href="tutorial.html">Abrir tutorial completo</a>
+                    <a class="button button-secondary" href="docs.html">Explorar docs</a>
                 </div>
             </div>
         </section>
 
         <footer class="footer">
-            <strong>Spike</strong> is a Portugol compiler in C++ created by Joao Pedro de Sena Santana and named after the author's dog.
+            <strong>Spike</strong> e um compilador de Portugol em C++ criado por Joao Pedro de Sena Santana e nomeado em homenagem ao cachorro do autor.
         </footer>
     </div>
 </body>

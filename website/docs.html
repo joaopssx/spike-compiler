@@ -3,7 +3,8 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Spike Documentation</title>
+    <meta name="description" content="Spike documentation: grammar, architecture, tutorial, roadmap and contribution guide.">
+    <title>Spike Docs</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -13,45 +14,187 @@
                 <span class="brand-mark">S</span>
                 <span>Spike Compiler</span>
             </a>
-            <div class="nav-links">
-                <a href="index.html">Home</a>
-                <a href="tutorial.html">Tutorial</a>
-                <a href="https://github.com/joaopssx/spike/tree/main/docs">Docs in repo</a>
+            <div class="nav-meta">
+                <div class="nav-links">
+                    <a class="nav-link" href="index.html">Home</a>
+                    <a class="nav-link active" href="docs.html">Docs</a>
+                    <a class="nav-link" href="tutorial.html">Tutorial</a>
+                    <a class="nav-link" href="https://github.com/joaopssx/spike">GitHub</a>
+                </div>
+                <div class="lang-switch" aria-label="Language switcher">
+                    <a class="lang-button active" href="docs.html">EN</a>
+                    <a class="lang-button" href="pt/docs.html">PT</a>
+                </div>
             </div>
         </nav>
 
         <section class="hero">
             <div class="hero-copy">
                 <div class="eyebrow">Documentation</div>
-                <h1>Everything about the compiler pipeline.</h1>
-                <p>Spike documents the language grammar, compiler architecture, roadmap and contribution flow so the repository stays educational and maintainable.</p>
+                <h1>The full map of the Spike project.</h1>
+                <p>This page organizes what you need to understand the language, the compiler architecture, the CLI and the roadmap. The main documentation still lives in Markdown inside the repository, but this overview makes navigation much faster.</p>
+                <div class="hero-actions">
+                    <a class="button button-primary" href="tutorial.html">Go to tutorial</a>
+                    <a class="button button-secondary" href="https://github.com/joaopssx/spike/tree/main/docs">Open docs in GitHub</a>
+                </div>
             </div>
 
-            <div class="panel">
-                <h2>Core docs</h2>
-                <p>`docs/grammar.md` defines the language.<br>`docs/architecture.md` explains the compiler.<br>`docs/tutorial.md` helps new users get started.</p>
+            <div class="hero-panel">
+                <div class="eyebrow">Quick index</div>
+                <div class="toc">
+                    <a href="#map">Documentation map</a>
+                    <a href="#architecture">Architecture</a>
+                    <a href="#mvp">Language MVP</a>
+                    <a href="#cli">CLI</a>
+                    <a href="#roadmap">Roadmap</a>
+                </div>
             </div>
         </section>
 
-        <section class="section">
-            <div class="grid">
+        <section class="section" id="map">
+            <div class="section-head">
+                <div class="eyebrow">Documentation map</div>
+                <h2>Main repository documents.</h2>
+            </div>
+            <div class="doc-grid">
+                <article class="doc-card">
+                    <h3>Grammar</h3>
+                    <p>Defines grammar, tokens, operators and precedence.</p>
+                    <p class="link-line"><a href="https://github.com/joaopssx/spike/blob/main/docs/grammar.md">Open `docs/grammar.md`</a></p>
+                </article>
+                <article class="doc-card">
+                    <h3>Architecture</h3>
+                    <p>Explains lexer, parser, AST, semantics and code generation.</p>
+                    <p class="link-line"><a href="https://github.com/joaopssx/spike/blob/main/docs/architecture.md">Open `docs/architecture.md`</a></p>
+                </article>
+                <article class="doc-card">
+                    <h3>Tutorial</h3>
+                    <p>Shows the practical flow from build to final execution.</p>
+                    <p class="link-line"><a href="https://github.com/joaopssx/spike/blob/main/docs/tutorial.md">Open `docs/tutorial.md`</a></p>
+                </article>
+                <article class="doc-card">
+                    <h3>Roadmap</h3>
+                    <p>Organizes upcoming versions and future features.</p>
+                    <p class="link-line"><a href="https://github.com/joaopssx/spike/blob/main/docs/roadmap.md">Open `docs/roadmap.md`</a></p>
+                </article>
+                <article class="doc-card">
+                    <h3>Contributing</h3>
+                    <p>Explains how to contribute and run local checks.</p>
+                    <p class="link-line"><a href="https://github.com/joaopssx/spike/blob/main/docs/contributing.md">Open `docs/contributing.md`</a></p>
+                </article>
+                <article class="doc-card">
+                    <h3>Changelog</h3>
+                    <p>Tracks what changed in each project release.</p>
+                    <p class="link-line"><a href="https://github.com/joaopssx/spike/blob/main/docs/changelog.md">Open `docs/changelog.md`</a></p>
+                </article>
+            </div>
+        </section>
+
+        <section class="section panel" id="architecture">
+            <div class="section-head">
+                <div class="eyebrow">Architecture</div>
+                <h2>How Spike is divided internally.</h2>
+                <p>Each module has a clear responsibility, which keeps the compiler easier to maintain and easier to study.</p>
+            </div>
+            <div class="card-grid">
                 <article class="card">
-                    <h3 class="card-title">Grammar</h3>
-                    <p>Language syntax, tokens, operators and precedence rules.</p>
+                    <h3>Lexer</h3>
+                    <p>Reads the source character by character and produces a `std::vector<Token>` with accurate locations.</p>
                 </article>
                 <article class="card">
-                    <h3 class="card-title">Architecture</h3>
-                    <p>Lexer, parser, AST, semantic analysis and code generation responsibilities.</p>
+                    <h3>Parser</h3>
+                    <p>Uses recursive descent to turn tokens into an AST with correct precedence.</p>
                 </article>
                 <article class="card">
-                    <h3 class="card-title">Roadmap</h3>
-                    <p>Version goals from the initial MVP up to a stable public release.</p>
+                    <h3>AST</h3>
+                    <p>Represents declarations, statements and expressions in memory with `std::unique_ptr`.</p>
                 </article>
+                <article class="card">
+                    <h3>Semantic Analysis</h3>
+                    <p>Validates symbols, assignments, types and conditions before C output exists.</p>
+                </article>
+                <article class="card">
+                    <h3>Code Generator</h3>
+                    <p>Walks the AST and emits valid, readable C source code.</p>
+                </article>
+                <article class="card">
+                    <h3>CLI</h3>
+                    <p>Connects the whole pipeline and exposes build, run, tokens, ast and emit-c modes.</p>
+                </article>
+            </div>
+        </section>
+
+        <section class="section" id="mvp">
+            <div class="section-head">
+                <div class="eyebrow">MVP</div>
+                <h2>The currently supported language subset.</h2>
+            </div>
+            <div class="columns-2">
+                <article class="panel">
+                    <h3>Supported structures</h3>
+                    <div class="pill-row">
+                        <span class="pill">algoritmo</span>
+                        <span class="pill">var</span>
+                        <span class="pill">inicio</span>
+                        <span class="pill">fimalgoritmo</span>
+                        <span class="pill">se / senao / fimse</span>
+                        <span class="pill">enquanto / faca / fimenquanto</span>
+                        <span class="pill">escreva</span>
+                        <span class="pill">leia</span>
+                    </div>
+                </article>
+                <article class="panel">
+                    <h3>Types and operators</h3>
+                    <div class="pill-row">
+                        <span class="pill">inteiro</span>
+                        <span class="pill">real</span>
+                        <span class="pill">&lt;-</span>
+                        <span class="pill">+ - * /</span>
+                        <span class="pill">= &lt;&gt; &lt; &lt;= &gt; &gt;=</span>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <section class="section" id="cli">
+            <div class="section-head">
+                <div class="eyebrow">CLI</div>
+                <h2>Most important commands.</h2>
+            </div>
+            <div class="command-grid">
+                <article class="command-card">
+                    <h3>Build</h3>
+                    <pre><code>spike build examples/hello.por</code></pre>
+                    <p>Generates the `.c` file and the final binary.</p>
+                </article>
+                <article class="command-card">
+                    <h3>Run</h3>
+                    <pre><code>spike run examples/hello.por</code></pre>
+                    <p>Builds and executes the generated binary.</p>
+                </article>
+                <article class="command-card">
+                    <h3>Inspect</h3>
+                    <pre><code>spike tokens file.por
+spike ast file.por</code></pre>
+                    <p>Helps you understand how the compiler is reading the program.</p>
+                </article>
+            </div>
+        </section>
+
+        <section class="section cta-banner" id="roadmap">
+            <div class="section-head">
+                <div class="eyebrow">Roadmap</div>
+                <h2>What comes after the MVP.</h2>
+                <p>The current plan includes better diagnostics, stronger test coverage, expanded type support and future ideas such as an interpreter, formatter and possibly an LLVM backend.</p>
+            </div>
+            <div class="hero-actions">
+                <a class="button button-primary" href="https://github.com/joaopssx/spike/blob/main/docs/roadmap.md">Open full roadmap</a>
+                <a class="button button-secondary" href="tutorial.html">Continue to tutorial</a>
             </div>
         </section>
 
         <footer class="footer">
-            Read the full markdown documentation in the repository for the latest details.
+            This page summarizes the documentation. The full material stays versioned in `docs/` and `docs_pt/` inside the repository.
         </footer>
     </div>
 </body>
