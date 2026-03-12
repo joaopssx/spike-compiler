@@ -1,50 +1,30 @@
 #include <cstdlib>
 #include <filesystem>
 #include <iostream>
+#include <memory>
+#include <sstream>
 #include <stdexcept>
 #include <string>
+#include <vector>
 
+#include "ast_graphviz.hpp"
+#include "ast_json.hpp"
+#include "cli/options.hpp"
 #include "codegen.hpp"
+#include "core/environment.hpp"
+#include "core/session.hpp"
+#include "core/version.hpp"
+#include "ir.hpp"
+#include "ir_builder.hpp"
 #include "lexer.hpp"
+#include "pass_manager.hpp"
 #include "parser.hpp"
+#include "program_stats.hpp"
 #include "semantic.hpp"
+#include "token_json.hpp"
 #include "utils.hpp"
 
-namespace portugol {
-
 namespace {
-
-struct CliOptions {
-    std::filesystem::path inputPath;
-    std::filesystem::path cOutputPath;
-    std::filesystem::path binaryOutputPath;
-    std::string cCompiler {"cc"};
-    bool dumpTokens {false};
-    bool dumpAst {false};
-    bool buildBinary {true};
-    bool runBinary {false};
-};
-
-void printUsage() {
-    std::cout
-        << "Spike - compilador de Portugol para C\n\n"
-        << "uso:\n"
-        << "  spike <arquivo.por>\n"
-        << "  spike build <arquivo.por>\n"
-        << "  spike run <arquivo.por>\n"
-        << "  spike tokens <arquivo.por>\n"
-        << "  spike ast <arquivo.por>\n"
-        << "  spike emit-c <arquivo.por> [--emit-c <arquivo.c>]\n\n"
-        << "opcoes:\n"
-        << "  --tokens              imprime os tokens e encerra\n"
-        << "  --lexer-only          alias para --tokens\n"
-        << "  --ast                 imprime a AST e encerra\n"
-        << "  --emit-c [arquivo.c]  gera apenas o codigo C\n"
-        << "  --no-build            nao chama o compilador C\n"
-        << "  --run                 executa o binario gerado\n"
-        << "  --cc <compilador>     escolhe gcc, clang ou outro compilador C\n"
-        << "  -o <binario>          define o caminho do executavel final\n";
-}
 
 std::string quotePath(const std::filesystem::path& path) {
     return "\"" + path.string() + "\"";
@@ -58,189 +38,257 @@ std::string executableCommand(const std::filesystem::path& path) {
     return "./" + quotePath(path);
 }
 
-CliOptions parseCli(int argc, char** argv) {
-    if (argc <= 1) {
-        throw std::runtime_error("faltou informar o arquivo de entrada");
+void printTimingIfEnabled(const portugol::core::CompilationSession& session, std::ostream& out) {
+    if (!session.options().showTiming) {
+        return;
     }
 
-    CliOptions options;
-    int startIndex = 1;
+    out << "\n";
+    session.printTimingReport(out);
+}
 
-    const std::string firstArg = argv[1];
-    if (firstArg == "build") {
-        startIndex = 2;
-    } else if (firstArg == "run") {
-        options.runBinary = true;
-        startIndex = 2;
-    } else if (firstArg == "tokens") {
-        options.dumpTokens = true;
-        startIndex = 2;
-    } else if (firstArg == "ast") {
-        options.dumpAst = true;
-        startIndex = 2;
-    } else if (firstArg == "emit-c") {
-        options.buildBinary = false;
-        startIndex = 2;
-    } else if (firstArg == "help") {
-        printUsage();
-        std::exit(0);
+std::size_t countLines(std::string_view source) {
+    if (source.empty()) {
+        return 0;
     }
 
-    for (int index = startIndex; index < argc; ++index) {
-        const std::string arg = argv[index];
+    std::size_t lines = 1;
+    for (const char ch : source) {
+        if (ch == '\n') {
+            ++lines;
+        }
+    }
+    return lines;
+}
 
-        if (arg == "-h" || arg == "--help") {
-            printUsage();
-            std::exit(0);
-        }
-        if (arg == "--tokens") {
-            options.dumpTokens = true;
-            continue;
-        }
-        if (arg == "--lexer-only") {
-            options.dumpTokens = true;
-            options.buildBinary = false;
-            continue;
-        }
-        if (arg == "--ast") {
-            options.dumpAst = true;
-            continue;
-        }
-        if (arg == "--compile") {
-            options.buildBinary = true;
-            continue;
-        }
-        if (arg == "--emit-c") {
-            options.buildBinary = false;
-            if (index + 1 < argc) {
-                const std::string nextArg = argv[index + 1];
-                if (!nextArg.empty() && nextArg[0] != '-') {
-                    options.cOutputPath = argv[++index];
-                }
-            }
-            continue;
-        }
-        if (arg == "--no-build") {
-            options.buildBinary = false;
-            continue;
-        }
-        if (arg == "--run") {
-            options.runBinary = true;
-            continue;
-        }
-        if (arg == "--cc") {
-            if (index + 1 >= argc) {
-                throw std::runtime_error("faltou o nome do compilador apos --cc");
-            }
-            options.cCompiler = argv[++index];
-            continue;
-        }
-        if (arg == "-o") {
-            if (index + 1 >= argc) {
-                throw std::runtime_error("faltou o caminho do binario apos -o");
-            }
-            options.binaryOutputPath = argv[++index];
-            continue;
-        }
-        if (!arg.empty() && arg[0] == '-') {
-            throw std::runtime_error("opcao desconhecida: " + arg);
-        }
-        if (!options.inputPath.empty()) {
-            throw std::runtime_error("mais de um arquivo de entrada foi informado");
-        }
+void emitArtifact(const std::string& content, const portugol::core::SessionOptions& options, const std::filesystem::path& defaultPath, const std::string& label) {
+    const std::filesystem::path outputPath = options.artifactOutputPath.empty() ? defaultPath : options.artifactOutputPath;
 
-        options.inputPath = arg;
+    if (options.stdoutOutput || outputPath.empty()) {
+        std::cout << content;
+        if (!content.empty() && content.back() != '\n') {
+            std::cout << "\n";
+        }
+        return;
     }
 
-    if (options.inputPath.empty()) {
-        throw std::runtime_error("faltou informar o arquivo de entrada");
-    }
+    portugol::writeFile(outputPath, content);
+    std::cout << label << " gerado em " << outputPath.string() << "\n";
+}
 
-    if (options.cOutputPath.empty()) {
-        options.cOutputPath = std::filesystem::path("generated") / (options.inputPath.stem().string() + ".c");
-    }
+std::string buildExplainReport(const portugol::core::CompilationSession& session, const std::vector<portugol::Token>& tokens, const portugol::Program& program, const portugol::IRProgram& ir, const portugol::PassReport& passReport, const std::string& generatedCode) {
+    const portugol::ProgramStats stats = portugol::collectProgramStats(program, countLines(session.sourceManager().source()), tokens.size());
 
-    if (options.binaryOutputPath.empty()) {
-        options.binaryOutputPath = std::filesystem::path("generated") / options.inputPath.stem();
+    std::ostringstream out;
+    out << "Spike Explain\n\n";
+    out << "Input: " << session.sourceManager().displayPath() << "\n\n";
+    out << "Pipeline\n";
+    out << "1. Source loaded: " << stats.lineCount << " lines\n";
+    out << "2. Lexer produced: " << stats.tokenCount << " tokens\n";
+    out << "3. Parser built AST with " << stats.declarationCount << " declarations and " << (stats.statementCount - stats.declarationCount) << " executable statements\n";
+    out << "4. Semantic analysis: success\n";
+    out << "5. Optimization passes: " << passReport.constantFolds << " constant folds\n";
+    out << "6. IR generation: " << ir.instructions.size() << " instructions\n";
+    out << "7. Code generation: " << generatedCode.size() << " bytes of C emitted\n\n";
+    out << renderProgramStats(stats) << "\n";
+    out << "AST Preview\n" << dumpAst(program) << "\n";
+    out << "IR Preview\n" << dumpIr(ir) << "\n";
+    out << "Generated C\n" << generatedCode;
+    if (!generatedCode.empty() && generatedCode.back() != '\n') {
+        out << "\n";
     }
-
-    if (options.runBinary) {
-        options.buildBinary = true;
-    }
-
-    return options;
+    return out.str();
 }
 
 } // namespace
 
-} // namespace portugol
-
 int main(int argc, char** argv) {
     using namespace portugol;
 
-    std::string source;
-    std::string inputName = "<desconhecido>";
+    std::unique_ptr<core::CompilationSession> session;
 
     try {
-        const CliOptions options = parseCli(argc, argv);
-        inputName = options.inputPath.string();
-        source = readFile(options.inputPath);
+        session = std::make_unique<core::CompilationSession>(cli::parseOptions(argc, argv));
 
-        Lexer lexer(source);
-        const std::vector<Token> tokens = lexer.tokenize();
-        if (options.dumpTokens) {
-            for (const auto& token : tokens) {
-                std::cout << tokenToString(token) << "\n";
-            }
-            if (!options.dumpAst) {
-                return 0;
-            }
-
-            std::cout << "\n";
-        }
-
-        Parser parser(tokens);
-        Program program = parser.parseProgram();
-        if (options.dumpAst) {
-            std::cout << "AST\n" << dumpAst(program) << "\n";
+        if (session->options().command == core::SessionCommand::Version) {
+            std::cout << "Spike " << core::versionString() << "\n";
+            std::cout << core::tagline() << "\n";
             return 0;
         }
 
-        SemanticAnalyzer semanticAnalyzer;
-        semanticAnalyzer.analyze(program);
+        if (session->options().command == core::SessionCommand::Doctor) {
+            std::cout << "Spike Doctor\n\n";
+            for (const auto& check : core::Environment::doctorChecks(session->options().cCompiler)) {
+                std::cout << check.label << ": " << (check.ok ? "OK" : "FAIL") << " - " << check.detail << "\n";
+            }
+            return 0;
+        }
 
-        CodeGenerator codeGenerator;
-        const std::string generatedCode = codeGenerator.generate(program);
-        writeFile(options.cOutputPath, generatedCode);
+        session->runPhase("file-read", [&] {
+            session->sourceManager().load(session->options().inputPath);
+        });
 
-        std::cout << "Arquivo C gerado em " << options.cOutputPath.string() << "\n";
+        const std::vector<Token> tokens = session->runPhase("lexer", [&] {
+            Lexer lexer(std::string(session->sourceManager().source()));
+            return lexer.tokenize();
+        });
 
-        if (options.buildBinary) {
-            const std::string command = options.cCompiler + " " + quotePath(options.cOutputPath) + " -o " + quotePath(options.binaryOutputPath);
-            std::cout.flush();
-            const int result = std::system(command.c_str());
-            if (result != 0) {
-                throw std::runtime_error("falha ao chamar o compilador C com o comando: " + command);
+        if (session->options().dumpTokens) {
+            std::ostringstream tokenOut;
+            if (session->options().jsonOutput) {
+                tokenOut << tokensToJson(tokens);
+            } else {
+                for (const auto& token : tokens) {
+                    tokenOut << tokenToString(token);
+                    if (session->options().withSpans) {
+                        tokenOut << " [" << token.location.line << ":" << token.location.column << "]";
+                    }
+                    tokenOut << "\n";
+                }
+            }
+            if (!session->options().dumpAst) {
+                if (session->options().artifactOutputPath.empty() && !session->options().stdoutOutput) {
+                    std::cout << tokenOut.str();
+                } else {
+                    emitArtifact(tokenOut.str(), session->options(), std::filesystem::path(), "Tokens");
+                }
+                printTimingIfEnabled(*session, std::cout);
+                return 0;
             }
 
-            std::cout << "Binario gerado em " << options.binaryOutputPath.string() << "\n";
+            std::cout << tokenOut.str() << "\n";
+        }
 
-            if (options.runBinary) {
-                const std::string runCommand = executableCommand(options.binaryOutputPath);
+        Program program = session->runPhase("parser", [&] {
+            Parser parser(tokens);
+            return parser.parseProgram();
+        });
+
+        if (session->options().dumpAst) {
+            if (session->options().jsonOutput) {
+                const std::filesystem::path defaultPath = std::filesystem::path("generated") / (session->options().inputPath.stem().string() + ".ast.json");
+                emitArtifact(astToJson(program), session->options(), defaultPath, "AST JSON");
+            } else if (session->options().graphOutput) {
+                const std::filesystem::path defaultPath = std::filesystem::path("generated") / (session->options().inputPath.stem().string() + ".ast.dot");
+                emitArtifact(astToGraphviz(program), session->options(), defaultPath, "AST Graphviz");
+            } else {
+                std::cout << "AST\n" << dumpAst(program) << "\n";
+            }
+            printTimingIfEnabled(*session, std::cout);
+            return 0;
+        }
+
+        session->runPhase("semantic", [&] {
+            SemanticAnalyzer semanticAnalyzer;
+            semanticAnalyzer.analyze(program);
+        });
+
+        const PassReport passReport = session->runPhase("passes", [&] {
+            return runOptimizationPasses(program);
+        });
+
+        const IRProgram irProgram = session->runPhase("ir", [&] {
+            IRBuilder builder;
+            return builder.build(program);
+        });
+
+        if (session->options().command == core::SessionCommand::Check) {
+            std::cout << "Analise concluida com sucesso para " << session->sourceManager().displayPath() << "\n";
+            if (passReport.constantFolds > 0) {
+                std::cout << "Constant folds aplicados: " << passReport.constantFolds << "\n";
+            }
+            printTimingIfEnabled(*session, std::cout);
+            return 0;
+        }
+
+        if (session->options().command == core::SessionCommand::Ir) {
+            if (session->options().jsonOutput) {
+                const std::filesystem::path defaultPath = std::filesystem::path("generated") / (session->options().inputPath.stem().string() + ".ir.json");
+                emitArtifact(irToJson(irProgram), session->options(), defaultPath, "IR JSON");
+            } else {
+                const std::filesystem::path defaultPath = session->options().stdoutOutput ? std::filesystem::path() : (std::filesystem::path("generated") / (session->options().inputPath.stem().string() + ".ir.txt"));
+                emitArtifact(dumpIr(irProgram), session->options(), defaultPath, "IR");
+            }
+            printTimingIfEnabled(*session, std::cout);
+            return 0;
+        }
+
+        if (session->options().command == core::SessionCommand::Stats) {
+            const ProgramStats stats = collectProgramStats(program, countLines(session->sourceManager().source()), tokens.size());
+            if (session->options().jsonOutput) {
+                emitArtifact(renderProgramStatsJson(stats), session->options(), std::filesystem::path(), "Stats");
+            } else {
+                emitArtifact(renderProgramStats(stats), session->options(), std::filesystem::path(), "Stats");
+            }
+            printTimingIfEnabled(*session, std::cout);
+            return 0;
+        }
+
+        const std::string generatedCode = session->runPhase("codegen", [&] {
+            CodeGenerator codeGenerator;
+            return codeGenerator.generate(program);
+        });
+
+        if (session->options().command == core::SessionCommand::Explain) {
+            emitArtifact(buildExplainReport(*session, tokens, program, irProgram, passReport, generatedCode), session->options(), std::filesystem::path(), "Explain");
+            printTimingIfEnabled(*session, std::cout);
+            return 0;
+        }
+
+        if (session->options().command == core::SessionCommand::EmitC && session->options().stdoutOutput) {
+            std::cout << generatedCode;
+            if (!generatedCode.empty() && generatedCode.back() != '\n') {
+                std::cout << "\n";
+            }
+            printTimingIfEnabled(*session, std::cout);
+            return 0;
+        }
+
+        session->runPhase("write-c", [&] {
+            writeFile(session->options().cOutputPath, generatedCode);
+        });
+
+        std::cout << "Arquivo C gerado em " << session->options().cOutputPath.string() << "\n";
+
+        if (session->options().buildBinary) {
+            session->runPhase("c-compile", [&] {
+                const std::string command = session->options().cCompiler + " " + quotePath(session->options().cOutputPath) + " -o " + quotePath(session->options().binaryOutputPath);
                 std::cout.flush();
-                const int runResult = std::system(runCommand.c_str());
-                if (runResult != 0) {
-                    throw std::runtime_error("falha ao executar o binario gerado com o comando: " + runCommand);
+                const int result = std::system(command.c_str());
+                if (result != 0) {
+                    throw std::runtime_error("falha ao chamar o compilador C com o comando: " + command);
                 }
+            });
+
+            std::cout << "Binario gerado em " << session->options().binaryOutputPath.string() << "\n";
+
+            if (session->options().runBinary) {
+                session->runPhase("run", [&] {
+                    const std::string runCommand = executableCommand(session->options().binaryOutputPath);
+                    std::cout.flush();
+                    const int runResult = std::system(runCommand.c_str());
+                    if (runResult != 0) {
+                        throw std::runtime_error("falha ao executar o binario gerado com o comando: " + runCommand);
+                    }
+                });
             }
         }
 
+        printTimingIfEnabled(*session, std::cout);
         return 0;
     } catch (const CompilerError& error) {
-        std::cerr << formatDiagnostic(inputName, source, error);
+        if (session != nullptr) {
+            session->diagnostics().emitCompilerError(error, std::cerr);
+            printTimingIfEnabled(*session, std::cerr);
+        } else {
+            std::cerr << "error[" << error.stage() << "]: " << error.message() << "\n";
+        }
     } catch (const std::exception& error) {
         std::cerr << "erro: " << error.what() << "\n";
         std::cerr << "dica: use --help para ver a sintaxe da CLI\n";
+        if (session != nullptr) {
+            printTimingIfEnabled(*session, std::cerr);
+        }
     }
 
     return 1;

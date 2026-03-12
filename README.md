@@ -16,11 +16,29 @@ Portuguese readers can use `README.pt-BR.md` and the full translated documentati
 ## Features
 
 - Modern C++ compiler architecture with `std::unique_ptr`, `std::vector` and `std::unordered_map`
+- Compiler core split into `cli`, `core`, lexer, parser, semantic analysis and backend-oriented modules
 - Lexer and recursive descent parser
 - AST-based pipeline with semantic analysis
 - Portugol to C transpilation
 - Native executable generation through `gcc`, `clang` or compatible C compilers
 - Debug-friendly CLI with token and AST inspection
+- Phase timing and trace output with `--time` and `--trace`
+- Structured outputs with `spike stats`, `spike explain`, `spike ast --json` and `spike ast --graph`
+- Initial IR layer with `spike ir` and a first optimization pass for constant folding
+
+## Repository Shape
+
+- serious compiler-first repository structure
+- strong English and Portuguese documentation under `docs/en/` and `docs/pt/`
+- issue templates, CI workflows and contribution files for GitHub
+- room for IR, passes, formatter, linter and watch mode without turning the codebase into a mess
+
+## v2.0.0 Direction
+
+- Spike v2.0.0 is planned as a compiler-first release
+- the repository is being prepared so GitHub language stats reflect the real project focus: C++
+- website and documentation assets are marked as documentation in `.gitattributes`, while future work expands the C++ core significantly
+- the target direction is a much stronger C++ share, around 70% of the repository language breakdown
 
 ## Supported MVP
 
@@ -65,7 +83,13 @@ Compiled output:
 ```text
 spike/
 ├── include/
+│   ├── cli/
+│   ├── core/
+│   └── ...
 ├── src/
+│   ├── cli/
+│   ├── core/
+│   └── ...
 ├── examples/
 ├── docs/
 ├── docs_pt/
@@ -113,9 +137,19 @@ Professional subcommands:
 ```bash
 ./build/spike build examples/hello.por
 ./build/spike run examples/hello.por
+./build/spike check examples/hello.por
+./build/spike trace examples/hello.por
 ./build/spike tokens examples/hello.por
 ./build/spike ast examples/if.por
+./build/spike ast examples/if.por --json --output generated/if.ast.json
+./build/spike ast examples/if.por --graph --output generated/if.ast.dot
+./build/spike ir examples/basic/hello.por
+./build/spike ir examples/basic/hello.por --json --output generated/hello.ir.json
+./build/spike stats examples/basic/hello.por
+./build/spike explain examples/basic/hello.por
 ./build/spike emit-c examples/loop.por --emit-c generated/loop.c
+./build/spike doctor
+./build/spike version
 ```
 
 Flags:
@@ -126,20 +160,28 @@ Flags:
 --emit-c [arquivo.c]
 --no-build
 --run
+--json
+--graph
+--output <arquivo>
+--stdout
+--with-spans
+--trace
+--time
 --cc <compiler>
 -o <binary>
 ```
 
 ## Documentation
 
-- English docs live in `docs/`
-- Portuguese docs live in `docs_pt/`
-- `docs/grammar.md` / `docs_pt/grammar.md` - language grammar and precedence
-- `docs/architecture.md` / `docs_pt/architecture.md` - compiler pipeline and module overview
-- `docs/tutorial.md` / `docs_pt/tutorial.md` - quick start and examples
-- `docs/roadmap.md` / `docs_pt/roadmap.md` - public roadmap
-- `docs/contributing.md` / `docs_pt/contributing.md` - contribution guide
-- `docs/changelog.md` / `docs_pt/changelog.md` - detailed release notes
+- English docs live in `docs/en/`
+- Portuguese docs live in `docs/pt/`
+- `docs/en/cli.md` / `docs/pt/cli.md` - command reference
+- `docs/en/architecture.md` / `docs/pt/architecture.md` - compiler pipeline and internal modules
+- `docs/en/ir.md` / `docs/pt/ir.md` - intermediate representation layer
+- `docs/en/tutorial.md` / `docs/pt/tutorial.md` - guided usage
+- `docs/en/roadmap.md` / `docs/pt/roadmap.md` - roadmap from `v0.1.0` to `v1.0.0`
+- `docs/en/contributing.md` / `docs/pt/contributing.md` - contribution guide
+- `docs/index.md` - documentation index
 
 ## Website and GitHub Pages
 

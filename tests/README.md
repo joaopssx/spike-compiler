@@ -1,16 +1,16 @@
 # Tests
 
-Spike currently ships with lightweight smoke tests through CTest.
+Spike uses a mix of smoke tests, future unit tests and future integration tests.
 
-Run them locally with:
+## Current local command
 
 ```bash
 ctest --test-dir build --output-on-failure
 ```
 
-Planned additions:
+## Planned layout
 
-- golden tests for token streams
-- golden tests for AST dumps
-- semantic error regression tests
-- generated C snapshots
+- `tests/unit/` for lexer, parser, AST, sema and IR tests
+- `tests/integration/` for CLI and end-to-end scenarios
+- `tests/snapshots/` for AST, diagnostics, IR and generated C outputs
+- `tests/data/` for reusable valid and invalid sample programs

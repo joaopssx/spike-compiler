@@ -30,6 +30,15 @@ O Spike segue um roadmap incremental focado em entregar um compilador real antes
 - suite de testes automatizados forte
 - experiencia de CLI pronta para uso publico
 
+## v2.0.0
+
+- foco compiler-first no repositorio, com GitHub Linguist configurado para priorizar C++ acima dos assets do site
+- crescimento forte de C++ em `src/` e `include/`, mirando algo perto de 70% das estatisticas de linguagem do repositorio
+- ferramental avancado do compilador: `--time`, `--trace`, `--stats`, `--ast-json`, `--graph`, `--doctor` e `--self-test`
+- analise semantica mais profunda e instrumentacao interna mais rica para performance e debug
+- mais testes automatizados focados em lexer, parser, analise semantica e geracao de codigo
+- site mantido como camada leve de documentacao e apresentacao, sem dominar o projeto principal
+
 ## Ideias Futuras
 
 - modo interpretador

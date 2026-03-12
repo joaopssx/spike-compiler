@@ -2,6 +2,15 @@
 
 All notable changes to Spike are documented in this file.
 
+## v2.0.0 (planned)
+
+Compiler-first release planned to shift the repository weight back toward C++.
+
+- GitHub Linguist configuration to keep website and docs from dominating language statistics
+- larger C++ surface in compiler internals and tooling
+- advanced developer flags such as timing, tracing, stats and AST export
+- stronger test coverage around the compiler pipeline
+
 ## v0.1.0
 
 Initial public structure for Spike.

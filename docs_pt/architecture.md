@@ -81,6 +81,27 @@ Responsabilidades:
 - imprimir tokens ou AST quando solicitado
 - chamar opcionalmente o compilador C externo
 
+### Servicos Core
+
+Arquivos: `include/core/source_manager.hpp`, `include/core/diagnostics.hpp`, `include/core/session.hpp`, `include/core/phase_profiler.hpp`
+
+Responsabilidades:
+
+- carregar o arquivo de entrada e expor linhas do codigo com `SourceManager`
+- renderizar diagnosticos melhores com `DiagnosticEngine`
+- centralizar o estado da compilacao com `CompilationSession`
+- medir cada fase do pipeline com `PhaseProfiler`
+
+### Camada de CLI
+
+Arquivos: `include/cli/options.hpp`, `src/cli/options.cpp`
+
+Responsabilidades:
+
+- interpretar subcomandos como `build`, `run`, `tokens`, `ast`, `emit-c` e `trace`
+- expor opcoes de tempo e rastreamento como `--time` e `--trace`
+- manter o `main.cpp` focado no pipeline em vez de concentrar toda a logica de argumentos
+
 ## Objetivos de Design
 
 - ser facil de ler para estudantes aprendendo compiladores

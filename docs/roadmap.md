@@ -30,6 +30,15 @@ Spike follows an incremental roadmap focused on shipping a real compiler before 
 - strong automated test suite
 - production-ready CLI experience
 
+## v2.0.0
+
+- compiler-first repository focus with GitHub Linguist configured to prioritize C++ over website assets
+- major C++ growth in `src/` and `include/`, targeting roughly 70% of the repository language stats as C++
+- advanced compiler tooling: `--time`, `--trace`, `--stats`, `--ast-json`, `--graph`, `--doctor` and `--self-test`
+- deeper semantic analysis and richer internal instrumentation for performance and debugging
+- more automated tests centered on lexer, parser, semantic analysis and code generation
+- website kept lightweight as documentation and project presentation, not as the core of the repository
+
 ## Future Ideas
 
 - interpreter mode

@@ -81,6 +81,27 @@ Responsibilities:
 - print tokens or AST when requested
 - optionally call the external C compiler
 
+### Core Services
+
+Files: `include/core/source_manager.hpp`, `include/core/diagnostics.hpp`, `include/core/session.hpp`, `include/core/phase_profiler.hpp`
+
+Responsibilities:
+
+- load the input file and expose source lines through `SourceManager`
+- render better diagnostics through `DiagnosticEngine`
+- centralize compilation state through `CompilationSession`
+- measure each pipeline phase through `PhaseProfiler`
+
+### CLI Layer
+
+Files: `include/cli/options.hpp`, `src/cli/options.cpp`
+
+Responsibilities:
+
+- parse subcommands such as `build`, `run`, `tokens`, `ast`, `emit-c` and `trace`
+- expose timing and tracing options like `--time` and `--trace`
+- keep `main.cpp` focused on the pipeline instead of argument parsing details
+
 ## Design Goals
 
 - easy to read for students learning compilers
