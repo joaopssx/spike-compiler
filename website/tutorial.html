@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Spike Tutorial</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="site-shell">
+        <nav class="site-nav">
+            <a class="brand" href="index.html">
+                <span class="brand-mark">S</span>
+                <span>Spike Compiler</span>
+            </a>
+            <div class="nav-links">
+                <a href="index.html">Home</a>
+                <a href="docs.html">Documentation</a>
+                <a href="https://github.com/joaopssx/spike">GitHub</a>
+            </div>
+        </nav>
+
+        <section class="hero">
+            <div class="hero-copy">
+                <div class="eyebrow">Tutorial</div>
+                <h1>Build, inspect and run a Portugol program.</h1>
+                <p>Spike exposes a small but practical CLI. Start with `tokens`, confirm the AST with `ast`, then build or run the final program.</p>
+            </div>
+
+            <div class="code-panel">
+                <div class="terminal-bar">
+                    <span class="terminal-dot"></span>
+                    <span class="terminal-dot"></span>
+                    <span class="terminal-dot"></span>
+                </div>
+                <pre><code>$ spike tokens examples/hello.por
+$ spike ast examples/hello.por
+$ spike run examples/hello.por</code></pre>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="grid">
+                <article class="card">
+                    <h3 class="card-title">1. Build</h3>
+                    <p>`cmake -S . -B build` and `cmake --build build` generate the Spike executable.</p>
+                </article>
+                <article class="card">
+                    <h3 class="card-title">2. Inspect</h3>
+                    <p>Use `spike tokens` and `spike ast` to understand what the compiler sees internally.</p>
+                </article>
+                <article class="card">
+                    <h3 class="card-title">3. Run</h3>
+                    <p>`spike run programa.por` emits C, builds the native binary and executes it.</p>
+                </article>
+            </div>
+        </section>
+
+        <footer class="footer">
+            For a complete walkthrough, open `docs/tutorial.md` in the repository.
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,247 @@
+:root {
+    --bg: #08111f;
+    --panel: rgba(12, 23, 42, 0.82);
+    --panel-strong: rgba(17, 32, 58, 0.96);
+    --text: #edf4ff;
+    --muted: #a8b7d4;
+    --accent: #ffb84d;
+    --accent-2: #57d6c0;
+    --border: rgba(255, 255, 255, 0.12);
+    --shadow: 0 22px 60px rgba(0, 0, 0, 0.35);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: "Space Grotesk", "Segoe UI", sans-serif;
+    color: var(--text);
+    background:
+        radial-gradient(circle at top left, rgba(255, 184, 77, 0.16), transparent 30%),
+        radial-gradient(circle at top right, rgba(87, 214, 192, 0.14), transparent 28%),
+        linear-gradient(160deg, #07101d 0%, #0c1a2e 55%, #08111f 100%);
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.site-shell {
+    width: min(1120px, calc(100% - 32px));
+    margin: 0 auto;
+}
+
+.site-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px 0;
+    gap: 16px;
+}
+
+.brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.brand-mark {
+    display: inline-grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, var(--accent), #ff8954);
+    color: #09101c;
+    box-shadow: var(--shadow);
+}
+
+.nav-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    color: var(--muted);
+}
+
+.hero {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 28px;
+    align-items: center;
+    padding: 36px 0 28px;
+}
+
+.hero-copy,
+.panel,
+.code-panel,
+.card {
+    border: 1px solid var(--border);
+    background: var(--panel);
+    backdrop-filter: blur(18px);
+    border-radius: 24px;
+    box-shadow: var(--shadow);
+}
+
+.hero-copy {
+    padding: 36px;
+}
+
+.eyebrow {
+    color: var(--accent);
+    font-size: 0.9rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+}
+
+h1,
+h2,
+h3 {
+    margin: 0;
+    line-height: 1.05;
+}
+
+h1 {
+    font-size: clamp(2.8rem, 6vw, 5rem);
+    margin-bottom: 16px;
+}
+
+h2 {
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    margin-bottom: 14px;
+}
+
+p {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.7;
+}
+
+.hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-top: 26px;
+}
+
+.button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 13px 18px;
+    border-radius: 999px;
+    font-weight: 700;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.button:hover {
+    transform: translateY(-1px);
+}
+
+.button-primary {
+    background: linear-gradient(135deg, var(--accent), #ff8954);
+    color: #09101c;
+}
+
+.button-secondary {
+    border: 1px solid var(--border);
+    color: var(--text);
+}
+
+.code-panel {
+    padding: 20px;
+    background: var(--panel-strong);
+}
+
+.terminal-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.terminal-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+}
+
+pre,
+code {
+    font-family: "IBM Plex Mono", "SFMono-Regular", monospace;
+}
+
+pre {
+    margin: 0;
+    color: #dcf2ff;
+    overflow-x: auto;
+    line-height: 1.7;
+}
+
+.section {
+    padding: 28px 0;
+}
+
+.grid {
+    display: grid;
+    gap: 18px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.card,
+.panel {
+    padding: 24px;
+}
+
+.card-title {
+    margin-bottom: 10px;
+    font-size: 1.15rem;
+}
+
+.pipeline {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.pipeline-step {
+    padding: 18px 14px;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border);
+    text-align: center;
+    font-weight: 700;
+}
+
+.footer {
+    padding: 28px 0 42px;
+    color: var(--muted);
+    font-size: 0.95rem;
+}
+
+@media (max-width: 900px) {
+    .hero,
+    .grid,
+    .pipeline {
+        grid-template-columns: 1fr;
+    }
+
+    .site-nav {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .hero-copy,
+    .code-panel,
+    .card,
+    .panel {
+        padding: 22px;
+    }
+}

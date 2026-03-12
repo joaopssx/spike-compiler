@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Spike - A modern Portugol compiler</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="site-shell">
+        <nav class="site-nav">
+            <a class="brand" href="index.html">
+                <span class="brand-mark">S</span>
+                <span>Spike Compiler</span>
+            </a>
+            <div class="nav-links">
+                <a href="docs.html">Documentation</a>
+                <a href="tutorial.html">Tutorial</a>
+                <a href="https://github.com/joaopssx/spike">GitHub</a>
+            </div>
+        </nav>
+
+        <section class="hero">
+            <div class="hero-copy">
+                <div class="eyebrow">Learn compilers with Spike</div>
+                <h1>Modern Portugol, native binaries, clean C++.</h1>
+                <p>Spike is a modern Portugol compiler written in C++ designed for learning, experimentation and performance. It lexes, parses, validates and transpiles Portugol into C before calling a native compiler.</p>
+                <div class="hero-actions">
+                    <a class="button button-primary" href="docs.html">Read the docs</a>
+                    <a class="button button-secondary" href="tutorial.html">Open the tutorial</a>
+                </div>
+            </div>
+
+            <div class="code-panel">
+                <div class="terminal-bar">
+                    <span class="terminal-dot"></span>
+                    <span class="terminal-dot"></span>
+                    <span class="terminal-dot"></span>
+                </div>
+                <pre><code>algoritmo "hello"
+
+var
+    a: inteiro
+
+inicio
+    a &lt;- 10
+    escreva(a)
+fimalgoritmo
+
+$ spike run hello.por
+10</code></pre>
+            </div>
+        </section>
+
+        <section class="section panel">
+            <div class="eyebrow">Pipeline</div>
+            <h2>From Portugol to executable</h2>
+            <div class="pipeline">
+                <div class="pipeline-step">Source</div>
+                <div class="pipeline-step">Lexer</div>
+                <div class="pipeline-step">Parser</div>
+                <div class="pipeline-step">AST</div>
+                <div class="pipeline-step">C Output</div>
+                <div class="pipeline-step">Binary</div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="grid">
+                <article class="card">
+                    <h3 class="card-title">Recursive descent parser</h3>
+                    <p>Spike keeps the parser explicit and readable, which makes the grammar easier to evolve and easier to teach.</p>
+                </article>
+                <article class="card">
+                    <h3 class="card-title">AST-first architecture</h3>
+                    <p>The compiler builds an internal tree before semantic checks and code generation, keeping each stage focused.</p>
+                </article>
+                <article class="card">
+                    <h3 class="card-title">Native build flow</h3>
+                    <p>Spike emits C and can immediately call `gcc`, `clang` or another compatible compiler to generate an executable.</p>
+                </article>
+            </div>
+        </section>
+
+        <footer class="footer">
+            Created by Joao Pedro de Sena Santana. Named after the author's dog, Spike.
+        </footer>
+    </div>
+</body>
+</html>

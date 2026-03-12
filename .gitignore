@@ -1,0 +1,10 @@
+build/
+generated/
+*.exe
+*.obj
+*.o
+*.out
+*.pdb
+*.ilk
+*.log
+.DS_Store
