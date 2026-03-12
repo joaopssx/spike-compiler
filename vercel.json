@@ -1,0 +1,34 @@
+{
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "/website/index.html",
+      "permanent": false
+    },
+    {
+      "source": "/docs",
+      "destination": "/website/docs.html",
+      "permanent": false
+    },
+    {
+      "source": "/tutorial",
+      "destination": "/website/tutorial.html",
+      "permanent": false
+    },
+    {
+      "source": "/pt",
+      "destination": "/website/pt/index.html",
+      "permanent": false
+    },
+    {
+      "source": "/pt/docs",
+      "destination": "/website/pt/docs.html",
+      "permanent": false
+    },
+    {
+      "source": "/pt/tutorial",
+      "destination": "/website/pt/tutorial.html",
+      "permanent": false
+    }
+  ]
+}
