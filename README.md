@@ -67,6 +67,38 @@ Main files for this version:
 
 This version does not execute code yet.
 
+## Version 0.2.0
+
+Goal: transform tokens into a basic AST.
+
+Planned features:
+
+- recursive descent parser
+- basic AST
+- simple statements
+- `ast` command
+
+Supported in this version:
+
+- `var`
+- assignment
+- `escreva`
+
+Example:
+
+```bash
+spike ast file.por
+```
+
+Example output:
+
+```text
+Program
+  VarDecl a : inteiro
+  Assign a <- 10
+  Write a
+```
+
 ## Build
 
 ```bash
@@ -78,12 +110,14 @@ cmake --build build
 
 ```bash
 ./build/spike tokens file.por
+./build/spike ast file.por
 ```
 
 Example:
 
 ```bash
 ./build/spike tokens examples/hello.por
+./build/spike ast examples/ast-basic.por
 ```
 
 ## Notes

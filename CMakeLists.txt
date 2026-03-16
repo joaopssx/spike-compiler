@@ -1,10 +1,12 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(spike VERSION 0.1.0 LANGUAGES CXX)
+project(spike VERSION 0.2.0 LANGUAGES CXX)
 
 add_executable(spike
+    src/ast.cpp
     src/lexer.cpp
     src/main.cpp
+    src/parser.cpp
     src/token.cpp
 )
 

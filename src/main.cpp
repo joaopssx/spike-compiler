@@ -6,7 +6,9 @@
 #include <string>
 #include <vector>
 
+#include "ast.hpp"
 #include "lexer.hpp"
+#include "parser.hpp"
 
 namespace {
 
@@ -14,11 +16,13 @@ constexpr int kExitSuccess = 0;
 constexpr int kExitUsageError = 1;
 constexpr int kExitFileError = 2;
 constexpr int kExitLexerError = 3;
+constexpr int kExitParserError = 4;
 
 void print_usage(const char* program_name) {
-    std::cerr << "Spike 0.1.0\n"
+    std::cerr << "Spike 0.2.0\n"
               << "Usage:\n"
               << "  " << program_name << " tokens <file.por>\n"
+              << "  " << program_name << " ast <file.por>\n"
               << "  " << program_name << " --help\n";
 }
 
@@ -59,6 +63,28 @@ int run_tokens(const std::string& path) {
     }
 }
 
+int run_ast(const std::string& path) {
+    const std::string source = read_file(path);
+    Lexer lexer(source);
+
+    try {
+        const std::vector<Token> tokens = lexer.tokenize();
+        Parser parser(tokens);
+        const Program program = parser.parse_program();
+
+        std::cout << ast_to_string(program) << '\n';
+        return kExitSuccess;
+    } catch (const LexerError& error) {
+        std::cerr << path << ':' << error.line() << ':' << error.column() << ": lexer error: "
+                  << error.what() << '\n';
+        return kExitLexerError;
+    } catch (const ParserError& error) {
+        std::cerr << path << ':' << error.line() << ':' << error.column()
+                  << ": parser error: " << error.what() << '\n';
+        return kExitParserError;
+    }
+}
+
 }  // namespace
 
 int main(int argc, char** argv) {
@@ -73,16 +99,29 @@ int main(int argc, char** argv) {
     }
 
     const std::string command = argv[1];
-    if (command != "tokens") {
+    if (command == "tokens") {
+        try {
+            return run_tokens(argv[2]);
+        } catch (const std::runtime_error& error) {
+            std::cerr << error.what() << '\n';
+            return kExitFileError;
+        }
+    }
+
+    if (command == "ast") {
+        try {
+            return run_ast(argv[2]);
+        } catch (const std::runtime_error& error) {
+            std::cerr << error.what() << '\n';
+            return kExitFileError;
+        }
+    }
+
+    if (command != "tokens" && command != "ast") {
         std::cerr << "unknown command: " << command << '\n';
         print_usage(argv[0]);
         return kExitUsageError;
     }
 
-    try {
-        return run_tokens(argv[2]);
-    } catch (const std::runtime_error& error) {
-        std::cerr << error.what() << '\n';
-        return kExitFileError;
-    }
+    return kExitUsageError;
 }
