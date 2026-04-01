@@ -1,0 +1,62 @@
+# Arquitetura
+
+O Spike foi montado com uma estrutura pequena e direta, pensando em estudo e evolucao gradual.
+
+## Fluxo atual
+
+Nesta etapa o fluxo e:
+
+1. A CLI recebe `spike tokens arquivo.por`.
+2. O modulo de leitura carrega todo o arquivo para uma `std::string`.
+3. O `Lexer` percorre o texto da esquerda para a direita.
+4. Cada trecho reconhecido vira um `Token`.
+5. A CLI imprime o nome de cada token encontrado.
+
+## Separacao de responsabilidades
+
+### `TokenType`
+
+`TokenType` define quais categorias de token existem. Ele e um `enum class`, o que deixa o codigo mais seguro e evita misturar tipos de token com inteiros soltos.
+
+### `Token`
+
+`Token` guarda:
+
+- o tipo do token
+- o lexema original
+- linha
+- coluna
+
+Mesmo que a CLI atual imprima so o nome do token, linha e coluna ja ficam prontas para mensagens de erro melhores nas proximas etapas.
+
+### `Lexer`
+
+O `Lexer` recebe o texto completo e produz `std::vector<Token>`.
+
+Ele foi mantido simples:
+
+- um indice para a posicao atual
+- contadores de linha e coluna
+- funcoes pequenas para cada tipo de leitura
+
+Essa abordagem ajuda a estudar o processo sem esconder a logica em muitas camadas.
+
+### `FileReader`
+
+O modulo de leitura de arquivo foi separado do lexer para nao misturar I/O com analise lexica.
+
+### `main.cpp`
+
+`main.cpp` cuida apenas da interface de linha de comando:
+
+- validar argumentos
+- ler arquivo
+- chamar o lexer
+- imprimir os tokens
+
+## Decisoes de design
+
+1. O projeto usa poucos arquivos, mas cada um tem um papel claro.
+2. O lexer trabalha em uma passada unica, que e o jeito mais facil de entender e depurar nessa fase.
+3. O token guarda o lexema original porque isso sera util no parser e em mensagens de erro.
+4. Existe um token interno de fim de arquivo, mas ele nao e exibido no comando `tokens` para manter a saida limpa.
