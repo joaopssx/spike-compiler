@@ -22,9 +22,11 @@ TOKEN_NUMBER
 
 The `Lexer` reads one character at a time and decides which function to use based on the first character of the next token.
 
-### 1. Whitespace
+### 1. Whitespace and comments
 
 Spaces, tabs, and line breaks are ignored.
+
+Line comments starting with `//` are also ignored until the end of the line.
 
 ### 2. Identifiers and keywords
 
@@ -101,6 +103,15 @@ Examples:
 - `TOKEN_NUMBER`
 - `TOKEN_STRING`
 
+## Error messages
+
+When the lexer finds an invalid character or an unterminated string, it reports:
+
+- line
+- column
+- the original source line
+- a caret showing the error position
+
 ## Intentional limitations of this stage
 
 To keep the base simple and educational, this version does not yet include:
@@ -108,7 +119,6 @@ To keep the base simple and educational, this version does not yet include:
 - parser
 - AST
 - C code generation
-- comments
 - string escape handling
 
 These features can be added later without making the current base more complex.

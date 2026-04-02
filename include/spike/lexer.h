@@ -21,13 +21,14 @@ private:
     char Advance();
     bool Match(char expected);
 
-    void SkipWhitespace();
+    void SkipIgnoredText();
 
     Token ReadIdentifierOrKeyword();
     Token ReadNumber();
     Token ReadString();
     Token BuildToken(TokenType type, std::size_t start, std::size_t line,
                      std::size_t column) const;
+    std::string GetLineText(std::size_t line) const;
 
     [[noreturn]] void ThrowError(const std::string& message, std::size_t line,
                                  std::size_t column) const;

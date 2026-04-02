@@ -22,9 +22,11 @@ TOKEN_NUMBER
 
 O `Lexer` le um caractere por vez e decide qual funcao usar com base no primeiro caractere do proximo token.
 
-### 1. Espacos em branco
+### 1. Espacos em branco e comentarios
 
 Espacos, tabulacoes e quebras de linha sao ignorados.
+
+Comentarios de linha iniciados com `//` tambem sao ignorados ate o fim da linha.
 
 ### 2. Identificadores e palavras-chave
 
@@ -101,6 +103,15 @@ Exemplos:
 - `TOKEN_NUMBER`
 - `TOKEN_STRING`
 
+## Mensagens de erro
+
+Quando o lexer encontra um caractere invalido ou uma string nao terminada, ele informa:
+
+- linha
+- coluna
+- a linha original do codigo
+- um cursor mostrando a posicao do erro
+
 ## Limitacoes intencionais desta fase
 
 Para manter a base simples e didatica, esta versao ainda nao faz:
@@ -108,7 +119,6 @@ Para manter a base simples e didatica, esta versao ainda nao faz:
 - parser
 - AST
 - geracao de codigo C
-- comentarios
 - tratamento de escapes em strings
 
 Esses pontos podem entrar depois, sem complicar a base atual.

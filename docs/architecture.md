@@ -10,7 +10,7 @@ At this stage, the flow is:
 2. The file reading module loads the entire file into a `std::string`.
 3. The `Lexer` walks through the text from left to right.
 4. Each recognized piece becomes a `Token`.
-5. The CLI prints the name of each token found.
+5. The CLI prints either the token names or a verbose token view with lexeme, line, and column.
 
 ## Separation of responsibilities
 
@@ -27,7 +27,7 @@ At this stage, the flow is:
 - line
 - column
 
-Even though the current CLI only prints the token name, line and column are already available for better error messages in future stages.
+The CLI can now print either the token name only or a verbose view with lexeme, line, and column.
 
 ### `Lexer`
 
@@ -38,6 +38,7 @@ It was intentionally kept simple:
 - one index for the current position
 - line and column counters
 - small functions for each kind of token reading
+- one pass that skips whitespace and `//` comments before reading the next token
 
 This approach makes the process easier to study without hiding the logic behind too many layers.
 
@@ -53,6 +54,15 @@ The file reading module was separated from the lexer so that I/O is not mixed wi
 - read the file
 - call the lexer
 - print the tokens
+- switch between normal and `--verbose` output
+
+### `tests/`
+
+The project includes a small automated test executable for the lexer. The tests focus on the core behavior of this stage:
+
+- token recognition
+- comment skipping
+- error reporting
 
 ## Design decisions
 
@@ -60,3 +70,4 @@ The file reading module was separated from the lexer so that I/O is not mixed wi
 2. The lexer works in a single pass, which is the easiest way to understand and debug it at this stage.
 3. The token stores the original lexeme because that will be useful in the parser and in error messages.
 4. There is an internal end-of-file token, but it is not displayed by the `tokens` command to keep the output clean.
+5. Automated tests were added now to keep future lexer changes safer without introducing a heavy test framework.

@@ -40,7 +40,7 @@ std::vector<Token> Lexer::Tokenize() {
     std::vector<Token> tokens;
 
     while (true) {
-        SkipWhitespace();
+        SkipIgnoredText();
         if (IsAtEnd()) {
             break;
         }
@@ -133,8 +133,8 @@ std::vector<Token> Lexer::Tokenize() {
                 }
                 break;
             default:
-                ThrowError(std::string("caractere inesperado: ") + current, token_line,
-                           token_column);
+                ThrowError(std::string("caractere inesperado: '") + current + "'",
+                           token_line, token_column);
         }
     }
 
@@ -176,11 +176,19 @@ bool Lexer::Match(char expected) {
     return true;
 }
 
-void Lexer::SkipWhitespace() {
+void Lexer::SkipIgnoredText() {
     while (!IsAtEnd()) {
         const char current = Peek();
         if (current == ' ' || current == '\t' || current == '\r' || current == '\n') {
             Advance();
+            continue;
+        }
+
+        if (current == '/' && Peek(1) == '/') {
+            while (!IsAtEnd() && Peek() != '\n') {
+                Advance();
+            }
+
             continue;
         }
 
@@ -257,8 +265,40 @@ Token Lexer::BuildToken(TokenType type, std::size_t start, std::size_t line,
 
 void Lexer::ThrowError(const std::string& message, std::size_t line,
                        std::size_t column) const {
-    throw std::runtime_error("linha " + std::to_string(line) + ", coluna " +
-                             std::to_string(column) + ": " + message);
+    const std::string line_text = GetLineText(line);
+    std::string formatted_message = "linha " + std::to_string(line) + ", coluna " +
+                                    std::to_string(column) + ": " + message;
+
+    if (!line_text.empty()) {
+        std::string caret_line(column > 1 ? column - 1 : 0, ' ');
+        caret_line += '^';
+        formatted_message += "\n  " + line_text + "\n  " + caret_line;
+    }
+
+    throw std::runtime_error(formatted_message);
+}
+
+std::string Lexer::GetLineText(std::size_t target_line) const {
+    std::size_t current_line = 1;
+    std::size_t line_start = 0;
+
+    for (std::size_t index = 0; index <= source_.size(); ++index) {
+        if (index == source_.size() || source_[index] == '\n') {
+            if (current_line == target_line) {
+                std::string line_text = source_.substr(line_start, index - line_start);
+                if (!line_text.empty() && line_text.back() == '\r') {
+                    line_text.pop_back();
+                }
+
+                return line_text;
+            }
+
+            ++current_line;
+            line_start = index + 1;
+        }
+    }
+
+    return "";
 }
 
 }  // namespace spike

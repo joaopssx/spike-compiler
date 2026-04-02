@@ -18,6 +18,7 @@ O executavel sera gerado em `build/spike`.
 
 ```bash
 ./build/spike tokens caminho/do/arquivo.por
+./build/spike tokens caminho/do/arquivo.por --verbose
 ```
 
 ## Exemplo
@@ -71,6 +72,31 @@ TOKEN_RIGHT_PAREN
 TOKEN_FIMALGORITMO
 ```
 
+Exemplo de saida detalhada:
+
+```bash
+./build/spike tokens examples/exemplo.por --verbose
+```
+
+```text
+TOKEN_ALGORITMO lexeme="algoritmo" line=1 column=1
+TOKEN_IDENTIFIER lexeme="soma" line=1 column=11
+TOKEN_VAR lexeme="var" line=2 column=1
+```
+
+## Executando os testes
+
+```bash
+ctest --test-dir build --output-on-failure
+```
+
 ## Erros atuais
 
 Se o arquivo nao existir ou se o lexer encontrar um caractere invalido, o programa encerra com mensagem de erro.
+
+Os erros lexicos agora incluem:
+
+- linha
+- coluna
+- a linha original do codigo
+- um cursor `^` apontando a posicao do erro

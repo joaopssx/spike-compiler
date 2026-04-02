@@ -14,6 +14,8 @@ Spike/
 |       |-- lexer.h
 |       `-- token.h
 |-- readme_pt.md
+|-- tests/
+|   `-- lexer_tests.cpp
 `-- src/
     |-- file_reader.cpp
     |-- lexer.cpp
@@ -46,3 +48,7 @@ Documentacao do projeto em portugues.
 ### `readme_pt.md`
 
 Versao em portugues do README principal.
+
+### `tests/`
+
+Testes automatizados do lexer.
