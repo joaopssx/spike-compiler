@@ -14,7 +14,7 @@ cmake --build build
 
 The executable will be generated at `build/spike`.
 
-## Available command
+## Available commands
 
 ```bash
 ./build/spike --help
@@ -25,24 +25,33 @@ The executable will be generated at `build/spike`.
 
 ## Example
 
-File `examples/exemplo.por`:
+Available example files:
+
+- `examples/exemplo.por`
+- `examples/comentarios_e_strings.por`
+- `examples/controle_fluxo.por`
+- `examples/logica.por`
+
+File `examples/logica.por`:
 
 ```text
-algoritmo soma
+algoritmo logica
 var
-  x, y: inteiro
-  mensagem: texto
+  ativo: logico
 inicio
-  leia(x)
-  y <- 10
-  escreva("resultado")
+  ativo <- verdadeiro
+  se nao ativo ou ativo e falso entao
+    escreva("falso")
+  senao
+    escreva("verdadeiro")
+  fimse
 fimalgoritmo
 ```
 
 Execution:
 
 ```bash
-./build/spike tokens examples/exemplo.por
+./build/spike tokens examples/logica.por
 ```
 
 Expected output:
@@ -52,39 +61,46 @@ TOKEN_ALGORITMO
 TOKEN_IDENTIFIER
 TOKEN_VAR
 TOKEN_IDENTIFIER
-TOKEN_COMMA
-TOKEN_IDENTIFIER
 TOKEN_COLON
-TOKEN_INTEIRO
-TOKEN_IDENTIFIER
-TOKEN_COLON
-TOKEN_TEXTO
+TOKEN_LOGICO
 TOKEN_INICIO
-TOKEN_LEIA
-TOKEN_LEFT_PAREN
-TOKEN_IDENTIFIER
-TOKEN_RIGHT_PAREN
 TOKEN_IDENTIFIER
 TOKEN_ASSIGN
-TOKEN_NUMBER
+TOKEN_VERDADEIRO
+TOKEN_SE
+TOKEN_NAO
+TOKEN_IDENTIFIER
+TOKEN_OU
+TOKEN_IDENTIFIER
+TOKEN_E
+TOKEN_FALSO
+TOKEN_ENTAO
 TOKEN_ESCREVA
 TOKEN_LEFT_PAREN
 TOKEN_STRING
 TOKEN_RIGHT_PAREN
+TOKEN_SENAO
+TOKEN_ESCREVA
+TOKEN_LEFT_PAREN
+TOKEN_STRING
+TOKEN_RIGHT_PAREN
+TOKEN_FIMSE
 TOKEN_FIMALGORITMO
 ```
 
 Verbose output example:
 
 ```bash
-./build/spike tokens examples/exemplo.por --verbose
+./build/spike tokens examples/controle_fluxo.por --verbose
 ```
 
 ```text
 TOKEN_ALGORITMO lexeme="algoritmo" line=1 column=1
-TOKEN_IDENTIFIER lexeme="soma" line=1 column=11
-TOKEN_VAR lexeme="var" line=2 column=1
+TOKEN_IDENTIFIER lexeme="fluxo" line=1 column=11
+TOKEN_ENQUANTO lexeme="enquanto" line=6 column=3
 ```
+
+Keywords are matched case-insensitively, so `algoritmo`, `Algoritmo`, and `ALGORITMO` all produce the same token type.
 
 Error example:
 

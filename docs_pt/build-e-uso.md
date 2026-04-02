@@ -14,7 +14,7 @@ cmake --build build
 
 O executavel sera gerado em `build/spike`.
 
-## Comando disponivel
+## Comandos disponiveis
 
 ```bash
 ./build/spike --help
@@ -25,24 +25,33 @@ O executavel sera gerado em `build/spike`.
 
 ## Exemplo
 
-Arquivo `examples/exemplo.por`:
+Arquivos de exemplo disponiveis:
+
+- `examples/exemplo.por`
+- `examples/comentarios_e_strings.por`
+- `examples/controle_fluxo.por`
+- `examples/logica.por`
+
+Arquivo `examples/logica.por`:
 
 ```text
-algoritmo soma
+algoritmo logica
 var
-  x, y: inteiro
-  mensagem: texto
+  ativo: logico
 inicio
-  leia(x)
-  y <- 10
-  escreva("resultado")
+  ativo <- verdadeiro
+  se nao ativo ou ativo e falso entao
+    escreva("falso")
+  senao
+    escreva("verdadeiro")
+  fimse
 fimalgoritmo
 ```
 
 Execucao:
 
 ```bash
-./build/spike tokens examples/exemplo.por
+./build/spike tokens examples/logica.por
 ```
 
 Saida esperada:
@@ -52,39 +61,46 @@ TOKEN_ALGORITMO
 TOKEN_IDENTIFIER
 TOKEN_VAR
 TOKEN_IDENTIFIER
-TOKEN_COMMA
-TOKEN_IDENTIFIER
 TOKEN_COLON
-TOKEN_INTEIRO
-TOKEN_IDENTIFIER
-TOKEN_COLON
-TOKEN_TEXTO
+TOKEN_LOGICO
 TOKEN_INICIO
-TOKEN_LEIA
-TOKEN_LEFT_PAREN
-TOKEN_IDENTIFIER
-TOKEN_RIGHT_PAREN
 TOKEN_IDENTIFIER
 TOKEN_ASSIGN
-TOKEN_NUMBER
+TOKEN_VERDADEIRO
+TOKEN_SE
+TOKEN_NAO
+TOKEN_IDENTIFIER
+TOKEN_OU
+TOKEN_IDENTIFIER
+TOKEN_E
+TOKEN_FALSO
+TOKEN_ENTAO
 TOKEN_ESCREVA
 TOKEN_LEFT_PAREN
 TOKEN_STRING
 TOKEN_RIGHT_PAREN
+TOKEN_SENAO
+TOKEN_ESCREVA
+TOKEN_LEFT_PAREN
+TOKEN_STRING
+TOKEN_RIGHT_PAREN
+TOKEN_FIMSE
 TOKEN_FIMALGORITMO
 ```
 
 Exemplo de saida detalhada:
 
 ```bash
-./build/spike tokens examples/exemplo.por --verbose
+./build/spike tokens examples/controle_fluxo.por --verbose
 ```
 
 ```text
 TOKEN_ALGORITMO lexeme="algoritmo" line=1 column=1
-TOKEN_IDENTIFIER lexeme="soma" line=1 column=11
-TOKEN_VAR lexeme="var" line=2 column=1
+TOKEN_IDENTIFIER lexeme="fluxo" line=1 column=11
+TOKEN_ENQUANTO lexeme="enquanto" line=6 column=3
 ```
+
+As palavras-chave agora sao reconhecidas sem diferenca entre maiusculas e minusculas, entao `algoritmo`, `Algoritmo` e `ALGORITMO` viram o mesmo tipo de token.
 
 Exemplo de erro:
 

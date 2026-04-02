@@ -32,7 +32,7 @@ Line comments starting with `//` are also ignored until the end of the line.
 
 If the token starts with a letter or `_`, the lexer keeps reading letters, digits, and `_`.
 
-After that, it checks whether the text is a known keyword. If it is, it returns the keyword token. Otherwise, it returns `TOKEN_IDENTIFIER`.
+After that, it checks whether the text is a known keyword. This comparison is case-insensitive, so `se`, `Se`, and `SE` are treated the same. If the text is not a keyword, the lexer returns `TOKEN_IDENTIFIER`.
 
 ### 3. Numbers
 
@@ -69,6 +69,7 @@ Short operators and symbols are recognized directly from the current character, 
 Examples:
 
 - `<-`
+- `<>`
 - `<=`
 - `>=`
 
@@ -80,11 +81,24 @@ Examples:
 - `var`
 - `inicio`
 - `fimalgoritmo`
+- `se`
+- `entao`
+- `senao`
+- `fimse`
+- `enquanto`
+- `faca`
+- `fimenquanto`
 - `inteiro`
 - `real`
 - `texto`
+- `logico`
+- `verdadeiro`
+- `falso`
 - `leia`
 - `escreva`
+- `e`
+- `ou`
+- `nao`
 
 ### Operators
 
@@ -96,6 +110,7 @@ Examples:
 - `=`
 - `<`
 - `>`
+- `<>`
 - `<=`
 - `>=`
 

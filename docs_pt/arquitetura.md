@@ -29,6 +29,8 @@ Nesta etapa o fluxo e:
 
 A CLI pode imprimir so o nome do token ou uma saida detalhada com lexema, linha e coluna.
 
+O reconhecimento de palavras-chave agora ignora diferenca entre maiusculas e minusculas, mas o lexema original continua sendo preservado.
+
 ### `Lexer`
 
 O `Lexer` recebe o texto completo e produz `std::vector<Token>`.
@@ -40,6 +42,7 @@ Ele foi mantido simples:
 - funcoes pequenas para cada tipo de leitura
 - uma passada unica que ignora espacos e comentarios `//` antes de ler o proximo token
 - validacao de um conjunto pequeno de escapes em strings
+- suporte a um conjunto maior de tokens para controle de fluxo e expressoes logicas
 
 Essa abordagem ajuda a estudar o processo sem esconder a logica em muitas camadas.
 
@@ -56,16 +59,18 @@ O modulo de leitura de arquivo foi separado do lexer para nao misturar I/O com a
 - chamar o lexer
 - imprimir os tokens
 - alternar entre a saida normal e a saida `--verbose`
+- responder `--help` e `--version`
 
 ### `tests/`
 
-O projeto agora inclui um executavel pequeno de testes automatizados do lexer. Os testes cobrem o comportamento central desta etapa:
+O projeto agora inclui um executavel pequeno de testes automatizados do lexer e cobertura de CLI via `CTest`. Os testes cobrem o comportamento central desta etapa:
 
 - reconhecimento de tokens
 - ignorar comentarios
 - tratamento de escapes em strings
 - mensagens de erro
 - leitura de fixtures a partir de arquivos reais
+- comportamento da CLI para ajuda, versao e impressao de tokens
 
 ## Decisoes de design
 
@@ -75,3 +80,4 @@ O projeto agora inclui um executavel pequeno de testes automatizados do lexer. O
 4. Existe um token interno de fim de arquivo, mas ele nao e exibido no comando `tokens` para manter a saida limpa.
 5. Os testes automatizados entraram agora para deixar as proximas mudancas no lexer mais seguras sem adicionar um framework pesado.
 6. O suporte a escapes foi mantido pequeno de proposito, cobrindo apenas o necessario nesta fase.
+7. As palavras-chave passaram a ser reconhecidas sem diferenca entre maiusculas e minusculas para deixar os exemplos de Portugol mais naturais.

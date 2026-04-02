@@ -35,3 +35,32 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
 endif()
 
 add_test(NAME spike_lexer_tests COMMAND spike_tests)
+
+add_test(NAME spike_cli_help COMMAND $<TARGET_FILE:spike> --help)
+set_tests_properties(spike_cli_help PROPERTIES
+    PASS_REGULAR_EXPRESSION "tokens <arquivo\\.por> \\[--verbose\\]"
+)
+
+add_test(NAME spike_cli_version COMMAND $<TARGET_FILE:spike> --version)
+set_tests_properties(spike_cli_version PROPERTIES
+    PASS_REGULAR_EXPRESSION "Spike 0\\.1\\.3"
+)
+
+add_test(
+    NAME spike_cli_tokens_basic
+    COMMAND $<TARGET_FILE:spike> tokens
+            "${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures/valid/control_flow_case_insensitive.por"
+)
+set_tests_properties(spike_cli_tokens_basic PROPERTIES
+    PASS_REGULAR_EXPRESSION "TOKEN_NOT_EQUAL"
+)
+
+add_test(
+    NAME spike_cli_tokens_verbose
+    COMMAND $<TARGET_FILE:spike> tokens
+            "${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures/valid/control_flow_case_insensitive.por"
+            --verbose
+)
+set_tests_properties(spike_cli_tokens_verbose PROPERTIES
+    PASS_REGULAR_EXPRESSION "TOKEN_ALGORITMO lexeme=\"Algoritmo\" line=1 column=1"
+)

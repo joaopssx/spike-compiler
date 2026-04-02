@@ -10,7 +10,7 @@
 
 namespace {
 
-constexpr const char* kVersion = "0.1.2";
+constexpr const char* kVersion = "0.1.3";
 
 void PrintUsage(std::ostream& output, const char* program_name) {
     output << "Uso:\n"

@@ -8,7 +8,10 @@ Spike/
 |-- docs/
 |-- docs_pt/
 |-- examples/
-|   `-- comentarios_e_strings.por
+|   |-- comentarios_e_strings.por
+|   |-- controle_fluxo.por
+|   |-- exemplo.por
+|   `-- logica.por
 |-- include/
 |   `-- spike/
 |       |-- file_reader.h
@@ -55,7 +58,7 @@ Versao em portugues do README principal.
 
 ### `tests/`
 
-Testes automatizados do lexer.
+Testes automatizados do lexer e cobertura da CLI via `CTest`.
 
 ### `tests/fixtures/`
 

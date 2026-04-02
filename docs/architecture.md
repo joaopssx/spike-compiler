@@ -29,6 +29,8 @@ At this stage, the flow is:
 
 The CLI can now print either the token name only or a verbose view with lexeme, line, and column.
 
+Keyword recognition is case-insensitive, but the original source spelling is preserved in the token lexeme.
+
 ### `Lexer`
 
 The `Lexer` receives the full source text and produces `std::vector<Token>`.
@@ -40,6 +42,7 @@ It was intentionally kept simple:
 - small functions for each kind of token reading
 - one pass that skips whitespace and `//` comments before reading the next token
 - validation for a small set of string escape sequences
+- support for a broader token set used by control flow and logical expressions
 
 This approach makes the process easier to study without hiding the logic behind too many layers.
 
@@ -56,16 +59,18 @@ The file reading module was separated from the lexer so that I/O is not mixed wi
 - call the lexer
 - print the tokens
 - switch between normal and `--verbose` output
+- handle `--help` and `--version`
 
 ### `tests/`
 
-The project includes a small automated test executable for the lexer. The tests focus on the core behavior of this stage:
+The project includes a small automated test executable for the lexer, plus `CTest` coverage for the CLI. The tests focus on the core behavior of this stage:
 
 - token recognition
 - comment skipping
 - string escape handling
 - error reporting
 - fixture-based file inputs
+- CLI behavior for help, version, and token printing
 
 ## Design decisions
 
@@ -75,3 +80,4 @@ The project includes a small automated test executable for the lexer. The tests 
 4. There is an internal end-of-file token, but it is not displayed by the `tokens` command to keep the output clean.
 5. Automated tests were added now to keep future lexer changes safer without introducing a heavy test framework.
 6. Escape handling remains intentionally small, covering only the sequences needed for this stage.
+7. Keyword matching is case-insensitive to make educational Portugol inputs more natural.

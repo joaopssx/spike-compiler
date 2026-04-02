@@ -32,7 +32,7 @@ Comentarios de linha iniciados com `//` tambem sao ignorados ate o fim da linha.
 
 Se o token comeca com letra ou `_`, o lexer continua lendo letras, digitos e `_`.
 
-Depois disso ele verifica se o texto lido e uma palavra-chave conhecida. Se for, retorna o token da palavra-chave. Se nao for, retorna `TOKEN_IDENTIFIER`.
+Depois disso ele verifica se o texto lido e uma palavra-chave conhecida. Essa verificacao ignora diferenca entre maiusculas e minusculas, entao `se`, `Se` e `SE` sao tratados do mesmo jeito. Se nao for palavra-chave, o lexer retorna `TOKEN_IDENTIFIER`.
 
 ### 3. Numeros
 
@@ -69,6 +69,7 @@ Operadores e simbolos curtos sao reconhecidos diretamente pelo caractere atual, 
 Exemplos:
 
 - `<-`
+- `<>`
 - `<=`
 - `>=`
 
@@ -80,11 +81,24 @@ Exemplos:
 - `var`
 - `inicio`
 - `fimalgoritmo`
+- `se`
+- `entao`
+- `senao`
+- `fimse`
+- `enquanto`
+- `faca`
+- `fimenquanto`
 - `inteiro`
 - `real`
 - `texto`
+- `logico`
+- `verdadeiro`
+- `falso`
 - `leia`
 - `escreva`
+- `e`
+- `ou`
+- `nao`
 
 ### Operadores
 
@@ -96,6 +110,7 @@ Exemplos:
 - `=`
 - `<`
 - `>`
+- `<>`
 - `<=`
 - `>=`
 

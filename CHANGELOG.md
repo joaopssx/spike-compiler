@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.1.3 - 2026-04-02
+
+### Added
+
+- New lexer tokens for control flow and logic: `se`, `entao`, `senao`, `fimse`, `enquanto`, `faca`, `fimenquanto`, `logico`, `verdadeiro`, `falso`, `e`, `ou`, and `nao`.
+- Support for the `<>` not-equal operator.
+- Fixture and example files for control flow and logical expressions.
+- CLI tests for `--help`, `--version`, standard token output, and verbose token output.
+
+### Changed
+
+- Keyword recognition is now case-insensitive while preserving the original lexeme in each token.
+- The CLI version output now reports `0.1.3`.
+
 ## 0.1.2 - 2026-04-01
 
 ### Added

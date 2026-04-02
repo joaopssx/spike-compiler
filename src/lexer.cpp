@@ -23,16 +23,41 @@ bool IsSupportedEscapeCharacter(char value) {
     return value == '"' || value == '\\' || value == 'n' || value == 't';
 }
 
+std::string ToLowerAscii(const std::string& text) {
+    std::string lowered;
+    lowered.reserve(text.size());
+
+    for (char value : text) {
+        lowered.push_back(
+            static_cast<char>(std::tolower(static_cast<unsigned char>(value))));
+    }
+
+    return lowered;
+}
+
 const std::unordered_map<std::string, TokenType> kKeywords = {
     {"algoritmo", TokenType::Algoritmo},
     {"var", TokenType::Var},
     {"inicio", TokenType::Inicio},
     {"fimalgoritmo", TokenType::FimAlgoritmo},
+    {"se", TokenType::Se},
+    {"entao", TokenType::Entao},
+    {"senao", TokenType::Senao},
+    {"fimse", TokenType::FimSe},
+    {"enquanto", TokenType::Enquanto},
+    {"faca", TokenType::Faca},
+    {"fimenquanto", TokenType::FimEnquanto},
     {"inteiro", TokenType::Inteiro},
     {"real", TokenType::Real},
     {"texto", TokenType::Texto},
+    {"logico", TokenType::Logico},
+    {"verdadeiro", TokenType::Verdadeiro},
+    {"falso", TokenType::Falso},
     {"leia", TokenType::Leia},
     {"escreva", TokenType::Escreva},
+    {"e", TokenType::E},
+    {"ou", TokenType::Ou},
+    {"nao", TokenType::Nao},
 };
 
 }  // namespace
@@ -125,6 +150,9 @@ std::vector<Token> Lexer::Tokenize() {
                 } else if (Match('=')) {
                     tokens.push_back(BuildToken(TokenType::LessEqual, token_start,
                                                 token_line, token_column));
+                } else if (Match('>')) {
+                    tokens.push_back(BuildToken(TokenType::NotEqual, token_start,
+                                                token_line, token_column));
                 } else {
                     tokens.push_back(BuildToken(TokenType::Less, token_start, token_line,
                                                 token_column));
@@ -214,7 +242,7 @@ Token Lexer::ReadIdentifierOrKeyword() {
     }
 
     const std::string lexeme = source_.substr(token_start, position_ - token_start);
-    const auto keyword = kKeywords.find(lexeme);
+    const auto keyword = kKeywords.find(ToLowerAscii(lexeme));
 
     if (keyword != kKeywords.end()) {
         return Token{keyword->second, lexeme, token_line, token_column};

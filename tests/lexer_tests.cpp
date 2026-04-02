@@ -164,6 +164,61 @@ void TestFixtureCommentsAndEscapes() {
            "expected escaped string lexeme");
 }
 
+void TestFixtureCaseInsensitiveControlFlow() {
+    const std::vector<spike::Token> tokens =
+        TokenizeFixtureWithoutEof("valid/control_flow_case_insensitive.por");
+
+    ExpectTokenTypes(tokens,
+                     {
+                         spike::TokenType::Algoritmo,
+                         spike::TokenType::Identifier,
+                         spike::TokenType::Var,
+                         spike::TokenType::Identifier,
+                         spike::TokenType::Colon,
+                         spike::TokenType::Logico,
+                         spike::TokenType::Inicio,
+                         spike::TokenType::Identifier,
+                         spike::TokenType::Assign,
+                         spike::TokenType::Verdadeiro,
+                         spike::TokenType::Se,
+                         spike::TokenType::Nao,
+                         spike::TokenType::Identifier,
+                         spike::TokenType::Ou,
+                         spike::TokenType::Identifier,
+                         spike::TokenType::E,
+                         spike::TokenType::Falso,
+                         spike::TokenType::Entao,
+                         spike::TokenType::Escreva,
+                         spike::TokenType::LeftParen,
+                         spike::TokenType::String,
+                         spike::TokenType::RightParen,
+                         spike::TokenType::Senao,
+                         spike::TokenType::Escreva,
+                         spike::TokenType::LeftParen,
+                         spike::TokenType::String,
+                         spike::TokenType::RightParen,
+                         spike::TokenType::FimSe,
+                         spike::TokenType::Enquanto,
+                         spike::TokenType::Identifier,
+                         spike::TokenType::NotEqual,
+                         spike::TokenType::Falso,
+                         spike::TokenType::Faca,
+                         spike::TokenType::Identifier,
+                         spike::TokenType::Assign,
+                         spike::TokenType::Falso,
+                         spike::TokenType::FimEnquanto,
+                         spike::TokenType::FimAlgoritmo,
+                     });
+
+    Assert(tokens[0].lexeme == "Algoritmo", "expected original case for algoritmo");
+    Assert(tokens[2].lexeme == "VAR", "expected original case for var");
+    Assert(tokens[11].lexeme == "NAO", "expected original case for nao");
+    Assert(tokens[13].lexeme == "Ou", "expected original case for ou");
+    Assert(tokens[15].lexeme == "E", "expected original case for e");
+    Assert(tokens[30].lexeme == "<>", "expected not equal operator lexeme");
+    Assert(tokens[32].lexeme == "Faca", "expected original case for faca");
+}
+
 void TestFixtureUnterminatedStringError() {
     try {
         const std::vector<spike::Token> tokens =
@@ -226,6 +281,7 @@ int main() {
         {"keywords and symbols", TestKeywordsAndSymbols},
         {"numbers and strings", TestNumbersAndStrings},
         {"comments and escapes fixture", TestFixtureCommentsAndEscapes},
+        {"case insensitive control flow fixture", TestFixtureCaseInsensitiveControlFlow},
         {"unterminated string fixture", TestFixtureUnterminatedStringError},
         {"invalid escape fixture", TestFixtureInvalidEscapeError},
         {"unexpected character fixture", TestFixtureUnexpectedCharacterError},
