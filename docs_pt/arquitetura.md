@@ -8,7 +8,7 @@ Nesta etapa o fluxo e:
 
 1. A CLI recebe `spike tokens arquivo.por`.
 2. O modulo de leitura carrega todo o arquivo para uma `std::string`.
-3. O `Lexer` percorre o texto da esquerda para a direita.
+3. O `Lexer` percorre o texto da esquerda para a direita e pode guardar o nome do arquivo para melhorar os diagnosticos.
 4. Cada trecho reconhecido vira um `Token`.
 5. A CLI imprime o nome dos tokens ou uma visao detalhada com lexema, linha e coluna.
 
@@ -39,6 +39,7 @@ Ele foi mantido simples:
 - contadores de linha e coluna
 - funcoes pequenas para cada tipo de leitura
 - uma passada unica que ignora espacos e comentarios `//` antes de ler o proximo token
+- validacao de um conjunto pequeno de escapes em strings
 
 Essa abordagem ajuda a estudar o processo sem esconder a logica em muitas camadas.
 
@@ -62,7 +63,9 @@ O projeto agora inclui um executavel pequeno de testes automatizados do lexer. O
 
 - reconhecimento de tokens
 - ignorar comentarios
+- tratamento de escapes em strings
 - mensagens de erro
+- leitura de fixtures a partir de arquivos reais
 
 ## Decisoes de design
 
@@ -71,3 +74,4 @@ O projeto agora inclui um executavel pequeno de testes automatizados do lexer. O
 3. O token guarda o lexema original porque isso sera util no parser e em mensagens de erro.
 4. Existe um token interno de fim de arquivo, mas ele nao e exibido no comando `tokens` para manter a saida limpa.
 5. Os testes automatizados entraram agora para deixar as proximas mudancas no lexer mais seguras sem adicionar um framework pesado.
+6. O suporte a escapes foi mantido pequeno de proposito, cobrindo apenas o necessario nesta fase.

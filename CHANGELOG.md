@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.1.2 - 2026-04-01
+
+### Added
+
+- Support for simple string escape sequences: `\"`, `\\`, `\n`, and `\t`.
+- Global CLI commands `--help` and `--version`.
+- Fixture-based lexer tests under `tests/fixtures/`.
+- Additional example source file with comments and escaped strings.
+
+### Changed
+
+- Lexical errors now include the source file name when available.
+- The CLI now prints self-contained error messages directly.
+
 ## 0.1.1 - 2026-04-01
 
 ### Added

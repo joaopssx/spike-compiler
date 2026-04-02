@@ -17,6 +17,8 @@ The executable will be generated at `build/spike`.
 ## Available command
 
 ```bash
+./build/spike --help
+./build/spike --version
 ./build/spike tokens path/to/file.por
 ./build/spike tokens path/to/file.por --verbose
 ```
@@ -84,6 +86,14 @@ TOKEN_IDENTIFIER lexeme="soma" line=1 column=11
 TOKEN_VAR lexeme="var" line=2 column=1
 ```
 
+Error example:
+
+```text
+Erro em tests/fixtures/invalid/invalid_escape.por: linha 3, coluna 14: sequencia de escape invalida: \q
+    escreva("oi\q")
+               ^
+```
+
 ## Running tests
 
 ```bash
@@ -96,6 +106,7 @@ If the file does not exist or the lexer finds an invalid character, the program 
 
 Lexical errors now include:
 
+- file name when available
 - line
 - column
 - the source line

@@ -8,7 +8,7 @@ At this stage, the flow is:
 
 1. The CLI receives `spike tokens file.por`.
 2. The file reading module loads the entire file into a `std::string`.
-3. The `Lexer` walks through the text from left to right.
+3. The `Lexer` walks through the text from left to right, optionally keeping the source file name for better diagnostics.
 4. Each recognized piece becomes a `Token`.
 5. The CLI prints either the token names or a verbose token view with lexeme, line, and column.
 
@@ -39,6 +39,7 @@ It was intentionally kept simple:
 - line and column counters
 - small functions for each kind of token reading
 - one pass that skips whitespace and `//` comments before reading the next token
+- validation for a small set of string escape sequences
 
 This approach makes the process easier to study without hiding the logic behind too many layers.
 
@@ -62,7 +63,9 @@ The project includes a small automated test executable for the lexer. The tests 
 
 - token recognition
 - comment skipping
+- string escape handling
 - error reporting
+- fixture-based file inputs
 
 ## Design decisions
 
@@ -71,3 +74,4 @@ The project includes a small automated test executable for the lexer. The tests 
 3. The token stores the original lexeme because that will be useful in the parser and in error messages.
 4. There is an internal end-of-file token, but it is not displayed by the `tokens` command to keep the output clean.
 5. Automated tests were added now to keep future lexer changes safer without introducing a heavy test framework.
+6. Escape handling remains intentionally small, covering only the sequences needed for this stage.

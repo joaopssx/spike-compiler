@@ -11,7 +11,7 @@ namespace spike {
 
 class Lexer {
 public:
-    explicit Lexer(std::string source);
+    explicit Lexer(std::string source, std::string source_name = "");
 
     std::vector<Token> Tokenize();
 
@@ -34,6 +34,7 @@ private:
                                  std::size_t column) const;
 
     std::string source_;
+    std::string source_name_;
     std::size_t position_;
     std::size_t line_;
     std::size_t column_;

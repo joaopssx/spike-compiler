@@ -53,6 +53,15 @@ Strings devem usar aspas duplas:
 
 Se a string nao for fechada, o lexer gera erro.
 
+Sequencias de escape suportadas nesta etapa:
+
+- `\"`
+- `\\`
+- `\n`
+- `\t`
+
+O lexer valida esses escapes, mas continua guardando o lexema original no token.
+
 ### 5. Operadores e simbolos
 
 Operadores e simbolos curtos sao reconhecidos diretamente pelo caractere atual, com tratamento especial para os casos de dois caracteres.
@@ -107,6 +116,7 @@ Exemplos:
 
 Quando o lexer encontra um caractere invalido ou uma string nao terminada, ele informa:
 
+- nome do arquivo quando disponivel
 - linha
 - coluna
 - a linha original do codigo
@@ -119,6 +129,5 @@ Para manter a base simples e didatica, esta versao ainda nao faz:
 - parser
 - AST
 - geracao de codigo C
-- tratamento de escapes em strings
 
 Esses pontos podem entrar depois, sem complicar a base atual.

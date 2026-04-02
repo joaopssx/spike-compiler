@@ -20,12 +20,14 @@ add_executable(spike
 target_include_directories(spike PRIVATE include)
 
 add_executable(spike_tests
+    src/file_reader.cpp
     src/lexer.cpp
     src/token.cpp
     tests/lexer_tests.cpp
 )
 
 target_include_directories(spike_tests PRIVATE include)
+target_compile_definitions(spike_tests PRIVATE SPIKE_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(spike PRIVATE -Wall -Wextra -Wpedantic)

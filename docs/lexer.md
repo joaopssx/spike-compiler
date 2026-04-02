@@ -53,6 +53,15 @@ Strings must use double quotes:
 
 If the string is not closed, the lexer raises an error.
 
+Supported escape sequences in this stage:
+
+- `\"`
+- `\\`
+- `\n`
+- `\t`
+
+The lexer validates these escapes but still stores the original lexeme in the token.
+
 ### 5. Operators and symbols
 
 Short operators and symbols are recognized directly from the current character, with special handling for two-character cases.
@@ -107,6 +116,7 @@ Examples:
 
 When the lexer finds an invalid character or an unterminated string, it reports:
 
+- file name when available
 - line
 - column
 - the original source line
@@ -119,6 +129,5 @@ To keep the base simple and educational, this version does not yet include:
 - parser
 - AST
 - C code generation
-- string escape handling
 
 These features can be added later without making the current base more complex.

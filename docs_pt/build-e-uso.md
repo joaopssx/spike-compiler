@@ -17,6 +17,8 @@ O executavel sera gerado em `build/spike`.
 ## Comando disponivel
 
 ```bash
+./build/spike --help
+./build/spike --version
 ./build/spike tokens caminho/do/arquivo.por
 ./build/spike tokens caminho/do/arquivo.por --verbose
 ```
@@ -84,6 +86,14 @@ TOKEN_IDENTIFIER lexeme="soma" line=1 column=11
 TOKEN_VAR lexeme="var" line=2 column=1
 ```
 
+Exemplo de erro:
+
+```text
+Erro em tests/fixtures/invalid/invalid_escape.por: linha 3, coluna 14: sequencia de escape invalida: \q
+    escreva("oi\q")
+               ^
+```
+
 ## Executando os testes
 
 ```bash
@@ -96,6 +106,7 @@ Se o arquivo nao existir ou se o lexer encontrar um caractere invalido, o progra
 
 Os erros lexicos agora incluem:
 
+- nome do arquivo quando disponivel
 - linha
 - coluna
 - a linha original do codigo

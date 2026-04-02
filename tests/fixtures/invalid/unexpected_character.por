@@ -1,0 +1,4 @@
+algoritmo teste
+inicio
+  @
+fimalgoritmo

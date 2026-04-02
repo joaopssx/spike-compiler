@@ -19,6 +19,10 @@ bool IsIdentifierPart(char value) {
     return std::isalnum(character) != 0 || value == '_';
 }
 
+bool IsSupportedEscapeCharacter(char value) {
+    return value == '"' || value == '\\' || value == 'n' || value == 't';
+}
+
 const std::unordered_map<std::string, TokenType> kKeywords = {
     {"algoritmo", TokenType::Algoritmo},
     {"var", TokenType::Var},
@@ -33,8 +37,12 @@ const std::unordered_map<std::string, TokenType> kKeywords = {
 
 }  // namespace
 
-Lexer::Lexer(std::string source)
-    : source_(std::move(source)), position_(0), line_(1), column_(1) {}
+Lexer::Lexer(std::string source, std::string source_name)
+    : source_(std::move(source)),
+      source_name_(std::move(source_name)),
+      position_(0),
+      line_(1),
+      column_(1) {}
 
 std::vector<Token> Lexer::Tokenize() {
     std::vector<Token> tokens;
@@ -247,6 +255,24 @@ Token Lexer::ReadString() {
             ThrowError("string nao terminada", token_line, token_column);
         }
 
+        if (Peek() == '\\') {
+            const std::size_t escape_line = line_;
+            const std::size_t escape_column = column_;
+
+            Advance();
+            if (IsAtEnd() || Peek() == '\n') {
+                ThrowError("string nao terminada", token_line, token_column);
+            }
+
+            if (!IsSupportedEscapeCharacter(Peek())) {
+                ThrowError(std::string("sequencia de escape invalida: \\") + Peek(),
+                           escape_line, escape_column);
+            }
+
+            Advance();
+            continue;
+        }
+
         Advance();
     }
 
@@ -266,8 +292,13 @@ Token Lexer::BuildToken(TokenType type, std::size_t start, std::size_t line,
 void Lexer::ThrowError(const std::string& message, std::size_t line,
                        std::size_t column) const {
     const std::string line_text = GetLineText(line);
-    std::string formatted_message = "linha " + std::to_string(line) + ", coluna " +
-                                    std::to_string(column) + ": " + message;
+    std::string formatted_message = "Erro";
+    if (!source_name_.empty()) {
+        formatted_message += " em " + source_name_;
+    }
+
+    formatted_message += ": linha " + std::to_string(line) + ", coluna " +
+                         std::to_string(column) + ": " + message;
 
     if (!line_text.empty()) {
         std::string caret_line(column > 1 ? column - 1 : 0, ' ');

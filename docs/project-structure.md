@@ -8,6 +8,7 @@ Spike/
 |-- docs/
 |-- docs_pt/
 |-- examples/
+|   `-- comentarios_e_strings.por
 |-- include/
 |   `-- spike/
 |       |-- file_reader.h
@@ -15,6 +16,9 @@ Spike/
 |       `-- token.h
 |-- readme_pt.md
 |-- tests/
+|   |-- fixtures/
+|   |   |-- invalid/
+|   |   `-- valid/
 |   `-- lexer_tests.cpp
 `-- src/
     |-- file_reader.cpp
@@ -52,3 +56,7 @@ Portuguese version of the main README.
 ### `tests/`
 
 Automated lexer tests.
+
+### `tests/fixtures/`
+
+Input files used by automated tests.
