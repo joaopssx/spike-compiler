@@ -26,7 +26,9 @@ Each token represents one piece of the code, for example:
 - numbers: `10`, `3.14`
 - strings: `"text"`
 - keywords: `algoritmo`, `inicio`, `fimalgoritmo`
-- symbols and operators: `(`, `)`, `:`, `<-`
+- symbols and operators: `(`, `)`, `:`, `<-`, `<<`, `>>`, `{`, `}`
+
+In this version, the lexer also recognizes `cout` and `cin` to prepare future styles.
 
 Each token stores:
 

@@ -171,6 +171,40 @@ void TestWhitespaceIdentifiersAndStrings() {
     Assert(tokens[7].lexeme == "\"oi\"", "expected basic string lexeme");
 }
 
+void TestIostreamAndBracesTokens() {
+    const std::string source =
+        "algoritmo io\n"
+        "{\n"
+        "  cout << \"oi\"\n"
+        "  cin >> valor\n"
+        "}\n"
+        "fimalgoritmo\n";
+
+    const std::vector<spike::Token> tokens = TokenizeWithoutEof(source);
+
+    ExpectTokenTypes(tokens,
+                     {
+                         spike::TokenType::Algoritmo,
+                         spike::TokenType::Identifier,
+                         spike::TokenType::LeftBrace,
+                         spike::TokenType::Cout,
+                         spike::TokenType::ShiftLeft,
+                         spike::TokenType::String,
+                         spike::TokenType::Cin,
+                         spike::TokenType::ShiftRight,
+                         spike::TokenType::Identifier,
+                         spike::TokenType::RightBrace,
+                         spike::TokenType::FimAlgoritmo,
+                     });
+
+    Assert(tokens[2].lexeme == "{", "expected left brace lexeme");
+    Assert(tokens[3].lexeme == "cout", "expected cout token lexeme");
+    Assert(tokens[4].lexeme == "<<", "expected shift left lexeme");
+    Assert(tokens[6].lexeme == "cin", "expected cin token lexeme");
+    Assert(tokens[7].lexeme == ">>", "expected shift right lexeme");
+    Assert(tokens[9].lexeme == "}", "expected right brace lexeme");
+}
+
 void TestFixtureCommentsAndEscapes() {
     const std::vector<spike::Token> tokens =
         TokenizeFixtureWithoutEof("valid/comments_and_escapes.por");
@@ -316,6 +350,7 @@ int main() {
         {"keywords and symbols", TestKeywordsAndSymbols},
         {"numbers and strings", TestNumbersAndStrings},
         {"whitespace identifiers and strings", TestWhitespaceIdentifiersAndStrings},
+        {"iostream and braces tokens", TestIostreamAndBracesTokens},
         {"comments and escapes fixture", TestFixtureCommentsAndEscapes},
         {"case insensitive control flow fixture", TestFixtureCaseInsensitiveControlFlow},
         {"unterminated string fixture", TestFixtureUnterminatedStringError},

@@ -44,6 +44,10 @@ std::string ToString(TokenType type) {
             return "TOKEN_LEIA";
         case TokenType::Escreva:
             return "TOKEN_ESCREVA";
+        case TokenType::Cout:
+            return "TOKEN_COUT";
+        case TokenType::Cin:
+            return "TOKEN_CIN";
         case TokenType::E:
             return "TOKEN_E";
         case TokenType::Ou:
@@ -72,6 +76,10 @@ std::string ToString(TokenType type) {
             return "TOKEN_GREATER_EQUAL";
         case TokenType::NotEqual:
             return "TOKEN_NOT_EQUAL";
+        case TokenType::ShiftLeft:
+            return "TOKEN_SHIFT_LEFT";
+        case TokenType::ShiftRight:
+            return "TOKEN_SHIFT_RIGHT";
         case TokenType::Colon:
             return "TOKEN_COLON";
         case TokenType::Comma:
@@ -80,6 +88,10 @@ std::string ToString(TokenType type) {
             return "TOKEN_LEFT_PAREN";
         case TokenType::RightParen:
             return "TOKEN_RIGHT_PAREN";
+        case TokenType::LeftBrace:
+            return "TOKEN_LEFT_BRACE";
+        case TokenType::RightBrace:
+            return "TOKEN_RIGHT_BRACE";
         case TokenType::Identifier:
             return "TOKEN_IDENTIFIER";
         case TokenType::Number:

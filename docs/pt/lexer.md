@@ -26,7 +26,9 @@ Cada token representa uma parte do codigo, por exemplo:
 - numeros: `10`, `3.14`
 - strings: `"texto"`
 - palavras-chave: `algoritmo`, `inicio`, `fimalgoritmo`
-- simbolos e operadores: `(`, `)`, `:`, `<-`
+- simbolos e operadores: `(`, `)`, `:`, `<-`, `<<`, `>>`, `{`, `}`
+
+Nesta versao, o lexer tambem reconhece `cout` e `cin` para preparar estilos futuros.
 
 Cada token guarda:
 

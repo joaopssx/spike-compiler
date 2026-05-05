@@ -63,6 +63,8 @@ const std::unordered_map<std::string, TokenType> kKeywords = {
     {"falso", TokenType::Falso},
     {"leia", TokenType::Leia},
     {"escreva", TokenType::Escreva},
+    {"cout", TokenType::Cout},
+    {"cin", TokenType::Cin},
     {"e", TokenType::E},
     {"ou", TokenType::Ou},
     {"nao", TokenType::Nao},
@@ -145,6 +147,16 @@ std::vector<Token> Lexer::Tokenize() {
                 tokens.push_back(BuildToken(TokenType::RightParen, token_start, token_line,
                                             token_column));
                 break;
+            case '{':
+                Advance();
+                tokens.push_back(BuildToken(TokenType::LeftBrace, token_start, token_line,
+                                            token_column));
+                break;
+            case '}':
+                Advance();
+                tokens.push_back(BuildToken(TokenType::RightBrace, token_start, token_line,
+                                            token_column));
+                break;
             case '=':
                 Advance();
                 tokens.push_back(BuildToken(TokenType::Equal, token_start, token_line,
@@ -161,6 +173,9 @@ std::vector<Token> Lexer::Tokenize() {
                 } else if (Match('>')) {
                     tokens.push_back(BuildToken(TokenType::NotEqual, token_start,
                                                 token_line, token_column));
+                } else if (Match('<')) {
+                    tokens.push_back(BuildToken(TokenType::ShiftLeft, token_start,
+                                                token_line, token_column));
                 } else {
                     tokens.push_back(BuildToken(TokenType::Less, token_start, token_line,
                                                 token_column));
@@ -170,6 +185,9 @@ std::vector<Token> Lexer::Tokenize() {
                 Advance();
                 if (Match('=')) {
                     tokens.push_back(BuildToken(TokenType::GreaterEqual, token_start,
+                                                token_line, token_column));
+                } else if (Match('>')) {
+                    tokens.push_back(BuildToken(TokenType::ShiftRight, token_start,
                                                 token_line, token_column));
                 } else {
                     tokens.push_back(BuildToken(TokenType::Greater, token_start, token_line,

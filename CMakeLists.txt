@@ -43,7 +43,7 @@ set_tests_properties(spike_cli_help PROPERTIES
 
 add_test(NAME spike_cli_version COMMAND $<TARGET_FILE:spike> --version)
 set_tests_properties(spike_cli_version PROPERTIES
-    PASS_REGULAR_EXPRESSION "Spike 0\\.1\\.4"
+    PASS_REGULAR_EXPRESSION "Spike 0\\.1\\.5"
 )
 
 add_test(

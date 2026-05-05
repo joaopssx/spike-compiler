@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.1.5 - 2026-05-05
+
+### Added
+
+- New lexer tokens for `cout`, `cin`, `<<`, `>>`, `{`, and `}`.
+- Initial `PortugolStyle` enum to prepare future syntax variants.
+- Simple documentation for planned style support in `docs/pt/styles.md` and `docs/en/styles.md`.
+
+### Changed
+
+- The lexer now recognizes basic iostream-style and brace-style tokens without changing the parser.
+
 ## 0.1.4 - 2026-05-05
 
 ### Added

@@ -96,6 +96,8 @@ Examples:
 - `falso`
 - `leia`
 - `escreva`
+- `cout`
+- `cin`
 - `e`
 - `ou`
 - `nao`
@@ -113,6 +115,8 @@ Examples:
 - `<>`
 - `<=`
 - `>=`
+- `<<`
+- `>>`
 
 ### Symbols
 
@@ -120,6 +124,8 @@ Examples:
 - `,`
 - `(`
 - `)`
+- `{`
+- `}`
 
 ### Generic token kinds
 

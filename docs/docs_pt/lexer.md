@@ -96,6 +96,8 @@ Exemplos:
 - `falso`
 - `leia`
 - `escreva`
+- `cout`
+- `cin`
 - `e`
 - `ou`
 - `nao`
@@ -113,6 +115,8 @@ Exemplos:
 - `<>`
 - `<=`
 - `>=`
+- `<<`
+- `>>`
 
 ### Simbolos
 
@@ -120,6 +124,8 @@ Exemplos:
 - `,`
 - `(`
 - `)`
+- `{`
+- `}`
 
 ### Tipos genericos
 
