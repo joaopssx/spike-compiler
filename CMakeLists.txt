@@ -43,7 +43,7 @@ set_tests_properties(spike_cli_help PROPERTIES
 
 add_test(NAME spike_cli_version COMMAND $<TARGET_FILE:spike> --version)
 set_tests_properties(spike_cli_version PROPERTIES
-    PASS_REGULAR_EXPRESSION "Spike 0\\.1\\.3"
+    PASS_REGULAR_EXPRESSION "Spike 0\\.1\\.4"
 )
 
 add_test(
@@ -52,7 +52,7 @@ add_test(
             "${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures/valid/control_flow_case_insensitive.por"
 )
 set_tests_properties(spike_cli_tokens_basic PROPERTIES
-    PASS_REGULAR_EXPRESSION "TOKEN_NOT_EQUAL"
+    PASS_REGULAR_EXPRESSION "ALGORITMO \\(Algoritmo\\)"
 )
 
 add_test(
@@ -62,5 +62,5 @@ add_test(
             --verbose
 )
 set_tests_properties(spike_cli_tokens_verbose PROPERTIES
-    PASS_REGULAR_EXPRESSION "TOKEN_ALGORITMO lexeme=\"Algoritmo\" line=1 column=1"
+    PASS_REGULAR_EXPRESSION "ALGORITMO \\(Algoritmo\\) line=1 column=1"
 )

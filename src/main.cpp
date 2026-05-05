@@ -1,5 +1,4 @@
 #include <exception>
-#include <iomanip>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -10,7 +9,7 @@
 
 namespace {
 
-constexpr const char* kVersion = "0.1.3";
+constexpr const char* kVersion = "0.1.4";
 
 void PrintUsage(std::ostream& output, const char* program_name) {
     output << "Uso:\n"
@@ -24,16 +23,25 @@ void PrintHelp(const char* program_name) {
     std::cout << "\nComandos:\n"
               << "  tokens     Le um arquivo .por e imprime os tokens\n"
               << "\nOpcoes:\n"
-              << "  --verbose  Mostra lexema, linha e coluna para cada token\n";
+              << "  --verbose  Mostra linha e coluna para cada token\n";
 }
 
 void PrintVersion() { std::cout << "Spike " << kVersion << '\n'; }
 
+std::string GetCliTokenName(spike::TokenType type) {
+    std::string name = spike::ToString(type);
+    const std::string prefix = "TOKEN_";
+    if (name.rfind(prefix, 0) == 0) {
+        name.erase(0, prefix.size());
+    }
+
+    return name;
+}
+
 void PrintToken(const spike::Token& token, bool verbose) {
-    std::cout << spike::ToString(token.type);
+    std::cout << GetCliTokenName(token.type) << " (" << token.lexeme << ")";
     if (verbose) {
-        std::cout << " lexeme=" << std::quoted(token.lexeme) << " line=" << token.line
-                  << " column=" << token.column;
+        std::cout << " line=" << token.line << " column=" << token.column;
     }
 
     std::cout << '\n';

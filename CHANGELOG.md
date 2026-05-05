@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.1.4 - 2026-05-05
+
+### Added
+
+- Simple lexer documentation in Portuguese and English under `docs/pt/` and `docs/en/`.
+- A lexer test covering blank lines, tabs, identifiers with `_`, and basic strings.
+
+### Changed
+
+- The `tokens` command now prints the token type together with its lexeme by default.
+- The lexer code now uses clearer helper names for skipped whitespace and digit checks.
+
 ## 0.1.3 - 2026-04-02
 
 ### Added

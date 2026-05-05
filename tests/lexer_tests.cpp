@@ -136,6 +136,41 @@ void TestNumbersAndStrings() {
            "expected string literal position");
 }
 
+void TestWhitespaceIdentifiersAndStrings() {
+    const std::string source =
+        "\n"
+        "\t\n"
+        "algoritmo exemplo\n"
+        "\n"
+        "\tvalor_1 <- 10\n"
+        "\tmensagem2 <- \"oi\"\n"
+        "fimalgoritmo\n";
+
+    const std::vector<spike::Token> tokens = TokenizeWithoutEof(source);
+
+    ExpectTokenTypes(tokens,
+                     {
+                         spike::TokenType::Algoritmo,
+                         spike::TokenType::Identifier,
+                         spike::TokenType::Identifier,
+                         spike::TokenType::Assign,
+                         spike::TokenType::Number,
+                         spike::TokenType::Identifier,
+                         spike::TokenType::Assign,
+                         spike::TokenType::String,
+                         spike::TokenType::FimAlgoritmo,
+                     });
+
+    Assert(tokens[0].line == 3 && tokens[0].column == 1,
+           "expected algoritmo after ignored blank lines");
+    Assert(tokens[2].lexeme == "valor_1", "expected identifier with underscore and digit");
+    Assert(tokens[2].line == 5 && tokens[2].column == 2,
+           "expected identifier position after tab");
+    Assert(tokens[4].lexeme == "10", "expected number after ignored whitespace");
+    Assert(tokens[5].lexeme == "mensagem2", "expected second identifier lexeme");
+    Assert(tokens[7].lexeme == "\"oi\"", "expected basic string lexeme");
+}
+
 void TestFixtureCommentsAndEscapes() {
     const std::vector<spike::Token> tokens =
         TokenizeFixtureWithoutEof("valid/comments_and_escapes.por");
@@ -280,6 +315,7 @@ int main() {
     const std::vector<TestCase> tests = {
         {"keywords and symbols", TestKeywordsAndSymbols},
         {"numbers and strings", TestNumbersAndStrings},
+        {"whitespace identifiers and strings", TestWhitespaceIdentifiersAndStrings},
         {"comments and escapes fixture", TestFixtureCommentsAndEscapes},
         {"case insensitive control flow fixture", TestFixtureCaseInsensitiveControlFlow},
         {"unterminated string fixture", TestFixtureUnterminatedStringError},

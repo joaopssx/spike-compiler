@@ -21,7 +21,7 @@ private:
     char Advance();
     bool Match(char expected);
 
-    void SkipIgnoredText();
+    void SkipWhitespaceAndComments();
 
     Token ReadIdentifierOrKeyword();
     Token ReadNumber();

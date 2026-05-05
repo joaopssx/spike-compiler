@@ -19,6 +19,14 @@ bool IsIdentifierPart(char value) {
     return std::isalnum(character) != 0 || value == '_';
 }
 
+bool IsDigit(char value) {
+    return std::isdigit(static_cast<unsigned char>(value)) != 0;
+}
+
+bool IsIgnoredWhitespace(char value) {
+    return value == ' ' || value == '\t' || value == '\r' || value == '\n';
+}
+
 bool IsSupportedEscapeCharacter(char value) {
     return value == '"' || value == '\\' || value == 'n' || value == 't';
 }
@@ -73,7 +81,7 @@ std::vector<Token> Lexer::Tokenize() {
     std::vector<Token> tokens;
 
     while (true) {
-        SkipIgnoredText();
+        SkipWhitespaceAndComments();
         if (IsAtEnd()) {
             break;
         }
@@ -88,7 +96,7 @@ std::vector<Token> Lexer::Tokenize() {
             continue;
         }
 
-        if (std::isdigit(static_cast<unsigned char>(current)) != 0) {
+        if (IsDigit(current)) {
             tokens.push_back(ReadNumber());
             continue;
         }
@@ -212,10 +220,11 @@ bool Lexer::Match(char expected) {
     return true;
 }
 
-void Lexer::SkipIgnoredText() {
+void Lexer::SkipWhitespaceAndComments() {
     while (!IsAtEnd()) {
         const char current = Peek();
-        if (current == ' ' || current == '\t' || current == '\r' || current == '\n') {
+
+        if (IsIgnoredWhitespace(current)) {
             Advance();
             continue;
         }
@@ -256,14 +265,14 @@ Token Lexer::ReadNumber() {
     const std::size_t token_line = line_;
     const std::size_t token_column = column_;
 
-    while (std::isdigit(static_cast<unsigned char>(Peek())) != 0) {
+    while (IsDigit(Peek())) {
         Advance();
     }
 
-    if (Peek() == '.' && std::isdigit(static_cast<unsigned char>(Peek(1))) != 0) {
+    if (Peek() == '.' && IsDigit(Peek(1))) {
         Advance();
 
-        while (std::isdigit(static_cast<unsigned char>(Peek())) != 0) {
+        while (IsDigit(Peek())) {
             Advance();
         }
     }
@@ -278,6 +287,7 @@ Token Lexer::ReadString() {
 
     Advance();
 
+    // Strings continuam simples nesta fase: aspas duplas e poucos escapes.
     while (!IsAtEnd() && Peek() != '"') {
         if (Peek() == '\n') {
             ThrowError("string nao terminada", token_line, token_column);
