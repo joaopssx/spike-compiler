@@ -105,6 +105,18 @@ CliArgs parse_args(int argc, char* argv[]) {
             return out;
         }
         out.input_file = argv[2];
+        // Aceita --verbose depois do arquivo (mesma flag do COMPILE, mesmo significado).
+        for (int i = 3; i < argc; ++i) {
+            if (eq(argv[i], "--verbose")) {
+                out.flag_verbose = true;
+            } else {
+                out.parse_error = true;
+                out.parse_error_msg =
+                    std::string("flag desconhecida para 'tokens': '") +
+                    argv[i] + "'.";
+                return out;
+            }
+        }
         return out;
     }
     if (eq(a1, "random")) {

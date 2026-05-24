@@ -4,20 +4,25 @@
 #include "spike/lexer.hpp"
 #include "spike/token.hpp"
 
+#include <algorithm>
+#include <cstddef>
+#include <iomanip>
 #include <iostream>
 #include <memory>
+#include <sstream>
 #include <string>
 #include <vector>
 
 namespace {
 
 struct LexOutcome {
+    std::string source;
     std::unique_ptr<spike::Lexer> lexer;
     std::vector<spike::Token> tokens;
 };
 
 // Lê o arquivo e roda o lexer. Em caso de falha de leitura imprime o erro e
-// retorna nullopt; caller deve interpretar como exit code 1.
+// retorna nullptr; caller deve interpretar como exit code 1.
 std::unique_ptr<LexOutcome> read_and_lex(const std::string& path) {
     spike::ReadResult read = spike::read_file(path);
     if (!read.ok) {
@@ -29,26 +34,75 @@ std::unique_ptr<LexOutcome> read_and_lex(const std::string& path) {
     }
 
     auto out = std::make_unique<LexOutcome>();
-    out->lexer = std::make_unique<spike::Lexer>(read.content, path);
+    out->source = read.content;
+    out->lexer = std::make_unique<spike::Lexer>(out->source, path);
     out->tokens = out->lexer->tokenize();
     return out;
 }
 
-int run_tokens(const std::string& path) {
-    auto lo = read_and_lex(path);
+// Conta linhas "humanas": "" → 0, "abc" → 1, "abc\n" → 1, "abc\ndef" → 2.
+std::size_t count_lines(const std::string& s) {
+    if (s.empty()) return 0;
+    std::size_t newlines = static_cast<std::size_t>(
+        std::count(s.begin(), s.end(), '\n'));
+    return newlines + (s.back() == '\n' ? 0 : 1);
+}
+
+// Direita-padded com espaços até `width`. Não trunca strings mais longas.
+std::string pad_right(const std::string& s, std::size_t width) {
+    if (s.size() >= width) return s;
+    return s + std::string(width - s.size(), ' ');
+}
+
+int run_tokens(const spike::CliArgs& args) {
+    auto lo = read_and_lex(args.input_file);
     if (!lo) return 1;
 
-    for (const spike::Token& t : lo->tokens) {
-        std::cout << spike::gray("[" + std::to_string(t.line) + ":" +
-                                 std::to_string(t.col) + "]")
-                  << " " << spike::cyan(spike::token_type_to_string(t.type))
-                  << " \"" << t.lexeme << "\"\n";
-    }
     if (lo->lexer->had_error()) {
+        // Diagnostics primeiro pra o erro ficar visível mesmo se o terminal
+        // for pequeno e o token dump rolar pra fora da tela.
         lo->lexer->diagnostics().print_all();
         return 1;
     }
-    std::cout << spike::green("Analise lexica concluida sem erros.") << std::endl;
+
+    constexpr std::size_t kTypeWidth = 14;
+
+    // Largura da coluna [L:C] = maior posição encontrada, pra TIPO e lexeme
+    // ficarem em colunas alinhadas mesmo com linhas/colunas de muitos dígitos.
+    std::size_t pos_width = 0;
+    for (const spike::Token& t : lo->tokens) {
+        if (t.type == spike::TokenType::END_OF_FILE) continue;
+        const std::size_t w = std::string("[" + std::to_string(t.line) + ":" +
+                                          std::to_string(t.col) + "]").size();
+        if (w > pos_width) pos_width = w;
+    }
+
+    std::size_t printed = 0;
+    for (const spike::Token& t : lo->tokens) {
+        if (t.type == spike::TokenType::END_OF_FILE) continue;
+
+        const std::string position =
+            "[" + std::to_string(t.line) + ":" + std::to_string(t.col) + "]";
+        const std::string type_str =
+            pad_right(spike::token_type_to_string(t.type), kTypeWidth);
+
+        if (args.flag_verbose) {
+            std::ostringstream idx;
+            idx << "#" << std::setw(3) << std::setfill('0') << (printed + 1);
+            std::cout << spike::gray(idx.str()) << " ";
+        }
+
+        std::cout << spike::gray(pad_right(position, pos_width)) << " "
+                  << spike::cyan(type_str) << " "
+                  << "\"" << t.lexeme << "\"\n";
+        ++printed;
+    }
+
+    const std::size_t lines = count_lines(lo->source);
+    std::ostringstream summary;
+    summary << "— " << printed << " tokens encontrados em " << lines
+            << (lines == 1 ? " linha" : " linhas");
+    std::cout << spike::gray(summary.str()) << std::endl;
     return 0;
 }
 
@@ -96,7 +150,7 @@ int main(int argc, char** argv) {
     switch (args.command) {
         case spike::Command::HELP:    spike::print_help();    return 0;
         case spike::Command::VERSION: spike::print_version(); return 0;
-        case spike::Command::TOKENS:  return run_tokens(args.input_file);
+        case spike::Command::TOKENS:  return run_tokens(args);
         case spike::Command::COMPILE: return run_compile(args);
         case spike::Command::FETCH:   return run_stub("fetch");
         case spike::Command::DEV:     return run_stub("dev");

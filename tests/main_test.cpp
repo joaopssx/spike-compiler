@@ -416,6 +416,19 @@ void test_cli_tokens_needs_file() {
     SPIKE_EXPECT(ok.command == spike::Command::TOKENS);
     SPIKE_EXPECT(ok.parse_error == false);
     SPIKE_EXPECT(ok.input_file == "x.por");
+    SPIKE_EXPECT(ok.flag_verbose == false);
+}
+
+void test_cli_tokens_accepts_verbose() {
+    auto a = parse({"spike", "tokens", "x.por", "--verbose"});
+    SPIKE_EXPECT(a.command == spike::Command::TOKENS);
+    SPIKE_EXPECT(a.parse_error == false);
+    SPIKE_EXPECT(a.flag_verbose);
+}
+
+void test_cli_tokens_rejects_unknown_flag() {
+    auto a = parse({"spike", "tokens", "x.por", "--xpto"});
+    SPIKE_EXPECT(a.parse_error == true);
 }
 
 void test_cli_compile_simple() {
@@ -537,6 +550,8 @@ int main() {
     test_cli_version_flag();
     test_cli_subcommands_no_args();
     test_cli_tokens_needs_file();
+    test_cli_tokens_accepts_verbose();
+    test_cli_tokens_rejects_unknown_flag();
     test_cli_compile_simple();
     test_cli_compile_case_insensitive_extension();
     test_cli_compile_with_all_flags();
