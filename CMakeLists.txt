@@ -11,6 +11,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 add_executable(spike
     src/main.cpp
     src/file_reader.cpp
+    src/token.cpp
 )
 
 target_include_directories(spike PRIVATE include)
@@ -26,6 +27,7 @@ enable_testing()
 add_executable(spike_tests
     tests/main_test.cpp
     src/file_reader.cpp
+    src/token.cpp
 )
 target_include_directories(spike_tests PRIVATE include)
 
