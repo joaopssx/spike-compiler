@@ -1,3 +1,4 @@
+#include "spike/colors.hpp"
 #include "spike/file_reader.hpp"
 #include "spike/lexer.hpp"
 #include "spike/token.hpp"
@@ -9,17 +10,18 @@
 namespace {
 
 void print_version() {
-    std::cout << "Spike " << SPIKE_VERSION << std::endl;
+    std::cout << spike::caramel(std::string("Spike ") + SPIKE_VERSION) << std::endl;
 }
 
 void print_help() {
     std::cout
-        << "Spike " << SPIKE_VERSION << " - compilador de Portugol\n"
+        << spike::caramel(std::string("Spike ") + SPIKE_VERSION)
+        << " - compilador de Portugol\n"
         << "\n"
-        << "Uso:\n"
+        << spike::bold("Uso:") << "\n"
         << "  spike [opcoes] [arquivo.por]\n"
         << "\n"
-        << "Opcoes:\n"
+        << spike::bold("Opcoes:") << "\n"
         << "  --version    Mostra a versao do compilador\n"
         << "  --help       Mostra esta mensagem de ajuda\n";
 }
@@ -27,34 +29,38 @@ void print_help() {
 int run_file(const std::string& path) {
     spike::ReadResult read = spike::read_file(path);
     if (!read.ok) {
-        std::cerr << read.error << std::endl;
+        std::cerr << spike::red(read.error) << std::endl;
         return 1;
     }
     if (!read.error.empty()) {
-        std::cerr << read.error << std::endl;
+        std::cerr << spike::yellow(read.error) << std::endl;
     }
 
     spike::Lexer lexer(read.content, path);
     const std::vector<spike::Token> tokens = lexer.tokenize();
 
     for (const spike::Token& t : tokens) {
-        std::cout << "[" << t.line << ":" << t.col << "] "
-                  << spike::token_type_to_string(t.type)
+        std::cout << spike::gray("[" + std::to_string(t.line) + ":" +
+                                 std::to_string(t.col) + "]")
+                  << " " << spike::cyan(spike::token_type_to_string(t.type))
                   << " \"" << t.lexeme << "\"\n";
     }
 
     if (lexer.had_error()) {
         for (const std::string& err : lexer.errors()) {
-            std::cerr << err << std::endl;
+            std::cerr << spike::red(err) << std::endl;
         }
         return 1;
     }
+    std::cout << spike::green("Analise lexica concluida sem erros.") << std::endl;
     return 0;
 }
 
 } // namespace
 
 int main(int argc, char** argv) {
+    spike::init_colors();
+
     if (argc < 2) {
         print_help();
         return 0;
