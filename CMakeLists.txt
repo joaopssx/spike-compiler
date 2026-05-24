@@ -17,3 +17,17 @@ target_compile_definitions(spike PRIVATE SPIKE_VERSION="0.1.0")
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     target_compile_options(spike PRIVATE -Wall -Wextra -Wpedantic)
 endif()
+
+enable_testing()
+
+add_executable(spike_tests tests/main_test.cpp)
+target_include_directories(spike_tests PRIVATE include)
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    target_compile_options(spike_tests PRIVATE -Wall -Wextra -Wpedantic)
+endif()
+
+add_test(NAME spike_version_check COMMAND spike --version)
+set_tests_properties(spike_version_check PROPERTIES
+    PASS_REGULAR_EXPRESSION "0\\.1"
+)
