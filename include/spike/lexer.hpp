@@ -1,6 +1,7 @@
 #ifndef SPIKE_LEXER_HPP
 #define SPIKE_LEXER_HPP
 
+#include "spike/diagnostics.hpp"
 #include "spike/token.hpp"
 
 #include <string>
@@ -10,10 +11,14 @@ namespace spike {
 
 class Lexer {
 public:
+    // O `source` é também passado pro Diagnostics, então as mensagens podem
+    // mostrar a linha do código onde o erro aconteceu.
     Lexer(const std::string& source, const std::string& filename);
+
     std::vector<Token> tokenize();
+
     bool had_error() const;
-    const std::vector<std::string>& errors() const;
+    const Diagnostics& diagnostics() const;
 
 private:
     std::string source_;
@@ -23,8 +28,7 @@ private:
     int col_;
     int token_start_line_;
     int token_start_col_;
-    bool had_error_;
-    std::vector<std::string> errors_;
+    Diagnostics diags_;
 
     bool scan_one_token(Token& out);
 
@@ -42,7 +46,10 @@ private:
 
     // Criação de tokens
     Token make_token(TokenType type, const std::string& lexeme) const;
-    void add_error(const std::string& msg);
+
+    // Reporta erro na posição inicial do token corrente.
+    void add_error(const std::string& code, const std::string& message,
+                   const std::string& hint);
 
     // Scanners específicos
     Token scan_identifier_or_keyword();

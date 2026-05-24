@@ -18,16 +18,31 @@ std::string to_lower_ascii(const std::string& s) {
     return out;
 }
 
+// Códigos e dicas — mantidos perto um do outro pra ser fácil de auditar.
+constexpr const char* kE001Hint =
+    "Portugol não usa este caractere. Verifique se não é um erro de digitação.";
+constexpr const char* kE002Hint =
+    "Feche a string com aspas duplas antes do fim da linha.";
+constexpr const char* kE003Hint =
+    "Números decimais precisam ter dígito após o ponto: use 3.0 em vez de 3.";
+constexpr const char* kE004Hint =
+    "Feche o comentário com } antes do fim do arquivo.";
+
 } // namespace
 
 Lexer::Lexer(const std::string& source, const std::string& filename)
     : source_(source), filename_(filename),
       current_(0), line_(1), col_(1),
       token_start_line_(1), token_start_col_(1),
-      had_error_(false) {}
+      diags_(filename, source) {}
 
-bool Lexer::had_error() const { return had_error_; }
-const std::vector<std::string>& Lexer::errors() const { return errors_; }
+bool Lexer::had_error() const {
+    return diags_.has_errors();
+}
+
+const Diagnostics& Lexer::diagnostics() const {
+    return diags_;
+}
 
 bool Lexer::is_at_end() const {
     return current_ >= static_cast<int>(source_.size());
@@ -79,10 +94,9 @@ Token Lexer::make_token(TokenType type, const std::string& lexeme) const {
     return t;
 }
 
-void Lexer::add_error(const std::string& msg) {
-    had_error_ = true;
-    errors_.push_back(filename_ + ":" + std::to_string(line_) + ":" +
-                      std::to_string(col_) + ": " + msg);
+void Lexer::add_error(const std::string& code, const std::string& message,
+                      const std::string& hint) {
+    diags_.error(code, message, token_start_line_, token_start_col_, hint);
 }
 
 Token Lexer::scan_identifier_or_keyword() {
@@ -104,23 +118,21 @@ Token Lexer::scan_number() {
         advance();
     }
 
-    // Parte decimal — só consome o '.' se houver dígito imediatamente depois.
     if (peek() == '.' && is_digit(peek_next())) {
-        advance(); // consome o '.'
+        advance();
         while (!is_at_end() && is_digit(peek())) {
             advance();
         }
     } else if (peek() == '.') {
-        // '.' sem dígito depois: consome o ponto, reporta erro, segue.
+        add_error("E003", "número malformado: '.' sem dígito decimal",
+                  kE003Hint);
         advance();
-        add_error("Número malformado: '.' sem dígito decimal");
     }
 
-    // Tentativa de notação inválida como "3.4.5": o segundo '.' (com dígito)
-    // dispararia um erro extra; aqui só detectamos o caso patológico.
     if (peek() == '.' && is_digit(peek_next())) {
-        add_error("Número malformado: múltiplos pontos decimais");
-        advance(); // consome o '.'
+        add_error("E003", "número malformado: múltiplos pontos decimais",
+                  kE003Hint);
+        advance();
         while (!is_at_end() && is_digit(peek())) {
             advance();
         }
@@ -146,7 +158,6 @@ Token Lexer::scan_string() {
                 case 'n':  value.push_back('\n'); break;
                 case 't':  value.push_back('\t'); break;
                 default:
-                    // Escape desconhecido: mantém os dois chars literalmente.
                     value.push_back('\\');
                     value.push_back(next);
                     break;
@@ -157,13 +168,11 @@ Token Lexer::scan_string() {
     }
 
     if (peek() != '"') {
-        // EOF ou '\n' antes de fechar.
-        add_error("String não fechada na linha " +
-                  std::to_string(token_start_line_));
+        add_error("E002", "string não fechada", kE002Hint);
         return make_token(TokenType::STRING, value);
     }
 
-    advance(); // consome a aspas de fechamento
+    advance();
     return make_token(TokenType::STRING, value);
 }
 
@@ -173,13 +182,11 @@ TokenType Lexer::keyword_type(const std::string& word) const {
         {"fimalgoritmo",  TokenType::FIM_ALGORITMO},
         {"inicio",        TokenType::INICIO},
         {"var",           TokenType::VAR},
-
         {"inteiro",       TokenType::INTEIRO},
         {"real",          TokenType::REAL},
         {"caractere",     TokenType::CARACTERE},
-        {"caracter",      TokenType::CARACTERE},  // dialeto VisuAlg
+        {"caracter",      TokenType::CARACTERE},
         {"logico",        TokenType::LOGICO},
-
         {"se",            TokenType::SE},
         {"entao",         TokenType::ENTAO},
         {"senao",         TokenType::SENAO},
@@ -193,19 +200,15 @@ TokenType Lexer::keyword_type(const std::string& word) const {
         {"passo",         TokenType::PASSO},
         {"fimpara",       TokenType::FIM_PARA},
         {"repita",        TokenType::REPITA},
-
         {"escreva",       TokenType::ESCREVA},
         {"escreval",      TokenType::ESCREVAL},
         {"leia",          TokenType::LEIA},
-
         {"verdadeiro",    TokenType::VERDADEIRO},
         {"falso",         TokenType::FALSO},
-
         {"e",             TokenType::E},
         {"ou",            TokenType::OU},
         {"nao",           TokenType::NAO},
     };
-
     const auto it = kKeywords.find(word);
     if (it != kKeywords.end()) return it->second;
     return TokenType::IDENTIFIER;
@@ -228,52 +231,31 @@ bool Lexer::scan_one_token(Token& out) {
         return false;
     }
 
-    if (is_alpha(c)) {
-        out = scan_identifier_or_keyword();
-        return true;
-    }
+    if (is_alpha(c))  { out = scan_identifier_or_keyword(); return true; }
+    if (is_digit(c))  { out = scan_number();                 return true; }
+    if (c == '"')     { out = scan_string();                 return true; }
 
-    if (is_digit(c)) {
-        out = scan_number();
-        return true;
-    }
-
-    if (c == '"') {
-        out = scan_string();
-        return true;
-    }
-
-    // Comentário de linha: // ... \n
+    // Comentário de linha
     if (c == '/' && peek_next() == '/') {
-        while (!is_at_end() && peek() != '\n') {
-            advance();
-        }
+        while (!is_at_end() && peek() != '\n') advance();
         return false;
     }
 
-    // Comentário de bloco: { ... }
+    // Comentário de bloco
     if (c == '{') {
-        const int open_line = line_;
-        advance(); // consome '{'
+        advance();
         while (!is_at_end() && peek() != '}') {
-            if (peek() == '\n') {
-                advance();
-                ++line_;
-                col_ = 1;
-            } else {
-                advance();
-            }
+            if (peek() == '\n') { advance(); ++line_; col_ = 1; }
+            else                { advance(); }
         }
         if (is_at_end()) {
-            add_error("Comentário não fechado (aberto na linha " +
-                      std::to_string(open_line) + ")");
+            add_error("E004", "comentário de bloco não fechado", kE004Hint);
             return false;
         }
-        advance(); // consome '}'
+        advance();
         return false;
     }
 
-    // Operadores e pontuação de um caractere.
     switch (c) {
         case '+': advance(); out = make_token(TokenType::PLUS,   "+"); return true;
         case '-': advance(); out = make_token(TokenType::MINUS,  "-"); return true;
@@ -287,7 +269,6 @@ bool Lexer::scan_one_token(Token& out) {
         default: break;
     }
 
-    // Operadores que podem ter um ou dois caracteres.
     if (c == '<') {
         advance();
         if (match('-')) { out = make_token(TokenType::ARROW,     "<-"); return true; }
@@ -309,11 +290,10 @@ bool Lexer::scan_one_token(Token& out) {
         return true;
     }
 
-    // Caractere desconhecido — consome um char pra avançar e reporta.
     advance();
-    add_error(std::string("Caractere desconhecido '") + c +
-              "' na linha " + std::to_string(token_start_line_) +
-              ", coluna " + std::to_string(token_start_col_));
+    add_error("E001",
+              std::string("caractere desconhecido '") + c + "'",
+              kE001Hint);
     out = make_token(TokenType::UNKNOWN, std::string(1, c));
     return true;
 }
@@ -322,9 +302,7 @@ std::vector<Token> Lexer::tokenize() {
     std::vector<Token> tokens;
     while (!is_at_end()) {
         Token t;
-        if (scan_one_token(t)) {
-            tokens.push_back(t);
-        }
+        if (scan_one_token(t)) tokens.push_back(t);
     }
     token_start_line_ = line_;
     token_start_col_ = col_;

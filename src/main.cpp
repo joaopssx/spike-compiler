@@ -47,9 +47,7 @@ int run_file(const std::string& path) {
     }
 
     if (lexer.had_error()) {
-        for (const std::string& err : lexer.errors()) {
-            std::cerr << spike::red(err) << std::endl;
-        }
+        lexer.diagnostics().print_all();
         return 1;
     }
     std::cout << spike::green("Analise lexica concluida sem erros.") << std::endl;
