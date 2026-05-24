@@ -15,12 +15,24 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang
 endif()
 
 # ---- Core library ------------------------------------------------------------
+# Headers são auto-descobertos pelo dependency scanner do CMake, então
+# tecnicamente não precisariam estar listados aqui. Mantemos `ast.hpp` (e os
+# outros headers públicos) listados pra aparecer na lista de fontes do IDE e
+# pra qualquer ferramenta que itere sobre as sources do target encontrar.
 add_library(spike_core STATIC
     src/file_reader.cpp
     src/token.cpp
     src/lexer.cpp
     src/diagnostics.cpp
     src/cli.cpp
+
+    include/spike/ast.hpp
+    include/spike/cli.hpp
+    include/spike/colors.hpp
+    include/spike/diagnostics.hpp
+    include/spike/file_reader.hpp
+    include/spike/lexer.hpp
+    include/spike/token.hpp
 )
 target_include_directories(spike_core PUBLIC include)
 target_compile_definitions(spike_core PUBLIC SPIKE_VERSION="0.1.0")
