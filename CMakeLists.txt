@@ -8,7 +8,10 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-add_executable(spike src/main.cpp)
+add_executable(spike
+    src/main.cpp
+    src/file_reader.cpp
+)
 
 target_include_directories(spike PRIVATE include)
 
@@ -20,7 +23,10 @@ endif()
 
 enable_testing()
 
-add_executable(spike_tests tests/main_test.cpp)
+add_executable(spike_tests
+    tests/main_test.cpp
+    src/file_reader.cpp
+)
 target_include_directories(spike_tests PRIVATE include)
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
@@ -30,4 +36,9 @@ endif()
 add_test(NAME spike_version_check COMMAND spike --version)
 set_tests_properties(spike_version_check PROPERTIES
     PASS_REGULAR_EXPRESSION "0\\.1"
+)
+
+add_test(NAME spike_unit_tests COMMAND spike_tests)
+set_tests_properties(spike_unit_tests PROPERTIES
+    PASS_REGULAR_EXPRESSION "all tests passed"
 )

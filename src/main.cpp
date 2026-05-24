@@ -1,3 +1,5 @@
+#include "spike/file_reader.hpp"
+
 #include <cstring>
 #include <iostream>
 #include <string>
@@ -20,6 +22,20 @@ void print_help() {
         << "  --help       Mostra esta mensagem de ajuda\n";
 }
 
+int run_file(const std::string& path) {
+    spike::ReadResult result = spike::read_file(path);
+    if (!result.ok) {
+        std::cerr << result.error << std::endl;
+        return 1;
+    }
+    if (!result.error.empty()) {
+        // Non-fatal warning (e.g. wrong extension).
+        std::cerr << result.error << std::endl;
+    }
+    std::cout << "Lido: " << result.content.size() << " bytes" << std::endl;
+    return 0;
+}
+
 } // namespace
 
 int main(int argc, char** argv) {
@@ -37,6 +53,14 @@ int main(int argc, char** argv) {
         if (std::strcmp(arg, "--help") == 0) {
             print_help();
             return 0;
+        }
+    }
+
+    // First non-flag argument is treated as the input file.
+    for (int i = 1; i < argc; ++i) {
+        const char* arg = argv[i];
+        if (arg[0] != '-') {
+            return run_file(arg);
         }
     }
 
