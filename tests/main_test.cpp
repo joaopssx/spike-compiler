@@ -5,8 +5,8 @@
 // is what CTest matches against.
 
 #include "spike/file_reader.hpp"
+#include "spike/token.hpp"
 
-#include <cstdio>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
@@ -24,6 +24,8 @@ int g_failures = 0;
                       << ": " #cond << std::endl;                              \
         }                                                                      \
     } while (0)
+
+// ---- file_reader -----------------------------------------------------------
 
 void test_read_file_missing() {
     spike::ReadResult r = spike::read_file("definitely_does_not_exist_xyz.por");
@@ -67,12 +69,33 @@ void test_read_file_wrong_extension_still_ok() {
     std::filesystem::remove(path, ec);
 }
 
+// ---- token -----------------------------------------------------------------
+
+void test_token_type_to_string_known_values() {
+    SPIKE_EXPECT(spike::token_type_to_string(spike::TokenType::NUMBER) == "NUMBER");
+    SPIKE_EXPECT(spike::token_type_to_string(spike::TokenType::ALGORITMO) == "ALGORITMO");
+    SPIKE_EXPECT(spike::token_type_to_string(spike::TokenType::FIM_ENQUANTO) == "FIM_ENQUANTO");
+    SPIKE_EXPECT(spike::token_type_to_string(spike::TokenType::ARROW) == "ARROW");
+    SPIKE_EXPECT(spike::token_type_to_string(spike::TokenType::END_OF_FILE) == "END_OF_FILE");
+    SPIKE_EXPECT(spike::token_type_to_string(spike::TokenType::UNKNOWN) == "UNKNOWN");
+}
+
+void test_token_default_construction() {
+    spike::Token t{spike::TokenType::IDENTIFIER, "contador", 3, 7};
+    SPIKE_EXPECT(t.type == spike::TokenType::IDENTIFIER);
+    SPIKE_EXPECT(t.lexeme == "contador");
+    SPIKE_EXPECT(t.line == 3);
+    SPIKE_EXPECT(t.col == 7);
+}
+
 } // namespace
 
 int main() {
     test_read_file_missing();
     test_read_file_ok();
     test_read_file_wrong_extension_still_ok();
+    test_token_type_to_string_known_values();
+    test_token_default_construction();
 
     if (g_failures == 0) {
         std::cout << "all tests passed" << std::endl;

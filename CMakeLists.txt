@@ -8,32 +8,34 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-add_executable(spike
-    src/main.cpp
+# ---- Shared warning flags ----------------------------------------------------
+# Applied to every Spike target via target_link_libraries on an INTERFACE lib,
+# so we only declare them once.
+add_library(spike_warnings INTERFACE)
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    target_compile_options(spike_warnings INTERFACE -Wall -Wextra -Wpedantic)
+endif()
+
+# ---- Core library ------------------------------------------------------------
+# Everything except the entry points lives here. Both the CLI and the test
+# runner link against it, so each translation unit is compiled exactly once.
+add_library(spike_core STATIC
     src/file_reader.cpp
     src/token.cpp
 )
+target_include_directories(spike_core PUBLIC include)
+target_compile_definitions(spike_core PUBLIC SPIKE_VERSION="0.1.0")
+target_link_libraries(spike_core PRIVATE spike_warnings)
 
-target_include_directories(spike PRIVATE include)
+# ---- CLI executable ----------------------------------------------------------
+add_executable(spike src/main.cpp)
+target_link_libraries(spike PRIVATE spike_core spike_warnings)
 
-target_compile_definitions(spike PRIVATE SPIKE_VERSION="0.1.0")
-
-if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-    target_compile_options(spike PRIVATE -Wall -Wextra -Wpedantic)
-endif()
-
+# ---- Tests -------------------------------------------------------------------
 enable_testing()
 
-add_executable(spike_tests
-    tests/main_test.cpp
-    src/file_reader.cpp
-    src/token.cpp
-)
-target_include_directories(spike_tests PRIVATE include)
-
-if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-    target_compile_options(spike_tests PRIVATE -Wall -Wextra -Wpedantic)
-endif()
+add_executable(spike_tests tests/main_test.cpp)
+target_link_libraries(spike_tests PRIVATE spike_core spike_warnings)
 
 add_test(NAME spike_version_check COMMAND spike --version)
 set_tests_properties(spike_version_check PROPERTIES

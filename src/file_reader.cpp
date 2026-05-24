@@ -1,5 +1,7 @@
 #include "spike/file_reader.hpp"
 
+#include <algorithm>
+#include <cctype>
 #include <filesystem>
 #include <fstream>
 #include <iterator>
@@ -10,22 +12,11 @@ namespace spike {
 namespace {
 
 bool has_por_extension(const std::string& path) {
-    const std::string ext = ".por";
-    if (path.size() < ext.size()) {
-        return false;
-    }
-    // Case-insensitive compare of the trailing 4 chars.
-    for (std::size_t i = 0; i < ext.size(); ++i) {
-        char a = path[path.size() - ext.size() + i];
-        char b = ext[i];
-        if (a >= 'A' && a <= 'Z') {
-            a = static_cast<char>(a + ('a' - 'A'));
-        }
-        if (a != b) {
-            return false;
-        }
-    }
-    return true;
+    std::string ext = std::filesystem::path(path).extension().string();
+    std::transform(ext.begin(), ext.end(), ext.begin(), [](unsigned char c) {
+        return static_cast<char>(std::tolower(c));
+    });
+    return ext == ".por";
 }
 
 } // namespace
