@@ -20,6 +20,7 @@ add_library(spike_core STATIC
     src/token.cpp
     src/lexer.cpp
     src/diagnostics.cpp
+    src/cli.cpp
 )
 target_include_directories(spike_core PUBLIC include)
 target_compile_definitions(spike_core PUBLIC SPIKE_VERSION="0.1.0")
