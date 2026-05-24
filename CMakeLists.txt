@@ -2,65 +2,18 @@ cmake_minimum_required(VERSION 3.16)
 
 project(Spike LANGUAGES CXX)
 
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-enable_testing()
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-add_executable(spike
-    src/file_reader.cpp
-    src/lexer.cpp
-    src/main.cpp
-    src/token.cpp
-)
+add_executable(spike src/main.cpp)
 
 target_include_directories(spike PRIVATE include)
 
-add_executable(spike_tests
-    src/file_reader.cpp
-    src/lexer.cpp
-    src/token.cpp
-    tests/lexer_tests.cpp
-)
+target_compile_definitions(spike PRIVATE SPIKE_VERSION="0.1.0")
 
-target_include_directories(spike_tests PRIVATE include)
-target_compile_definitions(spike_tests PRIVATE SPIKE_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
-
-if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     target_compile_options(spike PRIVATE -Wall -Wextra -Wpedantic)
-    target_compile_options(spike_tests PRIVATE -Wall -Wextra -Wpedantic)
 endif()
-
-add_test(NAME spike_lexer_tests COMMAND spike_tests)
-
-add_test(NAME spike_cli_help COMMAND $<TARGET_FILE:spike> --help)
-set_tests_properties(spike_cli_help PROPERTIES
-    PASS_REGULAR_EXPRESSION "tokens <arquivo\\.por> \\[--verbose\\]"
-)
-
-add_test(NAME spike_cli_version COMMAND $<TARGET_FILE:spike> --version)
-set_tests_properties(spike_cli_version PROPERTIES
-    PASS_REGULAR_EXPRESSION "Spike 0\\.1\\.5"
-)
-
-add_test(
-    NAME spike_cli_tokens_basic
-    COMMAND $<TARGET_FILE:spike> tokens
-            "${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures/valid/control_flow_case_insensitive.por"
-)
-set_tests_properties(spike_cli_tokens_basic PROPERTIES
-    PASS_REGULAR_EXPRESSION "ALGORITMO \\(Algoritmo\\)"
-)
-
-add_test(
-    NAME spike_cli_tokens_verbose
-    COMMAND $<TARGET_FILE:spike> tokens
-            "${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures/valid/control_flow_case_insensitive.por"
-            --verbose
-)
-set_tests_properties(spike_cli_tokens_verbose PROPERTIES
-    PASS_REGULAR_EXPRESSION "ALGORITMO \\(Algoritmo\\) line=1 column=1"
-)

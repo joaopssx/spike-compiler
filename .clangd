@@ -1,3 +1,2 @@
 CompileFlags:
-  Add:
-    - -Iinclude
+  Add: [-std=c++17]
