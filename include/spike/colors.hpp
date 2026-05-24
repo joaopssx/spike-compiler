@@ -11,6 +11,22 @@
 #    define WIN32_LEAN_AND_MEAN
 #  endif
 #  include <windows.h>
+   // wingdi.h e cia. despejam macros com nomes triviais que quebram código
+   // C++ normal (ex: ERROR vira #define ERROR 0, conflitando com qualquer
+   // enum value chamado ERROR). Como colors.hpp é um header interno e fica
+   // no topo de tudo, limpamos aqui mesmo.
+#  ifdef ERROR
+#    undef ERROR
+#  endif
+#  ifdef OPTIONAL
+#    undef OPTIONAL
+#  endif
+#  ifdef IN
+#    undef IN
+#  endif
+#  ifdef OUT
+#    undef OUT
+#  endif
 #endif
 
 namespace spike {
