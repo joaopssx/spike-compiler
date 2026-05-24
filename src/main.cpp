@@ -2,6 +2,7 @@
 #include "spike/colors.hpp"
 #include "spike/file_reader.hpp"
 #include "spike/lexer.hpp"
+#include "spike/parser.hpp"
 #include "spike/token.hpp"
 
 #include <algorithm>
@@ -103,6 +104,18 @@ int run_tokens(const spike::CliArgs& args) {
     summary << "— " << printed << " tokens encontrados em " << lines
             << (lines == 1 ? " linha" : " linhas");
     std::cout << spike::gray(summary.str()) << std::endl;
+
+    // Smoke test do parser — só pra confirmar que ele aceita/rejeita.
+    // (PROMPT 014: estrutura do programa + var section. Statements e
+    // expressões ainda não.)
+    spike::Parser parser(lo->tokens, args.input_file, lo->source);
+    parser.parse();
+    if (parser.had_error()) {
+        std::cout << spike::red("parse: erros encontrados.") << std::endl;
+        parser.diagnostics().print_all();
+    } else {
+        std::cout << spike::green("parse: OK") << std::endl;
+    }
     return 0;
 }
 

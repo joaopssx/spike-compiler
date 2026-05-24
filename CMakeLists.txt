@@ -25,6 +25,7 @@ add_library(spike_core STATIC
     src/lexer.cpp
     src/diagnostics.cpp
     src/cli.cpp
+    src/parser.cpp
 
     include/spike/ast.hpp
     include/spike/cli.hpp
@@ -32,6 +33,7 @@ add_library(spike_core STATIC
     include/spike/diagnostics.hpp
     include/spike/file_reader.hpp
     include/spike/lexer.hpp
+    include/spike/parser.hpp
     include/spike/token.hpp
 )
 target_include_directories(spike_core PUBLIC include)
