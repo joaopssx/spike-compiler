@@ -9,19 +9,16 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # ---- Shared warning flags ----------------------------------------------------
-# Applied to every Spike target via target_link_libraries on an INTERFACE lib,
-# so we only declare them once.
 add_library(spike_warnings INTERFACE)
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     target_compile_options(spike_warnings INTERFACE -Wall -Wextra -Wpedantic)
 endif()
 
 # ---- Core library ------------------------------------------------------------
-# Everything except the entry points lives here. Both the CLI and the test
-# runner link against it, so each translation unit is compiled exactly once.
 add_library(spike_core STATIC
     src/file_reader.cpp
     src/token.cpp
+    src/lexer.cpp
 )
 target_include_directories(spike_core PUBLIC include)
 target_compile_definitions(spike_core PUBLIC SPIKE_VERSION="0.1.0")

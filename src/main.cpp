@@ -1,4 +1,6 @@
 #include "spike/file_reader.hpp"
+#include "spike/lexer.hpp"
+#include "spike/token.hpp"
 
 #include <cstring>
 #include <iostream>
@@ -23,16 +25,30 @@ void print_help() {
 }
 
 int run_file(const std::string& path) {
-    spike::ReadResult result = spike::read_file(path);
-    if (!result.ok) {
-        std::cerr << result.error << std::endl;
+    spike::ReadResult read = spike::read_file(path);
+    if (!read.ok) {
+        std::cerr << read.error << std::endl;
         return 1;
     }
-    if (!result.error.empty()) {
-        // Non-fatal warning (e.g. wrong extension).
-        std::cerr << result.error << std::endl;
+    if (!read.error.empty()) {
+        std::cerr << read.error << std::endl;
     }
-    std::cout << "Lido: " << result.content.size() << " bytes" << std::endl;
+
+    spike::Lexer lexer(read.content, path);
+    const std::vector<spike::Token> tokens = lexer.tokenize();
+
+    for (const spike::Token& t : tokens) {
+        std::cout << "[" << t.line << ":" << t.col << "] "
+                  << spike::token_type_to_string(t.type)
+                  << " \"" << t.lexeme << "\"\n";
+    }
+
+    if (lexer.had_error()) {
+        for (const std::string& err : lexer.errors()) {
+            std::cerr << err << std::endl;
+        }
+        return 1;
+    }
     return 0;
 }
 
@@ -56,7 +72,6 @@ int main(int argc, char** argv) {
         }
     }
 
-    // First non-flag argument is treated as the input file.
     for (int i = 1; i < argc; ++i) {
         const char* arg = argv[i];
         if (arg[0] != '-') {
