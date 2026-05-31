@@ -301,6 +301,7 @@ StmtPtr Parser::parse_stmt() {
     if (match(TokenType::SE))        return parse_se();
     if (match(TokenType::ENQUANTO))  return parse_enquanto();
     if (match(TokenType::PARA))      return parse_para();
+    if (match(TokenType::REPITA))    return parse_repita();
 
     // Não reconheceu — emite e consome 1 token pra garantir progresso.
     const Token& t = peek();
@@ -493,6 +494,34 @@ StmtPtr Parser::parse_para() {
     s.body = std::move(body);
     s.line = para_tok.line;
     s.col = para_tok.col;
+    return make_stmt(std::move(s));
+}
+
+StmtPtr Parser::parse_repita() {
+    const Token rep_tok = previous();  // REPITA consumido pelo dispatcher
+
+    // Em Portugol o lexer mapeia "ate" pro token ATE (mesmo do `para`).
+    // ATE_QUE existe no enum mas não é emitido pelo lexer atual; mantemos
+    // os dois como stop pra ficar pronto se algum dia o tokenizador
+    // diferenciar "ate que" como token composto.
+    StmtList body = parse_stmt_list({TokenType::ATE, TokenType::ATE_QUE});
+
+    if (!(match(TokenType::ATE) || match(TokenType::ATE_QUE))) {
+        const Token& t = peek();
+        diags_.error("E600", "'ate' esperado para fechar 'repita'",
+                     t.line, t.col,
+                     "sintaxe: repita ... ate <condicao>. "
+                     "O corpo executa pelo menos uma vez e para quando a condição for verdadeira.");
+        // Continua mesmo assim — parse_expr abaixo cria stub se necessário.
+    }
+
+    ExprPtr cond = parse_expr();
+
+    RepitaStmt s;
+    s.body = std::move(body);
+    s.condition = std::move(cond);
+    s.line = rep_tok.line;
+    s.col = rep_tok.col;
     return make_stmt(std::move(s));
 }
 

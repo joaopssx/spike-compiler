@@ -56,6 +56,7 @@ private:
     StmtPtr  parse_se();
     StmtPtr  parse_enquanto();
     StmtPtr  parse_para();
+    StmtPtr  parse_repita();
 
     // Precedência crescente — cada nível chama o nível abaixo.
     ExprPtr parse_or();

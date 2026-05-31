@@ -1007,6 +1007,70 @@ void test_stmt_E504_para_missing_ate() {
     SPIKE_EXPECT(r.diag_output.find("E504") != std::string::npos);
 }
 
+// ---- parser: repita statement (PROMPT 019) --------------------------------
+
+void test_stmt_repita_basic() {
+    auto r = parse_source(
+        "algoritmo \"t\"\n"
+        "inicio\n"
+        "   repita\n"
+        "      leia(x)\n"
+        "   ate x > 0\n"
+        "fimalgoritmo\n");
+    SPIKE_EXPECT(r.had_error == false);
+    SPIKE_EXPECT(r.program.body.size() == 1);
+    SPIKE_EXPECT(std::holds_alternative<spike::RepitaStmt>(r.program.body[0]->node));
+    const auto& rp = std::get<spike::RepitaStmt>(r.program.body[0]->node);
+    SPIKE_EXPECT(rp.body.size() == 1);
+    SPIKE_EXPECT(std::holds_alternative<spike::LeiaStmt>(rp.body[0]->node));
+    SPIKE_EXPECT(std::holds_alternative<spike::BinaryExpr>(rp.condition->node));
+    SPIKE_EXPECT(std::get<spike::BinaryExpr>(rp.condition->node).op == ">");
+}
+
+void test_stmt_repita_empty_body() {
+    // Body vazio é sintaticamente válido (semanticamente esquisito).
+    auto r = parse_source(
+        "algoritmo \"t\"\n"
+        "inicio\n"
+        "   repita\n"
+        "   ate verdadeiro\n"
+        "fimalgoritmo\n");
+    SPIKE_EXPECT(r.had_error == false);
+    const auto& rp = std::get<spike::RepitaStmt>(r.program.body[0]->node);
+    SPIKE_EXPECT(rp.body.empty());
+    SPIKE_EXPECT(std::holds_alternative<spike::BoolExpr>(rp.condition->node));
+    SPIKE_EXPECT(std::get<spike::BoolExpr>(rp.condition->node).value == true);
+}
+
+void test_stmt_repita_nested_in_enquanto() {
+    auto r = parse_source(
+        "algoritmo \"t\"\n"
+        "inicio\n"
+        "   enquanto x > 0 faca\n"
+        "      repita\n"
+        "         leia(y)\n"
+        "      ate y = 0\n"
+        "      x <- x - 1\n"
+        "   fimenquanto\n"
+        "fimalgoritmo\n");
+    SPIKE_EXPECT(r.had_error == false);
+    const auto& w = std::get<spike::EnquantoStmt>(r.program.body[0]->node);
+    SPIKE_EXPECT(w.body.size() == 2);
+    SPIKE_EXPECT(std::holds_alternative<spike::RepitaStmt>(w.body[0]->node));
+    SPIKE_EXPECT(std::holds_alternative<spike::AssignStmt>(w.body[1]->node));
+}
+
+void test_stmt_E600_repita_missing_ate() {
+    auto r = parse_source(
+        "algoritmo \"t\"\n"
+        "inicio\n"
+        "   repita\n"
+        "      leia(x)\n"
+        "fimalgoritmo\n");
+    SPIKE_EXPECT(r.had_error == true);
+    SPIKE_EXPECT(r.diag_output.find("E600") != std::string::npos);
+}
+
 void test_stmt_E506_para_missing_fimpara() {
     auto r = parse_source(
         "algoritmo \"t\"\n"
@@ -1371,6 +1435,11 @@ int main() {
     test_stmt_E503_para_missing_de();
     test_stmt_E504_para_missing_ate();
     test_stmt_E506_para_missing_fimpara();
+
+    test_stmt_repita_basic();
+    test_stmt_repita_empty_body();
+    test_stmt_repita_nested_in_enquanto();
+    test_stmt_E600_repita_missing_ate();
 
     if (g_failures == 0) {
         std::cout << "all tests passed" << std::endl;
