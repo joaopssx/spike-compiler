@@ -661,6 +661,168 @@ void test_parser_E105_missing_colon() {
     SPIKE_EXPECT(r.diag_output.find("E105") != std::string::npos);
 }
 
+// ---- parser: expressions (PROMPT 015) -------------------------------------
+
+// Helper: lex `src` e parseia uma única expressão.
+struct ExprResult {
+    spike::ExprPtr expr;
+    bool had_error;
+};
+
+ExprResult parse_expression(const std::string& src) {
+    spike::Lexer lex(src, "<test>");
+    auto tokens = lex.tokenize();
+    spike::Parser parser(std::move(tokens), "<test>", src);
+    ExprResult r;
+    r.expr = parser.parse_expr();
+    r.had_error = parser.had_error();
+    return r;
+}
+
+void test_expr_number_literal() {
+    auto r = parse_expression("42");
+    SPIKE_EXPECT(r.had_error == false);
+    SPIKE_EXPECT(r.expr != nullptr);
+    SPIKE_EXPECT(std::holds_alternative<spike::NumberExpr>(r.expr->node));
+    const auto& n = std::get<spike::NumberExpr>(r.expr->node);
+    SPIKE_EXPECT(n.value == 42.0);
+    SPIKE_EXPECT(n.is_integer == true);
+}
+
+void test_expr_real_literal() {
+    auto r = parse_expression("3.14");
+    SPIKE_EXPECT(r.had_error == false);
+    const auto& n = std::get<spike::NumberExpr>(r.expr->node);
+    SPIKE_EXPECT(n.value > 3.13 && n.value < 3.15);
+    SPIKE_EXPECT(n.is_integer == false);
+}
+
+void test_expr_var() {
+    auto r = parse_expression("contador");
+    SPIKE_EXPECT(r.had_error == false);
+    SPIKE_EXPECT(std::holds_alternative<spike::VarExpr>(r.expr->node));
+    SPIKE_EXPECT(std::get<spike::VarExpr>(r.expr->node).name == "contador");
+}
+
+void test_expr_bool_literals() {
+    {
+        auto r = parse_expression("verdadeiro");
+        SPIKE_EXPECT(r.had_error == false);
+        SPIKE_EXPECT(std::get<spike::BoolExpr>(r.expr->node).value == true);
+    }
+    {
+        auto r = parse_expression("falso");
+        SPIKE_EXPECT(r.had_error == false);
+        SPIKE_EXPECT(std::get<spike::BoolExpr>(r.expr->node).value == false);
+    }
+}
+
+void test_expr_addition() {
+    auto r = parse_expression("x + 1");
+    SPIKE_EXPECT(r.had_error == false);
+    SPIKE_EXPECT(std::holds_alternative<spike::BinaryExpr>(r.expr->node));
+    const auto& b = std::get<spike::BinaryExpr>(r.expr->node);
+    SPIKE_EXPECT(b.op == "+");
+    SPIKE_EXPECT(std::holds_alternative<spike::VarExpr>(b.left->node));
+    SPIKE_EXPECT(std::get<spike::VarExpr>(b.left->node).name == "x");
+    SPIKE_EXPECT(std::holds_alternative<spike::NumberExpr>(b.right->node));
+    SPIKE_EXPECT(std::get<spike::NumberExpr>(b.right->node).value == 1.0);
+}
+
+void test_expr_unary_not() {
+    auto r = parse_expression("nao verdadeiro");
+    SPIKE_EXPECT(r.had_error == false);
+    SPIKE_EXPECT(std::holds_alternative<spike::UnaryExpr>(r.expr->node));
+    const auto& u = std::get<spike::UnaryExpr>(r.expr->node);
+    SPIKE_EXPECT(u.op == "nao");
+    SPIKE_EXPECT(std::holds_alternative<spike::BoolExpr>(u.operand->node));
+    SPIKE_EXPECT(std::get<spike::BoolExpr>(u.operand->node).value == true);
+}
+
+void test_expr_paren_changes_precedence() {
+    // (3 + 4) * 2 → raiz é o '*', filho esquerdo é o '+'.
+    auto r = parse_expression("(3 + 4) * 2");
+    SPIKE_EXPECT(r.had_error == false);
+    SPIKE_EXPECT(std::holds_alternative<spike::BinaryExpr>(r.expr->node));
+    const auto& mul = std::get<spike::BinaryExpr>(r.expr->node);
+    SPIKE_EXPECT(mul.op == "*");
+    SPIKE_EXPECT(std::holds_alternative<spike::BinaryExpr>(mul.left->node));
+    SPIKE_EXPECT(std::get<spike::BinaryExpr>(mul.left->node).op == "+");
+    SPIKE_EXPECT(std::holds_alternative<spike::NumberExpr>(mul.right->node));
+    SPIKE_EXPECT(std::get<spike::NumberExpr>(mul.right->node).value == 2.0);
+}
+
+void test_expr_precedence_without_parens() {
+    // 1 + 2 * 3 → 1 + (2 * 3); raiz é '+'.
+    auto r = parse_expression("1 + 2 * 3");
+    SPIKE_EXPECT(r.had_error == false);
+    const auto& add = std::get<spike::BinaryExpr>(r.expr->node);
+    SPIKE_EXPECT(add.op == "+");
+    SPIKE_EXPECT(std::holds_alternative<spike::NumberExpr>(add.left->node));
+    SPIKE_EXPECT(std::get<spike::NumberExpr>(add.left->node).value == 1.0);
+    const auto& mul = std::get<spike::BinaryExpr>(add.right->node);
+    SPIKE_EXPECT(mul.op == "*");
+}
+
+void test_expr_comparison_lower_than_arithmetic() {
+    // a + 1 < b * 2 → comparação na raiz.
+    auto r = parse_expression("a + 1 < b * 2");
+    SPIKE_EXPECT(r.had_error == false);
+    const auto& cmp = std::get<spike::BinaryExpr>(r.expr->node);
+    SPIKE_EXPECT(cmp.op == "<");
+}
+
+void test_expr_and_lower_than_comparison() {
+    // a > 1 e b < 2 → 'e' na raiz, comparações nos filhos.
+    auto r = parse_expression("a > 1 e b < 2");
+    SPIKE_EXPECT(r.had_error == false);
+    const auto& and_node = std::get<spike::BinaryExpr>(r.expr->node);
+    SPIKE_EXPECT(and_node.op == "e");
+    SPIKE_EXPECT(std::get<spike::BinaryExpr>(and_node.left->node).op == ">");
+    SPIKE_EXPECT(std::get<spike::BinaryExpr>(and_node.right->node).op == "<");
+}
+
+void test_expr_or_keyword_case_insensitive() {
+    // Lexer normaliza keywords no match; canonical_op força lowercase no op.
+    auto r = parse_expression("verdadeiro OU falso");
+    SPIKE_EXPECT(r.had_error == false);
+    SPIKE_EXPECT(std::get<spike::BinaryExpr>(r.expr->node).op == "ou");
+}
+
+void test_expr_unary_minus() {
+    auto r = parse_expression("-x");
+    SPIKE_EXPECT(r.had_error == false);
+    const auto& u = std::get<spike::UnaryExpr>(r.expr->node);
+    SPIKE_EXPECT(u.op == "-");
+    SPIKE_EXPECT(std::get<spike::VarExpr>(u.operand->node).name == "x");
+}
+
+void test_expr_unclosed_paren_emits_E200() {
+    spike::Lexer lex("(1 + 2", "<test>");
+    auto toks = lex.tokenize();
+    spike::Parser p(std::move(toks), "<test>", "(1 + 2");
+    p.parse_expr();
+    SPIKE_EXPECT(p.had_error());
+    std::ostringstream sink;
+    auto* old = std::cerr.rdbuf(sink.rdbuf());
+    p.diagnostics().print_all();
+    std::cerr.rdbuf(old);
+    SPIKE_EXPECT(sink.str().find("E200") != std::string::npos);
+}
+
+void test_expr_unexpected_token_emits_E201() {
+    spike::Lexer lex("+", "<test>");
+    auto toks = lex.tokenize();
+    spike::Parser p(std::move(toks), "<test>", "+");
+    p.parse_expr();
+    SPIKE_EXPECT(p.had_error());
+    std::ostringstream sink;
+    auto* old = std::cerr.rdbuf(sink.rdbuf());
+    p.diagnostics().print_all();
+    std::cerr.rdbuf(old);
+    SPIKE_EXPECT(sink.str().find("E201") != std::string::npos);
+}
+
 void test_parser_recovers_to_next_line_after_var_error() {
     // Linha ruim, depois uma linha boa — a boa deve ser parseada.
     auto r = parse_source(
@@ -797,6 +959,21 @@ int main() {
     test_parser_E104_bad_type();
     test_parser_E105_missing_colon();
     test_parser_recovers_to_next_line_after_var_error();
+
+    test_expr_number_literal();
+    test_expr_real_literal();
+    test_expr_var();
+    test_expr_bool_literals();
+    test_expr_addition();
+    test_expr_unary_not();
+    test_expr_paren_changes_precedence();
+    test_expr_precedence_without_parens();
+    test_expr_comparison_lower_than_arithmetic();
+    test_expr_and_lower_than_comparison();
+    test_expr_or_keyword_case_insensitive();
+    test_expr_unary_minus();
+    test_expr_unclosed_paren_emits_E200();
+    test_expr_unexpected_token_emits_E201();
 
     if (g_failures == 0) {
         std::cout << "all tests passed" << std::endl;

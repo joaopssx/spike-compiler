@@ -18,6 +18,10 @@ public:
 
     Program parse();
 
+    // Entrada pública pra parsear uma única expressão. Usada por testes e,
+    // eventualmente, pelos parsers de statement (PROMPTs seguintes).
+    ExprPtr parse_expr();
+
     bool had_error() const;
     const Diagnostics& diagnostics() const;
 
@@ -42,13 +46,19 @@ private:
     Program              parse_program();
     std::vector<VarDecl> parse_var_section();
 
-    // Parsing de statements (implementados nos próximos prompts).
-    // Por enquanto parse_stmt_list só consome tokens até `stop_at` ou EOF.
+    // Parsing de statements (implementados nos próximos prompts)
     StmtList parse_stmt_list(TokenType stop_at);
     StmtPtr  parse_stmt();
 
-    // Parsing de expressões (implementados nos próximos prompts).
-    ExprPtr parse_expr();
+    // Precedência crescente — cada nível chama o nível abaixo.
+    ExprPtr parse_or();
+    ExprPtr parse_and();
+    ExprPtr parse_not();
+    ExprPtr parse_comparison();
+    ExprPtr parse_term();
+    ExprPtr parse_factor();
+    ExprPtr parse_unary();
+    ExprPtr parse_primary();
 };
 
 } // namespace spike
