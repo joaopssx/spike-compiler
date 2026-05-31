@@ -274,6 +274,20 @@ StmtList Parser::parse_stmt_list(TokenType stop_at) {
     return list;
 }
 
+StmtList Parser::parse_stmt_list(std::initializer_list<TokenType> stop_tokens) {
+    StmtList list;
+    while (!is_at_end()) {
+        bool should_stop = false;
+        for (TokenType s : stop_tokens) {
+            if (check(s)) { should_stop = true; break; }
+        }
+        if (should_stop) break;
+        StmtPtr s = parse_stmt();
+        if (s) list.push_back(std::move(s));
+    }
+    return list;
+}
+
 StmtPtr Parser::parse_stmt() {
     // Atribuição: IDENTIFIER seguido de <- ou :=.
     if (check(TokenType::IDENTIFIER) &&
@@ -284,6 +298,7 @@ StmtPtr Parser::parse_stmt() {
     if (match(TokenType::ESCREVA))   return parse_escreva(false);
     if (match(TokenType::ESCREVAL))  return parse_escreva(true);
     if (match(TokenType::LEIA))      return parse_leia();
+    if (match(TokenType::SE))        return parse_se();
 
     // Não reconheceu — emite e consome 1 token pra garantir progresso.
     const Token& t = peek();
@@ -353,6 +368,42 @@ StmtPtr Parser::parse_escreva(bool newline) {
     s.newline = newline;
     s.line = op_tok.line;
     s.col = op_tok.col;
+    return make_stmt(std::move(s));
+}
+
+StmtPtr Parser::parse_se() {
+    const Token se_tok = previous();  // SE consumido pelo dispatcher
+
+    ExprPtr cond = parse_expr();
+
+    if (!match(TokenType::ENTAO)) {
+        const Token& t = peek();
+        diags_.error("E400", "'entao' esperado após condição do 'se'",
+                     t.line, t.col,
+                     "sintaxe: se <condicao> entao ... fimse.");
+    }
+
+    StmtList then_branch = parse_stmt_list(
+        {TokenType::SENAO, TokenType::FIM_SE});
+
+    StmtList else_branch;
+    if (match(TokenType::SENAO)) {
+        else_branch = parse_stmt_list(TokenType::FIM_SE);
+    }
+
+    if (!match(TokenType::FIM_SE)) {
+        const Token& t = peek();
+        diags_.error("E401",
+                     "'fimse' não encontrado — todo 'se' precisa de um 'fimse'",
+                     t.line, t.col, "feche o bloco com 'fimse'.");
+    }
+
+    SeStmt s;
+    s.condition = std::move(cond);
+    s.then_branch = std::move(then_branch);
+    s.else_branch = std::move(else_branch);
+    s.line = se_tok.line;
+    s.col = se_tok.col;
     return make_stmt(std::move(s));
 }
 

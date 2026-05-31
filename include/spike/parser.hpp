@@ -48,10 +48,14 @@ private:
 
     // Parsing de statements
     StmtList parse_stmt_list(TokenType stop_at);
+    StmtList parse_stmt_list(std::initializer_list<TokenType> stop_tokens);
     StmtPtr  parse_stmt();
     StmtPtr  parse_assign();
     StmtPtr  parse_escreva(bool newline);
     StmtPtr  parse_leia();
+    StmtPtr  parse_se();
+    StmtPtr  parse_enquanto();
+    StmtPtr  parse_para();
 
     // Precedência crescente — cada nível chama o nível abaixo.
     ExprPtr parse_or();
