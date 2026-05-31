@@ -46,9 +46,12 @@ private:
     Program              parse_program();
     std::vector<VarDecl> parse_var_section();
 
-    // Parsing de statements (implementados nos próximos prompts)
+    // Parsing de statements
     StmtList parse_stmt_list(TokenType stop_at);
     StmtPtr  parse_stmt();
+    StmtPtr  parse_assign();
+    StmtPtr  parse_escreva(bool newline);
+    StmtPtr  parse_leia();
 
     // Precedência crescente — cada nível chama o nível abaixo.
     ExprPtr parse_or();
