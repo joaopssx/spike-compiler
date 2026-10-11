@@ -47,7 +47,21 @@ target_link_libraries(spike PRIVATE spike_core spike_warnings)
 # ---- Tests -------------------------------------------------------------------
 enable_testing()
 
-add_executable(spike_tests tests/main_test.cpp)
+add_executable(spike_tests
+    tests/main_test.cpp
+    tests/ast/ast_test.cpp
+    tests/cli/cli_test.cpp
+    tests/diagnostics/diagnostics_test.cpp
+    tests/file_reader/file_reader_test.cpp
+    tests/lexer/lexer_comments_test.cpp
+    tests/lexer/lexer_errors_test.cpp
+    tests/lexer/lexer_keywords_test.cpp
+    tests/lexer/lexer_numbers_test.cpp
+    tests/lexer/lexer_operators_test.cpp
+    tests/lexer/lexer_strings_test.cpp
+    tests/token/token_test.cpp
+)
+target_include_directories(spike_tests PRIVATE tests)
 target_link_libraries(spike_tests PRIVATE spike_core spike_warnings)
 
 string(REPLACE "." "\\." SPIKE_VERSION_REGEX "${PROJECT_VERSION}")

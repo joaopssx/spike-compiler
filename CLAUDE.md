@@ -28,7 +28,9 @@ Esta seção descreve o estado atual. Atualize-a quando a estrutura mudar (os pr
 CMakeLists.txt, README.md, CHANGELOG.md, LICENSE, CLAUDE.md, .clangd, .gitignore
 include/spike/   ast.hpp cli.hpp colors.hpp diagnostics.hpp file_reader.hpp lexer.hpp parser.hpp token.hpp
 src/             cli.cpp diagnostics.cpp file_reader.cpp lexer.cpp main.cpp parser.cpp token.cpp
-tests/           main_test.cpp, programs.cmake (incluído pelo CMakeLists.txt)
+tests/           main_test.cpp (main do executor e, por enquanto, os testes do parser), programs.cmake
+tests/support/   test_support.hpp (SPIKE_EXPECT, g_failures, tokens_of) e registry.hpp (run_<grupo>_tests)
+tests/<modulo>/  ast, cli, diagnostics, file_reader, lexer, token: um arquivo por assunto
 tests/programs/  valid/ e invalid/: programas .por usados como testes
 examples/        programas de exemplo; também rodam como testes válidos
 ```
@@ -38,7 +40,7 @@ Alvos do CMake:
 - `spike_warnings`: biblioteca INTERFACE com `-Wall -Wextra -Wpedantic` (GCC e Clang).
 - `spike_core`: biblioteca estática com tudo, menos o `main`.
 - `spike`: executável (`src/main.cpp`).
-- `spike_tests`: executável de testes (`tests/main_test.cpp`).
+- `spike_tests`: executável de testes (`tests/main_test.cpp` mais os arquivos de `tests/<modulo>/`, listados um a um).
 
 Testes no CTest: `spike_version_check` (roda `spike --version` e espera a versão do `project()`) e `spike_unit_tests` (espera a frase `all tests passed`). Cada `.por` em `examples/` e `tests/programs/valid/` vira um teste que roda `spike tokens` e espera `parse: OK`. Cada `.por` em `tests/programs/invalid/` começa com o código esperado (`e400_missing_entao.por`) e o teste exige `[E400]` na saída. Basta criar o arquivo e reconfigurar. C++17 sem extensões. A macro `SPIKE_VERSION` vem de `PROJECT_VERSION`.
 
@@ -148,9 +150,7 @@ cmake --build build -j
 ctest --test-dir build --output-on-failure
 ```
 
-`C:\msys64\ucrt64\bin` precisa vir antes de qualquer outro MinGW no PATH (o Git traz um `/mingw64/bin`). Se a ordem estiver errada, os executáveis carregam a `libstdc++-6.dll` errada e o CTest falha com `0xc0000139`. No Bash: `PATH="/c/msys64/ucrt64/bin:$PATH" ctest --test-dir build --output-on-failure`.
-
-No Linux/macOS, os mesmos comandos sem `-G Ninja`.
+`C:\msys64\ucrt64\bin` precisa vir antes de qualquer outro MinGW no PATH (o Git traz um `/mingw64/bin`). Se a ordem estiver errada, os executáveis carregam a `libstdc++-6.dll` errada e o CTest falha com `0xc0000139`. No Bash: `PATH="/c/msys64/ucrt64/bin:$PATH" ctest --test-dir build --output-on-failure`. No Linux/macOS, os mesmos comandos sem `-G Ninja`.
 
 O executável fica em `build/spike` (`build/spike.exe` no Windows). Os testes usam um executor próprio: a macro `SPIKE_EXPECT(cond)` conta falhas, e o programa imprime `all tests passed` quando não há nenhuma. O CTest procura exatamente essa frase. Nunca mude essa frase.
 
