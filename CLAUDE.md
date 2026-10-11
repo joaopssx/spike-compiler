@@ -25,7 +25,7 @@ Hoje só existem o Lexer e o Parser.
 Esta seção descreve o estado atual. Atualize-a quando a estrutura mudar (os prompts de refatoração fazem isso).
 
 ```
-CMakeLists.txt, README.md, CLAUDE.md, .clangd, .gitignore
+CMakeLists.txt, README.md, CHANGELOG.md, LICENSE, CLAUDE.md, .clangd, .gitignore
 include/spike/   ast.hpp cli.hpp colors.hpp diagnostics.hpp file_reader.hpp lexer.hpp parser.hpp token.hpp
 src/             cli.cpp diagnostics.cpp file_reader.cpp lexer.cpp main.cpp parser.cpp token.cpp
 tests/           main_test.cpp
@@ -38,7 +38,7 @@ Alvos do CMake:
 - `spike`: executável (`src/main.cpp`).
 - `spike_tests`: executável de testes (`tests/main_test.cpp`).
 
-Testes no CTest: `spike_version_check` (roda `spike --version` e espera `0.1`) e `spike_unit_tests` (espera a frase `all tests passed`). C++17 sem extensões. A macro `SPIKE_VERSION` é definida no CMake.
+Testes no CTest: `spike_version_check` (roda `spike --version` e espera a versão do `project()`) e `spike_unit_tests` (espera a frase `all tests passed`). C++17 sem extensões. A macro `SPIKE_VERSION` vem de `PROJECT_VERSION`.
 
 ## Convenções de código
 
@@ -177,6 +177,7 @@ Trabalho:
 13. Portabilidade: o produto precisa funcionar em Windows, Linux e macOS. Não use API só de POSIX ou só de Windows sem `#ifdef` e sem alternativa.
 14. Não adicione dependência externa (biblioteca C++, pacote npm etc.) sem perguntar, salvo quando o prompt mandar.
 15. Segurança: nunca monte comando de shell juntando texto do usuário. Execute programas passando os argumentos como lista.
+16. A versão do produto existe só em CMakeLists.txt (project VERSION). Nunca escreva o número em outro lugar.
 
 ## Plano
 

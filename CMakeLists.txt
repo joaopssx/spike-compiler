@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(Spike LANGUAGES CXX)
+project(Spike VERSION 0.1.6 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -37,7 +37,7 @@ add_library(spike_core STATIC
     include/spike/token.hpp
 )
 target_include_directories(spike_core PUBLIC include)
-target_compile_definitions(spike_core PUBLIC SPIKE_VERSION="0.1.0")
+target_compile_definitions(spike_core PUBLIC SPIKE_VERSION="${PROJECT_VERSION}")
 target_link_libraries(spike_core PRIVATE spike_warnings)
 
 # ---- CLI executable ----------------------------------------------------------
@@ -50,9 +50,10 @@ enable_testing()
 add_executable(spike_tests tests/main_test.cpp)
 target_link_libraries(spike_tests PRIVATE spike_core spike_warnings)
 
+string(REPLACE "." "\\." SPIKE_VERSION_REGEX "${PROJECT_VERSION}")
 add_test(NAME spike_version_check COMMAND spike --version)
 set_tests_properties(spike_version_check PROPERTIES
-    PASS_REGULAR_EXPRESSION "0\\.1"
+    PASS_REGULAR_EXPRESSION "${SPIKE_VERSION_REGEX}"
 )
 
 add_test(NAME spike_unit_tests COMMAND spike_tests)
