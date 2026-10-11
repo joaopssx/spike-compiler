@@ -14,6 +14,12 @@ void run_lexer_error_tests();
 void run_diagnostics_tests();
 void run_cli_tests();
 void run_ast_tests();
+void run_parser_program_tests();
+void run_parser_expr_literal_tests();
+void run_parser_expr_operator_tests();
+void run_parser_stmt_basic_tests();
+void run_parser_stmt_if_tests();
+void run_parser_stmt_loop_tests();
 
 } // namespace spike_tests
 

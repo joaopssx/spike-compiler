@@ -48,7 +48,7 @@ target_link_libraries(spike PRIVATE spike_core spike_warnings)
 enable_testing()
 
 add_executable(spike_tests
-    tests/main_test.cpp
+    tests/main.cpp
     tests/ast/ast_test.cpp
     tests/cli/cli_test.cpp
     tests/diagnostics/diagnostics_test.cpp
@@ -59,6 +59,12 @@ add_executable(spike_tests
     tests/lexer/lexer_numbers_test.cpp
     tests/lexer/lexer_operators_test.cpp
     tests/lexer/lexer_strings_test.cpp
+    tests/parser/expr_literals_test.cpp
+    tests/parser/expr_operators_test.cpp
+    tests/parser/program_test.cpp
+    tests/parser/stmt_basic_test.cpp
+    tests/parser/stmt_if_test.cpp
+    tests/parser/stmt_loops_test.cpp
     tests/token/token_test.cpp
 )
 target_include_directories(spike_tests PRIVATE tests)
