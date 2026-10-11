@@ -19,18 +19,29 @@ endif()
 # tecnicamente não precisariam estar listados aqui. Mantemos `ast.hpp` (e os
 # outros headers públicos) listados pra aparecer na lista de fontes do IDE e
 # pra qualquer ferramenta que itere sobre as sources do target encontrar.
-add_library(spike_core STATIC
-    src/file_reader.cpp
-    src/token.cpp
-    src/lexer.cpp
-    src/diagnostics.cpp
-    src/cli.cpp
+set(SPIKE_IO_SOURCES
+    src/io/file_reader.cpp
+)
+set(SPIKE_LEXER_SOURCES
+    src/lexer/token.cpp
+    src/lexer/lexer_core.cpp
+    src/lexer/lexer_scan.cpp
+    src/lexer/lexer_hints.hpp
+)
+set(SPIKE_DIAGNOSTICS_SOURCES
+    src/diagnostics/diagnostics.cpp
+)
+set(SPIKE_CLI_SOURCES
+    src/cli/cli.cpp
+)
+set(SPIKE_PARSER_SOURCES
     src/parser/parser_core.cpp
     src/parser/parser_program.cpp
     src/parser/parser_stmt.cpp
     src/parser/parser_control.cpp
     src/parser/parser_expr.cpp
-
+)
+set(SPIKE_PUBLIC_HEADERS
     include/spike/ast.hpp
     include/spike/cli.hpp
     include/spike/colors.hpp
@@ -40,7 +51,16 @@ add_library(spike_core STATIC
     include/spike/parser.hpp
     include/spike/token.hpp
 )
-target_include_directories(spike_core PUBLIC include)
+
+add_library(spike_core STATIC
+    ${SPIKE_IO_SOURCES}
+    ${SPIKE_LEXER_SOURCES}
+    ${SPIKE_DIAGNOSTICS_SOURCES}
+    ${SPIKE_CLI_SOURCES}
+    ${SPIKE_PARSER_SOURCES}
+    ${SPIKE_PUBLIC_HEADERS}
+)
+target_include_directories(spike_core PUBLIC include PRIVATE src)
 target_compile_definitions(spike_core PUBLIC SPIKE_VERSION="${PROJECT_VERSION}")
 target_link_libraries(spike_core PRIVATE spike_warnings)
 

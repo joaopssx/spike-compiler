@@ -23,11 +23,11 @@ Hoje só existem o Lexer e o Parser.
 ## Estrutura de pastas e alvos do CMake
 
 Esta seção descreve o estado atual. Atualize-a quando a estrutura mudar (os prompts de refatoração fazem isso).
-
 ```
 CMakeLists.txt, README.md, CHANGELOG.md, LICENSE, CLAUDE.md, .clangd, .gitignore
 include/spike/   ast.hpp cli.hpp colors.hpp diagnostics.hpp file_reader.hpp lexer.hpp parser.hpp token.hpp
-src/             cli.cpp diagnostics.cpp file_reader.cpp lexer.cpp main.cpp token.cpp
+src/             main.cpp; um módulo por pasta: io/ (file_reader), diagnostics/, cli/
+src/lexer/       token.cpp, lexer_core (laço principal, navegação, comentários), lexer_scan (números, textos, nomes), lexer_hints.hpp (interno)
 src/parser/      parser_core (navegação), parser_program (cabeçalho, var), parser_stmt (atribuição, escreva, leia), parser_control (se, laços), parser_expr (precedência)
 tests/           main.cpp (só chama os run_<grupo>_tests() e imprime o resultado), programs.cmake
 tests/support/   test_support.hpp (SPIKE_EXPECT, g_failures, tokens_of) e registry.hpp (run_<grupo>_tests)
@@ -39,7 +39,7 @@ examples/        programas de exemplo; também rodam como testes válidos
 Alvos do CMake:
 
 - `spike_warnings`: biblioteca INTERFACE com `-Wall -Wextra -Wpedantic` (GCC e Clang).
-- `spike_core`: biblioteca estática com tudo, menos o `main`.
+- `spike_core`: biblioteca estática com tudo, menos o `main`. As fontes ficam em listas por módulo (`SPIKE_LEXER_SOURCES` etc.). `src/` é include PRIVATE: headers internos de módulo ficam em `src/<modulo>/`, nunca em `include/`.
 - `spike`: executável (`src/main.cpp`).
 - `spike_tests`: executável de testes (`tests/main.cpp` mais os arquivos de `tests/<modulo>/`, listados um a um).
 
