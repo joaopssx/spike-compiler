@@ -1,0 +1,3 @@
+algoritmo "vazio"
+inicio
+fimalgoritmo

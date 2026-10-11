@@ -1,0 +1,3 @@
+inicio
+  escreval("oi")
+fimalgoritmo

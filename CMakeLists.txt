@@ -60,3 +60,5 @@ add_test(NAME spike_unit_tests COMMAND spike_tests)
 set_tests_properties(spike_unit_tests PROPERTIES
     PASS_REGULAR_EXPRESSION "all tests passed"
 )
+
+include(tests/programs.cmake)
