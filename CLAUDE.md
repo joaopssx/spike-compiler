@@ -27,7 +27,8 @@ Esta seção descreve o estado atual. Atualize-a quando a estrutura mudar (os pr
 ```
 CMakeLists.txt, README.md, CHANGELOG.md, LICENSE, CLAUDE.md, .clangd, .gitignore
 include/spike/   ast.hpp cli.hpp colors.hpp diagnostics.hpp file_reader.hpp lexer.hpp parser.hpp token.hpp
-src/             cli.cpp diagnostics.cpp file_reader.cpp lexer.cpp main.cpp parser.cpp token.cpp
+src/             cli.cpp diagnostics.cpp file_reader.cpp lexer.cpp main.cpp token.cpp
+src/parser/      parser_core (navegação), parser_program (cabeçalho, var), parser_stmt (atribuição, escreva, leia), parser_control (se, laços), parser_expr (precedência)
 tests/           main.cpp (só chama os run_<grupo>_tests() e imprime o resultado), programs.cmake
 tests/support/   test_support.hpp (SPIKE_EXPECT, g_failures, tokens_of) e registry.hpp (run_<grupo>_tests)
 tests/<modulo>/  ast, cli, diagnostics, file_reader, lexer, parser, token: um arquivo por assunto

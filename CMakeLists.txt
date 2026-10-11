@@ -25,7 +25,11 @@ add_library(spike_core STATIC
     src/lexer.cpp
     src/diagnostics.cpp
     src/cli.cpp
-    src/parser.cpp
+    src/parser/parser_core.cpp
+    src/parser/parser_program.cpp
+    src/parser/parser_stmt.cpp
+    src/parser/parser_control.cpp
+    src/parser/parser_expr.cpp
 
     include/spike/ast.hpp
     include/spike/cli.hpp
