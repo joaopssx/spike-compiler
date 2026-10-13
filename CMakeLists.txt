@@ -36,6 +36,7 @@ set(SPIKE_DIAGNOSTICS_SOURCES
 )
 set(SPIKE_CLI_SOURCES
     src/cli/cli.cpp
+    src/cli/console.cpp
 )
 set(SPIKE_PARSER_SOURCES
     src/parser/parser_core.cpp
@@ -49,6 +50,7 @@ set(SPIKE_PUBLIC_HEADERS
     include/spike/ast_enums.hpp
     include/spike/cli.hpp
     include/spike/colors.hpp
+    include/spike/console.hpp
     include/spike/diagnostics.hpp
     include/spike/file_reader.hpp
     include/spike/lexer.hpp
@@ -81,6 +83,7 @@ add_executable(spike_tests
     tests/ast/ast_test.cpp
     tests/ast/ast_enums_test.cpp
     tests/cli/cli_test.cpp
+    tests/cli/console_test.cpp
     tests/diagnostics/diagnostics_test.cpp
     tests/file_reader/file_reader_test.cpp
     tests/lexer/lexer_comments_test.cpp

@@ -13,6 +13,7 @@ void run_lexer_comment_tests();
 void run_lexer_error_tests();
 void run_diagnostics_tests();
 void run_cli_tests();
+void run_console_tests();
 void run_ast_tests();
 void run_ast_enum_tests();
 void run_parser_program_tests();

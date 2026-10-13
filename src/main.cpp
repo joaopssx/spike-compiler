@@ -1,5 +1,6 @@
 #include "spike/cli.hpp"
 #include "spike/colors.hpp"
+#include "spike/console.hpp"
 #include "spike/file_reader.hpp"
 #include "spike/lexer.hpp"
 #include "spike/parser.hpp"
@@ -150,7 +151,7 @@ int run_stub(const std::string& label) {
 } // namespace
 
 int main(int argc, char** argv) {
-    spike::init_colors();
+    spike::init_console();
 
     spike::CliArgs args = spike::parse_args(argc, argv);
 

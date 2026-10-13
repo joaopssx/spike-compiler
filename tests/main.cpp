@@ -19,6 +19,7 @@ int main() {
     spike_tests::run_lexer_error_tests();
     spike_tests::run_diagnostics_tests();
     spike_tests::run_cli_tests();
+    spike_tests::run_console_tests();
     spike_tests::run_ast_tests();
     spike_tests::run_ast_enum_tests();
     spike_tests::run_parser_program_tests();
