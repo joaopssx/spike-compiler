@@ -2,7 +2,7 @@
 
 ## O que é o Spike
 
-Spike é um compilador de Portugol para executável. Ele lê um arquivo `.por`, converte o programa para C e chama um compilador C (GCC ou Clang) para gerar o executável. Repositório: github.com/joaopssx/spike-compiler. Linguagem do compilador: C++17. Build: CMake. Autor: JP, estudante de Análise e Desenvolvimento de Sistemas. O alvo principal é Windows; Linux e macOS também precisam funcionar. O desenvolvimento acontece primeiro no Windows (MSYS2 UCRT64) e depois é conferido no Debian.
+Spike é um compilador de Portugol para executável. Ele lê um arquivo `.por`, converte o programa para C e chama um compilador C (GCC ou Clang) para gerar o executável. Repositório: github.com/joaopssx/spike-compiler. Linguagem do compilador: C++17. Build: CMake. Autor: JP, estudante de Análise e Desenvolvimento de Sistemas. Windows, Linux e macOS têm o mesmo nível de suporte. O desenvolvimento acontece primeiro no Windows (MSYS2 UCRT64) e depois é conferido no Debian.
 
 Público: estudantes brasileiros de introdução à programação.
 
@@ -34,6 +34,7 @@ tests/support/   test_support.hpp (SPIKE_EXPECT, g_failures, tokens_of) e regist
 tests/<modulo>/  ast, cli, diagnostics, file_reader, lexer, parser, token: um arquivo por assunto
 tests/programs/  valid/ e invalid/: programas .por usados como testes
 examples/        programas de exemplo; também rodam como testes válidos
+docs/            language.md (especificação), decisions.md (decisões de produto)
 ```
 
 Alvos do CMake:
@@ -69,45 +70,35 @@ AST:
 - `VarDecl{name, type: TypeKind, initializer, line, col}` (o parser nunca preenche `initializer`).
 - `Program{name, globals, body, line}`.
 
-## A linguagem hoje
+## A linguagem
+
+A especificação completa fica em `docs/language.md`: tipos, operadores, conversões, comandos, roadmap com a sintaxe proposta e erros de execução. Ela é a referência; se o código discordar dela, um dos dois tem bug. Exemplo do que o parser aceita hoje:
 
 ```
 algoritmo "exemplo"
 var
-  a, b : inteiro
-  nome : caractere
+  a : inteiro
 inicio
   a <- 10
-  b := a * 2 + 1
-  se b > 20 e nao (a = 5) entao
+  se a > 5 e nao (a = 7) entao
     escreval("grande")
-  senao
-    escreval("pequeno")
   fimse
-  para a de 1 ate 3 passo 1 faca
-    escreva(a, " ")
-  fimpara
 fimalgoritmo
 ```
 
-Regras léxicas:
+Detalhes do lexer que a especificação não cobre: o token `ATE_QUE` existe no enum, mas o lexer não o emite (`repita ... ate` usa `ATE`); escape desconhecido fica como barra mais o caractere.
 
-- Palavras-chave não diferenciam maiúsculas de minúsculas. `caracter` vale como `caractere`.
-- Palavras-chave: algoritmo fimalgoritmo inicio var inteiro real caractere caracter logico se entao senao fimse enquanto faca fimenquanto para de ate passo fimpara repita escreva escreval leia verdadeiro falso e ou nao.
-- Identificadores: letra ASCII ou `_`, seguida de letras ASCII, dígitos ou `_`. Letra acentuada num nome dá E001.
-- Números: dígitos com parte decimal opcional (`3.14`). `3.` dá E003.
-- Textos: entre aspas duplas, na mesma linha. Escapes `\"`, `\\`, `\n`, `\t`. Escape desconhecido fica como barra mais o caractere.
-- Comentários: `//` até o fim da linha e `{ ... }` em bloco, que pode ter várias linhas (sem fechar dá E004).
-- Operadores e símbolos: `+ - * / = <> < > <= >= <- := ( ) , : .`
-- O token `ATE_QUE` existe no enum, mas o lexer não o emite; `repita ... ate condicao` usa `ATE`.
+## Decisões de produto
 
-Regras do parser:
+Registradas em `docs/decisions.md` (13/10/2026):
 
-- Programa: `algoritmo "nome" [var ...] inicio ... fimalgoritmo`. O nome é um texto entre aspas.
-- Seção `var`: linhas `a, b : tipo`, sem valor inicial.
-- `escreva`, `escreval` e `leia` exigem parênteses. Atribuição: `nome <- expr` ou `nome := expr`.
-- `se ... entao ... [senao ...] fimse`; `enquanto ... faca ... fimenquanto`; `para v de a ate b [passo c] faca ... fimpara`; `repita ... ate condicao`.
-- Precedência, do mais fraco para o mais forte: `ou`, `e`, `nao`, comparações (`= <> < > <= >=`), `+ -`, `* /`, menos unário, valores e parênteses.
+1. Público: estudantes de introdução à programação.
+2. Dialeto: estilo VisuAlg, com extras documentados em `docs/language.md`.
+3. Compilador C: o Spike traz um embutido (o aluno não instala nada). O driver (035) procura o embutido primeiro; o 061 empacota.
+4. Sistemas: Windows, Linux e macOS no mesmo nível (CI, release e instalador nos três).
+5. `inteiro` de 64 bits; `/` sempre dá `real`; `div` é a divisão inteira.
+6. Nomes não diferenciam maiúsculas de minúsculas.
+7. Nomes só com letras ASCII; `média` dá erro.
 
 ## Diagnósticos
 
@@ -190,7 +181,7 @@ Os prompts são numerados de 020 a 076; cada um é uma tarefa e um commit.
 - B (023-028) Base: dividir arquivos grandes, enums na AST, especificação da linguagem.
 - C (029-041) Fatia vertical até o primeiro executável (v0.2).
 - D (042-058) Linguagem útil: operadores, constantes, vetores, funções, funções prontas, erros de execução, recuperação de erros, avisos, diagnósticos (v0.3).
-- E (059-064) Pronto para usar: CI, portabilidade, instalador do compilador C, release, sugestões, documentação (v0.4).
+- E (059-064) Pronto para usar: CI, portabilidade, compilador C embutido, release, sugestões, documentação (v0.4).
 - F (065-069) Ferramentas: extensão do VS Code, formatador, otimizador, fuzzing (v0.5).
 - G (070-076) Estável: interpretador, REPL, WebAssembly, servidor de linguagem, random, v1.0.
 
