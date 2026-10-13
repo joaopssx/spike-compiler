@@ -26,7 +26,7 @@ void test_stmt_se_then_only() {
     SPIKE_EXPECT(std::holds_alternative<spike::SeStmt>(r.program.body[0]->node));
     const auto& s = std::get<spike::SeStmt>(r.program.body[0]->node);
     SPIKE_EXPECT(std::holds_alternative<spike::BinaryExpr>(s.condition->node));
-    SPIKE_EXPECT(std::get<spike::BinaryExpr>(s.condition->node).op == ">");
+    SPIKE_EXPECT(std::get<spike::BinaryExpr>(s.condition->node).op == spike::BinaryOp::Gt);
     SPIKE_EXPECT(s.then_branch.size() == 1);
     SPIKE_EXPECT(s.else_branch.empty());
     SPIKE_EXPECT(std::holds_alternative<spike::EscrevaStmt>(s.then_branch[0]->node));

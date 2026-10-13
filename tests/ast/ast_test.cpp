@@ -31,11 +31,11 @@ void test_ast_binary_expr_is_recursive() {
     auto left  = spike::make_expr(spike::VarExpr{"x", 1, 1});
     auto right = spike::make_expr(spike::NumberExpr{1.0, true, 1, 5});
     auto sum   = spike::make_expr(
-        spike::BinaryExpr{"+", std::move(left), std::move(right), 1, 3});
+        spike::BinaryExpr{spike::BinaryOp::Add, std::move(left), std::move(right), 1, 3});
 
     SPIKE_EXPECT(std::holds_alternative<spike::BinaryExpr>(sum->node));
     const auto& bin = std::get<spike::BinaryExpr>(sum->node);
-    SPIKE_EXPECT(bin.op == "+");
+    SPIKE_EXPECT(bin.op == spike::BinaryOp::Add);
     SPIKE_EXPECT(std::holds_alternative<spike::VarExpr>(bin.left->node));
     SPIKE_EXPECT(std::holds_alternative<spike::NumberExpr>(bin.right->node));
 }
@@ -43,7 +43,7 @@ void test_ast_binary_expr_is_recursive() {
 void test_ast_program_assembles() {
     spike::Program prog;
     prog.name = "calc";
-    prog.globals.push_back(spike::VarDecl{"x", "inteiro", nullptr, 2, 4});
+    prog.globals.push_back(spike::VarDecl{"x", spike::TypeKind::Integer, nullptr, 2, 4});
 
     // x <- 42
     auto val = spike::make_expr(spike::NumberExpr{42.0, true, 4, 9});
@@ -52,7 +52,7 @@ void test_ast_program_assembles() {
 
     // se x > 0 entao escreval("positivo") fimse
     auto cond = spike::make_expr(spike::BinaryExpr{
-        ">",
+        spike::BinaryOp::Gt,
         spike::make_expr(spike::VarExpr{"x", 5, 7}),
         spike::make_expr(spike::NumberExpr{0.0, true, 5, 11}),
         5, 9});

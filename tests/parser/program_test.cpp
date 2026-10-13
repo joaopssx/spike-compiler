@@ -31,7 +31,7 @@ void test_parser_single_var_decl() {
     SPIKE_EXPECT(r.had_error == false);
     SPIKE_EXPECT(r.program.globals.size() == 1);
     SPIKE_EXPECT(r.program.globals[0].name == "x");
-    SPIKE_EXPECT(r.program.globals[0].type == "inteiro");
+    SPIKE_EXPECT(r.program.globals[0].type == spike::TypeKind::Integer);
     SPIKE_EXPECT(r.program.globals[0].initializer == nullptr);
 }
 
@@ -48,7 +48,7 @@ void test_parser_multi_name_var_decl() {
     SPIKE_EXPECT(r.program.globals[1].name == "b");
     SPIKE_EXPECT(r.program.globals[2].name == "c");
     for (const auto& g : r.program.globals) {
-        SPIKE_EXPECT(g.type == "real");
+        SPIKE_EXPECT(g.type == spike::TypeKind::Real);
     }
 }
 
@@ -63,9 +63,9 @@ void test_parser_multiple_var_lines() {
         "fimalgoritmo\n");
     SPIKE_EXPECT(r.had_error == false);
     SPIKE_EXPECT(r.program.globals.size() == 3);
-    SPIKE_EXPECT(r.program.globals[0].type == "inteiro");
-    SPIKE_EXPECT(r.program.globals[1].type == "caractere");
-    SPIKE_EXPECT(r.program.globals[2].type == "logico");
+    SPIKE_EXPECT(r.program.globals[0].type == spike::TypeKind::Integer);
+    SPIKE_EXPECT(r.program.globals[1].type == spike::TypeKind::String);
+    SPIKE_EXPECT(r.program.globals[2].type == spike::TypeKind::Bool);
 }
 
 void test_parser_E100_missing_algoritmo() {
@@ -128,7 +128,7 @@ void test_parser_recovers_to_next_line_after_var_error() {
     // y deveria ter sido capturado mesmo depois do erro em x.
     bool found_y = false;
     for (const auto& g : r.program.globals) {
-        if (g.name == "y" && g.type == "inteiro") found_y = true;
+        if (g.name == "y" && g.type == spike::TypeKind::Integer) found_y = true;
     }
     SPIKE_EXPECT(found_y);
 }

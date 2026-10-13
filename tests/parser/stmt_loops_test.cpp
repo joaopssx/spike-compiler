@@ -27,7 +27,7 @@ void test_stmt_enquanto_basic() {
     SPIKE_EXPECT(std::holds_alternative<spike::EnquantoStmt>(r.program.body[0]->node));
     const auto& w = std::get<spike::EnquantoStmt>(r.program.body[0]->node);
     SPIKE_EXPECT(std::holds_alternative<spike::BinaryExpr>(w.condition->node));
-    SPIKE_EXPECT(std::get<spike::BinaryExpr>(w.condition->node).op == "<");
+    SPIKE_EXPECT(std::get<spike::BinaryExpr>(w.condition->node).op == spike::BinaryOp::Lt);
     SPIKE_EXPECT(w.body.size() == 1);
     SPIKE_EXPECT(std::holds_alternative<spike::AssignStmt>(w.body[0]->node));
 }
@@ -67,7 +67,7 @@ void test_stmt_para_with_step() {
     // step é UnaryExpr("-", NumberExpr(1))
     SPIKE_EXPECT(std::holds_alternative<spike::UnaryExpr>(p.step->node));
     const auto& neg = std::get<spike::UnaryExpr>(p.step->node);
-    SPIKE_EXPECT(neg.op == "-");
+    SPIKE_EXPECT(neg.op == spike::UnaryOp::Neg);
     SPIKE_EXPECT(std::get<spike::NumberExpr>(neg.operand->node).value == 1.0);
 }
 
@@ -160,7 +160,7 @@ void test_stmt_repita_basic() {
     SPIKE_EXPECT(rp.body.size() == 1);
     SPIKE_EXPECT(std::holds_alternative<spike::LeiaStmt>(rp.body[0]->node));
     SPIKE_EXPECT(std::holds_alternative<spike::BinaryExpr>(rp.condition->node));
-    SPIKE_EXPECT(std::get<spike::BinaryExpr>(rp.condition->node).op == ">");
+    SPIKE_EXPECT(std::get<spike::BinaryExpr>(rp.condition->node).op == spike::BinaryOp::Gt);
 }
 
 void test_stmt_repita_empty_body() {

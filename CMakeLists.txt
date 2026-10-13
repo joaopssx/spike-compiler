@@ -19,6 +19,9 @@ endif()
 # tecnicamente não precisariam estar listados aqui. Mantemos `ast.hpp` (e os
 # outros headers públicos) listados pra aparecer na lista de fontes do IDE e
 # pra qualquer ferramenta que itere sobre as sources do target encontrar.
+set(SPIKE_AST_SOURCES
+    src/ast/ast_enums.cpp
+)
 set(SPIKE_IO_SOURCES
     src/io/file_reader.cpp
 )
@@ -43,6 +46,7 @@ set(SPIKE_PARSER_SOURCES
 )
 set(SPIKE_PUBLIC_HEADERS
     include/spike/ast.hpp
+    include/spike/ast_enums.hpp
     include/spike/cli.hpp
     include/spike/colors.hpp
     include/spike/diagnostics.hpp
@@ -53,6 +57,7 @@ set(SPIKE_PUBLIC_HEADERS
 )
 
 add_library(spike_core STATIC
+    ${SPIKE_AST_SOURCES}
     ${SPIKE_IO_SOURCES}
     ${SPIKE_LEXER_SOURCES}
     ${SPIKE_DIAGNOSTICS_SOURCES}
@@ -74,6 +79,7 @@ enable_testing()
 add_executable(spike_tests
     tests/main.cpp
     tests/ast/ast_test.cpp
+    tests/ast/ast_enums_test.cpp
     tests/cli/cli_test.cpp
     tests/diagnostics/diagnostics_test.cpp
     tests/file_reader/file_reader_test.cpp

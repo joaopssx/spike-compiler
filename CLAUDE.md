@@ -25,8 +25,8 @@ Hoje só existem o Lexer e o Parser.
 Esta seção descreve o estado atual. Atualize-a quando a estrutura mudar (os prompts de refatoração fazem isso).
 ```
 CMakeLists.txt, README.md, CHANGELOG.md, LICENSE, CLAUDE.md, .clangd, .gitignore
-include/spike/   ast.hpp cli.hpp colors.hpp diagnostics.hpp file_reader.hpp lexer.hpp parser.hpp token.hpp
-src/             main.cpp; um módulo por pasta: io/ (file_reader), diagnostics/, cli/
+include/spike/   ast.hpp ast_enums.hpp cli.hpp colors.hpp diagnostics.hpp file_reader.hpp lexer.hpp parser.hpp token.hpp
+src/             main.cpp; um módulo por pasta: ast/ (ast_enums), io/ (file_reader), diagnostics/, cli/
 src/lexer/       token.cpp, lexer_core (laço principal, navegação, comentários), lexer_scan (números, textos, nomes), lexer_hints.hpp (interno)
 src/parser/      parser_core (navegação), parser_program (cabeçalho, var), parser_stmt (atribuição, escreva, leia), parser_control (se, laços), parser_expr (precedência)
 tests/           main.cpp (só chama os run_<grupo>_tests() e imprime o resultado), programs.cmake
@@ -50,7 +50,7 @@ Testes no CTest: `spike_version_check` (roda `spike --version` e espera a versã
 - `namespace spike`; guardas de header `SPIKE_<NOME>_HPP`; extensões `.hpp` e `.cpp`.
 - Todo nó da AST guarda `line` e `col`.
 - A AST usa `std::variant` dentro dos structs envelope `Expr` e `Stmt`, com `std::unique_ptr` (`ExprPtr`, `StmtPtr`, `StmtList`) e os helpers `make_expr` e `make_stmt`. Não há classes virtuais.
-- Operadores (`op`) e tipos (`type`) da AST são `std::string` ("+", "e", "inteiro"...).
+- Operadores e tipos da AST são enums (`ast_enums.hpp`): `BinaryOp` (Add Sub Mul Div Eq Ne Lt Gt Le Ge And Or), `UnaryOp` (Neg Not), `TypeKind` (None Invalid Integer Real String Bool). `to_string(op)` devolve o símbolo do fonte ("+", "e", "<>"); `type_name(kind)` devolve o nome em português ("inteiro"; None e Invalid dão "?"). `caracter` e `caractere` viram `String`; tipo desconhecido dá E104 e `Invalid`.
 - Cada fase tem a mesma forma: recebe a entrada, acumula erros num objeto `Diagnostics` e expõe `had_error()` e `diagnostics()`.
 
 API pública:
@@ -64,9 +64,9 @@ API pública:
 
 AST:
 
-- Expressões: `NumberExpr{value, is_integer}`, `StringExpr`, `BoolExpr`, `VarExpr{name}`, `BinaryExpr{op, left, right}`, `UnaryExpr{op, operand}`.
+- Expressões: `NumberExpr{value, is_integer}`, `StringExpr`, `BoolExpr`, `VarExpr{name}`, `BinaryExpr{op: BinaryOp, left, right}`, `UnaryExpr{op: UnaryOp, operand}`.
 - Comandos: `AssignStmt{var_name, value}`, `EscrevaStmt{args, newline}`, `LeiaStmt{var_names}`, `SeStmt{condition, then_branch, else_branch}`, `EnquantoStmt{condition, body}`, `ParaStmt{var_name, from, to, step, body}`, `RepitaStmt{body, condition}`.
-- `VarDecl{name, type, initializer, line, col}` (o parser nunca preenche `initializer`).
+- `VarDecl{name, type: TypeKind, initializer, line, col}` (o parser nunca preenche `initializer`).
 - `Program{name, globals, body, line}`.
 
 ## A linguagem hoje

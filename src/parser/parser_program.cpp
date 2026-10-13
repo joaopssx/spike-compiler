@@ -8,13 +8,13 @@ namespace spike {
 
 namespace {
 
-const char* type_name_for(TokenType t) {
+TypeKind type_kind_for(TokenType t) {
     switch (t) {
-        case TokenType::INTEIRO:   return "inteiro";
-        case TokenType::REAL:      return "real";
-        case TokenType::CARACTERE: return "caractere";
-        case TokenType::LOGICO:    return "logico";
-        default:                   return "";
+        case TokenType::INTEIRO:   return TypeKind::Integer;
+        case TokenType::REAL:      return TypeKind::Real;
+        case TokenType::CARACTERE: return TypeKind::String;
+        case TokenType::LOGICO:    return TypeKind::Bool;
+        default:                   return TypeKind::Invalid;
     }
 }
 
@@ -136,23 +136,23 @@ std::vector<VarDecl> Parser::parse_var_section() {
             continue;
         }
 
-        std::string type_str;
+        TypeKind type = TypeKind::Invalid;
         if (is_type_keyword(peek().type)) {
-            type_str = type_name_for(peek().type);
+            type = type_kind_for(peek().type);
             advance();
         } else {
             const Token& bad = peek();
             diags_.error("E104",
                          std::string("tipo inválido '") + bad.lexeme + "'",
                          bad.line, bad.col, kHintE104);
-            // Avança 1 pra evitar loop infinito; type fica "".
+            // Avança 1 pra evitar loop infinito; type fica Invalid.
             if (!is_at_end()) advance();
         }
 
         for (const Token& nt : names) {
             VarDecl vd;
             vd.name = nt.lexeme;
-            vd.type = type_str;
+            vd.type = type;
             vd.initializer = nullptr;
             vd.line = nt.line;
             vd.col = nt.col;

@@ -1,6 +1,8 @@
 #ifndef SPIKE_AST_HPP
 #define SPIKE_AST_HPP
 
+#include "spike/ast_enums.hpp"
+
 #include <memory>
 #include <string>
 #include <variant>
@@ -42,14 +44,14 @@ struct VarExpr {
 };
 
 struct BinaryExpr {
-    std::string op;   // "+", "-", "*", "/", "=", "<>", "<", ">", "<=", ">=", "e", "ou"
+    BinaryOp op = BinaryOp::Add;
     ExprPtr left;
     ExprPtr right;
     int line = 0, col = 0;
 };
 
 struct UnaryExpr {
-    std::string op;  // "nao", "-"
+    UnaryOp op = UnaryOp::Neg;
     ExprPtr operand;
     int line = 0, col = 0;
 };
@@ -130,7 +132,7 @@ struct Stmt {
 
 struct VarDecl {
     std::string name;
-    std::string type;         // "inteiro", "real", "caractere", "logico"
+    TypeKind    type = TypeKind::None;
     ExprPtr     initializer;  // nullptr se não tem valor inicial
     int line = 0, col = 0;
 };

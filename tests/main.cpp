@@ -20,6 +20,7 @@ int main() {
     spike_tests::run_diagnostics_tests();
     spike_tests::run_cli_tests();
     spike_tests::run_ast_tests();
+    spike_tests::run_ast_enum_tests();
     spike_tests::run_parser_program_tests();
     spike_tests::run_parser_expr_literal_tests();
     spike_tests::run_parser_expr_operator_tests();

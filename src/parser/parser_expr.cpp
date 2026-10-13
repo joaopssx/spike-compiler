@@ -7,25 +7,21 @@ namespace spike {
 
 namespace {
 
-// Forma canônica (lowercase, símbolo) do operador, independente de como o
-// usuário digitou. `E`/`OU`/`NAO` viram `"e"`/`"ou"`/`"nao"`; símbolos são
-// passados como o lexema.
-const char* canonical_op(TokenType t) {
+BinaryOp binary_op_for(TokenType t) {
     switch (t) {
-        case TokenType::PLUS:       return "+";
-        case TokenType::MINUS:      return "-";
-        case TokenType::STAR:       return "*";
-        case TokenType::SLASH:      return "/";
-        case TokenType::EQUAL:      return "=";
-        case TokenType::NOT_EQUAL:  return "<>";
-        case TokenType::LESS:       return "<";
-        case TokenType::GREATER:    return ">";
-        case TokenType::LESS_EQ:    return "<=";
-        case TokenType::GREATER_EQ: return ">=";
-        case TokenType::E:          return "e";
-        case TokenType::OU:         return "ou";
-        case TokenType::NAO:        return "nao";
-        default:                    return "?";
+        case TokenType::PLUS:       return BinaryOp::Add;
+        case TokenType::MINUS:      return BinaryOp::Sub;
+        case TokenType::STAR:       return BinaryOp::Mul;
+        case TokenType::SLASH:      return BinaryOp::Div;
+        case TokenType::EQUAL:      return BinaryOp::Eq;
+        case TokenType::NOT_EQUAL:  return BinaryOp::Ne;
+        case TokenType::LESS:       return BinaryOp::Lt;
+        case TokenType::GREATER:    return BinaryOp::Gt;
+        case TokenType::LESS_EQ:    return BinaryOp::Le;
+        case TokenType::GREATER_EQ: return BinaryOp::Ge;
+        case TokenType::E:          return BinaryOp::And;
+        case TokenType::OU:         return BinaryOp::Or;
+        default:                    return BinaryOp::Add;
     }
 }
 
@@ -43,7 +39,7 @@ ExprPtr Parser::parse_or() {
         Token op = advance();
         ExprPtr right = parse_and();
         left = make_expr(BinaryExpr{
-            canonical_op(op.type), std::move(left), std::move(right),
+            binary_op_for(op.type), std::move(left), std::move(right),
             op.line, op.col});
     }
     return left;
@@ -55,7 +51,7 @@ ExprPtr Parser::parse_and() {
         Token op = advance();
         ExprPtr right = parse_not();
         left = make_expr(BinaryExpr{
-            canonical_op(op.type), std::move(left), std::move(right),
+            binary_op_for(op.type), std::move(left), std::move(right),
             op.line, op.col});
     }
     return left;
@@ -66,7 +62,7 @@ ExprPtr Parser::parse_not() {
         Token op = advance();
         ExprPtr operand = parse_not();  // recursivo: "nao nao x" funciona
         return make_expr(UnaryExpr{
-            "nao", std::move(operand), op.line, op.col});
+            UnaryOp::Not, std::move(operand), op.line, op.col});
     }
     return parse_comparison();
 }
@@ -79,7 +75,7 @@ ExprPtr Parser::parse_comparison() {
         Token op = advance();
         ExprPtr right = parse_term();
         left = make_expr(BinaryExpr{
-            canonical_op(op.type), std::move(left), std::move(right),
+            binary_op_for(op.type), std::move(left), std::move(right),
             op.line, op.col});
     }
     return left;
@@ -91,7 +87,7 @@ ExprPtr Parser::parse_term() {
         Token op = advance();
         ExprPtr right = parse_factor();
         left = make_expr(BinaryExpr{
-            canonical_op(op.type), std::move(left), std::move(right),
+            binary_op_for(op.type), std::move(left), std::move(right),
             op.line, op.col});
     }
     return left;
@@ -103,7 +99,7 @@ ExprPtr Parser::parse_factor() {
         Token op = advance();
         ExprPtr right = parse_unary();
         left = make_expr(BinaryExpr{
-            canonical_op(op.type), std::move(left), std::move(right),
+            binary_op_for(op.type), std::move(left), std::move(right),
             op.line, op.col});
     }
     return left;
@@ -114,7 +110,7 @@ ExprPtr Parser::parse_unary() {
         Token op = advance();
         ExprPtr operand = parse_unary();  // recursivo: "--x" funciona
         return make_expr(UnaryExpr{
-            "-", std::move(operand), op.line, op.col});
+            UnaryOp::Neg, std::move(operand), op.line, op.col});
     }
     return parse_primary();
 }

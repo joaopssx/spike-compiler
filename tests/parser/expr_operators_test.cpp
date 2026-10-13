@@ -18,7 +18,7 @@ void test_expr_addition() {
     SPIKE_EXPECT(r.had_error == false);
     SPIKE_EXPECT(std::holds_alternative<spike::BinaryExpr>(r.expr->node));
     const auto& b = std::get<spike::BinaryExpr>(r.expr->node);
-    SPIKE_EXPECT(b.op == "+");
+    SPIKE_EXPECT(b.op == spike::BinaryOp::Add);
     SPIKE_EXPECT(std::holds_alternative<spike::VarExpr>(b.left->node));
     SPIKE_EXPECT(std::get<spike::VarExpr>(b.left->node).name == "x");
     SPIKE_EXPECT(std::holds_alternative<spike::NumberExpr>(b.right->node));
@@ -30,7 +30,7 @@ void test_expr_unary_not() {
     SPIKE_EXPECT(r.had_error == false);
     SPIKE_EXPECT(std::holds_alternative<spike::UnaryExpr>(r.expr->node));
     const auto& u = std::get<spike::UnaryExpr>(r.expr->node);
-    SPIKE_EXPECT(u.op == "nao");
+    SPIKE_EXPECT(u.op == spike::UnaryOp::Not);
     SPIKE_EXPECT(std::holds_alternative<spike::BoolExpr>(u.operand->node));
     SPIKE_EXPECT(std::get<spike::BoolExpr>(u.operand->node).value == true);
 }
@@ -41,9 +41,9 @@ void test_expr_paren_changes_precedence() {
     SPIKE_EXPECT(r.had_error == false);
     SPIKE_EXPECT(std::holds_alternative<spike::BinaryExpr>(r.expr->node));
     const auto& mul = std::get<spike::BinaryExpr>(r.expr->node);
-    SPIKE_EXPECT(mul.op == "*");
+    SPIKE_EXPECT(mul.op == spike::BinaryOp::Mul);
     SPIKE_EXPECT(std::holds_alternative<spike::BinaryExpr>(mul.left->node));
-    SPIKE_EXPECT(std::get<spike::BinaryExpr>(mul.left->node).op == "+");
+    SPIKE_EXPECT(std::get<spike::BinaryExpr>(mul.left->node).op == spike::BinaryOp::Add);
     SPIKE_EXPECT(std::holds_alternative<spike::NumberExpr>(mul.right->node));
     SPIKE_EXPECT(std::get<spike::NumberExpr>(mul.right->node).value == 2.0);
 }
@@ -53,11 +53,11 @@ void test_expr_precedence_without_parens() {
     auto r = parse_expression("1 + 2 * 3");
     SPIKE_EXPECT(r.had_error == false);
     const auto& add = std::get<spike::BinaryExpr>(r.expr->node);
-    SPIKE_EXPECT(add.op == "+");
+    SPIKE_EXPECT(add.op == spike::BinaryOp::Add);
     SPIKE_EXPECT(std::holds_alternative<spike::NumberExpr>(add.left->node));
     SPIKE_EXPECT(std::get<spike::NumberExpr>(add.left->node).value == 1.0);
     const auto& mul = std::get<spike::BinaryExpr>(add.right->node);
-    SPIKE_EXPECT(mul.op == "*");
+    SPIKE_EXPECT(mul.op == spike::BinaryOp::Mul);
 }
 
 void test_expr_comparison_lower_than_arithmetic() {
@@ -65,7 +65,7 @@ void test_expr_comparison_lower_than_arithmetic() {
     auto r = parse_expression("a + 1 < b * 2");
     SPIKE_EXPECT(r.had_error == false);
     const auto& cmp = std::get<spike::BinaryExpr>(r.expr->node);
-    SPIKE_EXPECT(cmp.op == "<");
+    SPIKE_EXPECT(cmp.op == spike::BinaryOp::Lt);
 }
 
 void test_expr_and_lower_than_comparison() {
@@ -73,23 +73,23 @@ void test_expr_and_lower_than_comparison() {
     auto r = parse_expression("a > 1 e b < 2");
     SPIKE_EXPECT(r.had_error == false);
     const auto& and_node = std::get<spike::BinaryExpr>(r.expr->node);
-    SPIKE_EXPECT(and_node.op == "e");
-    SPIKE_EXPECT(std::get<spike::BinaryExpr>(and_node.left->node).op == ">");
-    SPIKE_EXPECT(std::get<spike::BinaryExpr>(and_node.right->node).op == "<");
+    SPIKE_EXPECT(and_node.op == spike::BinaryOp::And);
+    SPIKE_EXPECT(std::get<spike::BinaryExpr>(and_node.left->node).op == spike::BinaryOp::Gt);
+    SPIKE_EXPECT(std::get<spike::BinaryExpr>(and_node.right->node).op == spike::BinaryOp::Lt);
 }
 
 void test_expr_or_keyword_case_insensitive() {
-    // Lexer normaliza keywords no match; canonical_op força lowercase no op.
+    // Lexer normaliza keywords no match; binary_op_for converte o token no enum.
     auto r = parse_expression("verdadeiro OU falso");
     SPIKE_EXPECT(r.had_error == false);
-    SPIKE_EXPECT(std::get<spike::BinaryExpr>(r.expr->node).op == "ou");
+    SPIKE_EXPECT(std::get<spike::BinaryExpr>(r.expr->node).op == spike::BinaryOp::Or);
 }
 
 void test_expr_unary_minus() {
     auto r = parse_expression("-x");
     SPIKE_EXPECT(r.had_error == false);
     const auto& u = std::get<spike::UnaryExpr>(r.expr->node);
-    SPIKE_EXPECT(u.op == "-");
+    SPIKE_EXPECT(u.op == spike::UnaryOp::Neg);
     SPIKE_EXPECT(std::get<spike::VarExpr>(u.operand->node).name == "x");
 }
 
