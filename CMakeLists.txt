@@ -54,6 +54,21 @@ set(SPIKE_SEMANTIC_SOURCES
     src/semantic/semantic_control.cpp
     src/semantic/semantic_internal.hpp
 )
+set(SPIKE_RUNTIME_TEXT_CPP "${CMAKE_BINARY_DIR}/generated/runtime_text.cpp")
+add_custom_command(
+    OUTPUT "${SPIKE_RUNTIME_TEXT_CPP}"
+    COMMAND ${CMAKE_COMMAND}
+        "-DINPUT=${CMAKE_SOURCE_DIR}/runtime/spike_runtime.h"
+        "-DOUTPUT=${SPIKE_RUNTIME_TEXT_CPP}"
+        -P "${CMAKE_SOURCE_DIR}/cmake/embed_runtime.cmake"
+    DEPENDS "${CMAKE_SOURCE_DIR}/runtime/spike_runtime.h" "${CMAKE_SOURCE_DIR}/cmake/embed_runtime.cmake"
+    COMMENT "Embedding the C runtime"
+    VERBATIM
+)
+set(SPIKE_RUNTIME_SOURCES
+    "${SPIKE_RUNTIME_TEXT_CPP}"
+    runtime/spike_runtime.h
+)
 set(SPIKE_PUBLIC_HEADERS
     include/spike/ast.hpp
     include/spike/ast_enums.hpp
@@ -64,6 +79,7 @@ set(SPIKE_PUBLIC_HEADERS
     include/spike/file_reader.hpp
     include/spike/lexer.hpp
     include/spike/parser.hpp
+    include/spike/runtime_text.hpp
     include/spike/semantic.hpp
     include/spike/symbol_table.hpp
     include/spike/token.hpp
@@ -77,6 +93,7 @@ add_library(spike_core STATIC
     ${SPIKE_CLI_SOURCES}
     ${SPIKE_PARSER_SOURCES}
     ${SPIKE_SEMANTIC_SOURCES}
+    ${SPIKE_RUNTIME_SOURCES}
     ${SPIKE_PUBLIC_HEADERS}
 )
 target_include_directories(spike_core PUBLIC include PRIVATE src)
@@ -117,6 +134,7 @@ add_executable(spike_tests
     tests/semantic/semantic_operators_test.cpp
     tests/semantic/semantic_programs_test.cpp
     tests/semantic/symbol_table_test.cpp
+    tests/runtime/runtime_text_test.cpp
     tests/token/token_test.cpp
 )
 target_include_directories(spike_tests PRIVATE tests)
@@ -135,3 +153,4 @@ set_tests_properties(spike_unit_tests PROPERTIES
 )
 
 include(tests/programs.cmake)
+include(tests/runtime.cmake)

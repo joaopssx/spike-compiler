@@ -107,7 +107,7 @@ From the loosest binding to the tightest:
 `escreva(a, b, ...)` writes each value in order, with no separator. `escreval` does the same and then starts a new line. `escreval()` only starts a new line.
 
 - `inteiro` is written in full: `42`, `-7`.
-- `real` is written in its shortest form that keeps the value, always with a decimal point: `3.5`, `2.0`, `0.1`.
+- `real` is written with up to 10 significant digits and no trailing zeros, as in VisuAlg: `3.5`, `0.1`, and `7` for `7.0`. The decimal separator is always a point, whatever the system language. Very large or very small values use exponent notation (`1e+20`).
 - `logico` is written as `verdadeiro` or `falso`.
 
 ### leia
@@ -116,8 +116,8 @@ From the loosest binding to the tightest:
 
 - `inteiro` and `real` accept spaces around the number. `real` accepts `3.5` and `3,5`.
 - `caractere` takes the whole line as typed.
-- `logico` accepts `verdadeiro` or `falso`, in any case.
-- Anything else is runtime error R003.
+- `logico` accepts `verdadeiro`, `falso`, `v`, `f`, `sim` or `nao`, in any case.
+- Anything else is runtime error R003. If the input ends before a line could be read, it is R007.
 
 ### se
 
@@ -276,5 +276,7 @@ A compiled program stops at the first runtime error. It prints a message in Port
 | R004 | `paraInteiro` or `paraReal` got invalid text |
 | R005 | math function outside its domain (`raiz` of a negative, `log` of zero or less) |
 | R006 | `para` with a step of 0 |
+| R007 | `leia` reached the end of the input |
+| R008 | the program ran out of memory |
 
 The numbering is proposed and becomes final in v0.3.

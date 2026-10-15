@@ -675,3 +675,41 @@ inicio
   fimpara
 fimalgoritmo
 ```
+
+---
+
+# Erros de execução
+
+Estes erros acontecem quando o programa já compilou e está rodando. A mensagem começa com `erro de execução[R...]`, mostra a linha do `.por` onde aconteceu, e o programa termina com o código de saída 101.
+
+## R001 — divisão por zero
+
+**Mensagem:** `divisão por zero`
+
+**Quando acontece:** o divisor de `/` (e, quando existirem, de `div` e `mod`) vale zero no momento da conta.
+
+**Como corrigir:** confira o divisor antes de dividir: `se b <> 0 entao ... fimse`.
+
+## R003 — entrada inválida
+
+**Mensagem:** `o valor digitado não é um número inteiro` (ou `não é um número`, ou `digite verdadeiro ou falso (também valem v, f, sim e nao)`)
+
+**Quando acontece:** o `leia` recebeu um texto que não combina com o tipo da variável. Por exemplo, `abc` para uma variável `inteiro`, ou `3.5` para um `inteiro`.
+
+**Como corrigir:** digite um valor do tipo certo. Para `real`, valem `3.5` e `3,5`.
+
+## R007 — a entrada terminou
+
+**Mensagem:** `a entrada terminou antes do 'leia'`
+
+**Quando acontece:** o programa pediu um valor, mas não havia mais nada para ler. Isso aparece quando a entrada vem de um arquivo (`programa < dados.txt`) com menos linhas do que o programa precisa.
+
+**Como corrigir:** coloque uma linha na entrada para cada valor que o programa lê.
+
+## R008 — memória insuficiente
+
+**Mensagem:** `memória insuficiente`
+
+**Quando acontece:** o programa criou textos demais e o computador ficou sem memória. Na prática, só acontece num laço que junta textos sem parar.
+
+**Como corrigir:** confira se o laço termina.

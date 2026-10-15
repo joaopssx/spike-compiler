@@ -29,6 +29,7 @@ void run_semantic_operator_tests();
 void run_semantic_assign_tests();
 void run_semantic_control_tests();
 void run_semantic_program_tests();
+void run_runtime_text_tests();
 
 } // namespace spike_tests
 
