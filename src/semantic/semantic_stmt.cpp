@@ -17,8 +17,7 @@ void SemanticAnalyzer::check_stmt(const Stmt& stmt) {
         [this](const auto& node) {
             using Node = std::decay_t<decltype(node)>;
             if constexpr (std::is_same_v<Node, AssignStmt>) {
-                check_expr(node.value);
-                mark_assigned(node.var_name, node.line, node.col);
+                check_assign(node);
             } else if constexpr (std::is_same_v<Node, EscrevaStmt>) {
                 for (const ExprPtr& arg : node.args) check_expr(arg);
             } else if constexpr (std::is_same_v<Node, LeiaStmt>) {

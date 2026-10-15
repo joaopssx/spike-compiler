@@ -25,6 +25,10 @@ const SymbolTable& SemanticAnalyzer::symbols() const {
     return symbols_;
 }
 
+const std::unordered_map<const Expr*, TypeKind>& SemanticAnalyzer::expr_types() const {
+    return expr_types_;
+}
+
 void SemanticAnalyzer::declare_globals() {
     for (const VarDecl& decl : program_.globals) {
         if (symbols_.declare(decl.name, decl.type, decl.line, decl.col)) continue;
@@ -44,10 +48,6 @@ Symbol* SemanticAnalyzer::resolve(const std::string& name, int line, int col) {
                      line, col, "declare '" + name + "' na seção var.");
     }
     return nullptr;
-}
-
-void SemanticAnalyzer::mark_read(const std::string& name, int line, int col) {
-    if (Symbol* symbol = resolve(name, line, col)) symbol->used = true;
 }
 
 void SemanticAnalyzer::mark_assigned(const std::string& name, int line, int col) {

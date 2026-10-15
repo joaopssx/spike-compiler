@@ -50,6 +50,8 @@ set(SPIKE_SEMANTIC_SOURCES
     src/semantic/semantic_core.cpp
     src/semantic/semantic_expr.cpp
     src/semantic/semantic_stmt.cpp
+    src/semantic/semantic_types.cpp
+    src/semantic/semantic_internal.hpp
 )
 set(SPIKE_PUBLIC_HEADERS
     include/spike/ast.hpp
@@ -108,11 +110,15 @@ add_executable(spike_tests
     tests/parser/stmt_basic_test.cpp
     tests/parser/stmt_if_test.cpp
     tests/parser/stmt_loops_test.cpp
+    tests/semantic/semantic_assign_test.cpp
     tests/semantic/semantic_names_test.cpp
+    tests/semantic/semantic_operators_test.cpp
+    tests/semantic/semantic_programs_test.cpp
     tests/semantic/symbol_table_test.cpp
     tests/token/token_test.cpp
 )
 target_include_directories(spike_tests PRIVATE tests)
+target_compile_definitions(spike_tests PRIVATE SPIKE_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
 target_link_libraries(spike_tests PRIVATE spike_core spike_warnings)
 
 string(REPLACE "." "\\." SPIKE_VERSION_REGEX "${PROJECT_VERSION}")

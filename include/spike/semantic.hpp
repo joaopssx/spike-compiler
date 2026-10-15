@@ -7,6 +7,7 @@
 
 #include <set>
 #include <string>
+#include <unordered_map>
 #include <utility>
 
 namespace spike {
@@ -21,21 +22,25 @@ public:
     bool had_error() const;
     const Diagnostics& diagnostics() const;
     const SymbolTable& symbols() const;
+    const std::unordered_map<const Expr*, TypeKind>& expr_types() const;
 
 private:
     const Program& program_;
     Diagnostics diags_;
     SymbolTable symbols_;
+    std::unordered_map<const Expr*, TypeKind> expr_types_;
     std::set<std::pair<std::string, int>> reported_undeclared_;
 
     void declare_globals();
     Symbol* resolve(const std::string& name, int line, int col);
-    void mark_read(const std::string& name, int line, int col);
     void mark_assigned(const std::string& name, int line, int col);
 
     void check_block(const StmtList& stmts);
     void check_stmt(const Stmt& stmt);
-    void check_expr(const ExprPtr& expr);
+    void check_assign(const AssignStmt& stmt);
+    TypeKind check_expr(const ExprPtr& expr);
+    TypeKind check_binary(const BinaryExpr& node, TypeKind left, TypeKind right);
+    TypeKind check_unary(const UnaryExpr& node, TypeKind operand);
 };
 
 } // namespace spike

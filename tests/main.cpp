@@ -31,6 +31,9 @@ int main() {
     spike_tests::run_parser_name_position_tests();
     spike_tests::run_symbol_table_tests();
     spike_tests::run_semantic_name_tests();
+    spike_tests::run_semantic_operator_tests();
+    spike_tests::run_semantic_assign_tests();
+    spike_tests::run_semantic_program_tests();
 
     if (spike_tests::g_failures == 0) {
         std::cout << "all tests passed" << std::endl;

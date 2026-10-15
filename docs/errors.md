@@ -494,3 +494,108 @@ var
 inicio
 fimalgoritmo
 ```
+
+## E710 — operador aritmético com tipos errados
+
+**Mensagem:** `o operador '+' não funciona entre 'caractere' e 'inteiro'`
+
+**Quando acontece:** `+`, `-`, `*` ou `/` foi usado com um valor que não é número. A única exceção é `+` entre dois textos, que junta os dois.
+
+**Como corrigir:** use números dos dois lados. Para montar uma mensagem com número, passe os valores separados para o `escreva` (`escreval("idade: ", idade)`) ou converta o número com `paraTexto()`.
+
+```
+algoritmo "exemplo"
+var
+  nome : caractere
+inicio
+  nome <- "idade: " + 18
+fimalgoritmo
+```
+
+## E711 — comparação com tipos incompatíveis
+
+**Mensagem:** `não é possível comparar 'caractere' com 'inteiro' usando '>'`
+
+**Quando acontece:** uma comparação juntou tipos diferentes, ou usou `<`, `>`, `<=` ou `>=` com valores do tipo `logico`. Números se comparam com números (inteiro com real vale), textos com textos, e `logico` só com `=` e `<>`.
+
+**Como corrigir:** compare valores do mesmo tipo.
+
+```
+algoritmo "exemplo"
+var
+  nome : caractere
+  ok : logico
+inicio
+  ok <- nome > 5
+fimalgoritmo
+```
+
+## E712 — 'e' ou 'ou' com valor que não é logico
+
+**Mensagem:** `o operador 'e' precisa de dois valores do tipo logico, mas recebeu 'inteiro'`
+
+**Quando acontece:** um dos lados de `e` ou `ou` não é `verdadeiro`/`falso`.
+
+**Como corrigir:** transforme o valor numa comparação: `x > 0 e verdadeiro`.
+
+```
+algoritmo "exemplo"
+var
+  x : inteiro
+  ok : logico
+inicio
+  ok <- x e verdadeiro
+fimalgoritmo
+```
+
+## E713 — 'nao' ou '-' com o tipo errado
+
+**Mensagem:** `o operador 'nao' precisa de um valor do tipo logico, mas recebeu 'inteiro'` ou `o operador '-' precisa de um número, mas recebeu 'caractere'`
+
+**Quando acontece:** `nao` foi usado com algo que não é `logico`, ou o sinal de menos foi colocado na frente de algo que não é número.
+
+**Como corrigir:** use `nao` com condições (`nao (x = 0)`) e o sinal de menos só com `inteiro` e `real`.
+
+```
+algoritmo "exemplo"
+var
+  x : inteiro
+  ok : logico
+inicio
+  ok <- nao x
+fimalgoritmo
+```
+
+## E720 — atribuição com tipo incompatível
+
+**Mensagem:** `não é possível guardar 'caractere' em 'x', que é 'inteiro'`
+
+**Quando acontece:** o valor do lado direito do `<-` tem um tipo diferente do da variável. A seta aponta para o começo do valor. Guardar `inteiro` numa variável `real` é permitido.
+
+**Como corrigir:** guarde um valor do mesmo tipo da variável, ou declare a variável com o tipo certo.
+
+```
+algoritmo "exemplo"
+var
+  x : inteiro
+inicio
+  x <- "dez"
+fimalgoritmo
+```
+
+## E721 — real guardado em inteiro
+
+**Mensagem:** `'x' é inteiro e o valor é real`
+
+**Quando acontece:** um valor `real` foi guardado numa variável `inteiro`. O Spike não corta as casas decimais sozinho, porque isso esconderia erros. Lembre que `/` sempre dá `real`: `7 / 2` é `3.5`.
+
+**Como corrigir:** declare a variável como `real`, ou converta o valor com `trunca()` (corta as casas decimais) ou `arredonda()` (arredonda para o inteiro mais próximo).
+
+```
+algoritmo "exemplo"
+var
+  x : inteiro
+inicio
+  x <- 7 / 2
+fimalgoritmo
+```

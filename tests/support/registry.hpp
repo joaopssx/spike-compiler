@@ -25,6 +25,9 @@ void run_parser_stmt_loop_tests();
 void run_parser_name_position_tests();
 void run_symbol_table_tests();
 void run_semantic_name_tests();
+void run_semantic_operator_tests();
+void run_semantic_assign_tests();
+void run_semantic_program_tests();
 
 } // namespace spike_tests
 
