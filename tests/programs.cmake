@@ -60,6 +60,18 @@ set_tests_properties(compile_without_c_compiler PROPERTIES
     ENVIRONMENT "SPIKE_CC=${CMAKE_BINARY_DIR}/no/such/compiler"
 )
 
+add_test(NAME ast_flag_prints_tree_and_does_not_compile
+    COMMAND ${CMAKE_COMMAND}
+        -DPROGRAM=$<TARGET_FILE:spike>
+        "-DARGS=${CMAKE_SOURCE_DIR}/examples/sum.por|--ast|-o|${CMAKE_BINARY_DIR}/e2e/ast_only"
+        -DWORK_DIR=${CMAKE_BINARY_DIR}
+        -DNAME=ast_flag
+        -DEXPECT_CODE=0
+        "-DEXPECT_STDOUT=^Program \"soma\" \\(2:1\\).*Leia a \\(7:3\\)"
+        "-DEXPECT_NO_FILE=${CMAKE_BINARY_DIR}/e2e/ast_only${CMAKE_EXECUTABLE_SUFFIX}"
+        -P "${CMAKE_SOURCE_DIR}/tests/runtime/expect_run.cmake"
+)
+
 foreach(program IN LISTS SPIKE_INVALID_PROGRAMS)
     get_filename_component(program_name "${program}" NAME_WE)
     string(REGEX MATCH "^[eE][0-9][0-9][0-9]" expected_code "${program_name}")

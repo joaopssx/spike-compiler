@@ -21,6 +21,7 @@ endif()
 # pra qualquer ferramenta que itere sobre as sources do target encontrar.
 set(SPIKE_AST_SOURCES
     src/ast/ast_enums.cpp
+    src/ast/ast_printer.cpp
 )
 set(SPIKE_IO_SOURCES
     src/io/file_reader.cpp
@@ -66,6 +67,7 @@ set(SPIKE_DRIVER_SOURCES
     src/driver/compile_pipeline.cpp
     src/driver/output_paths.cpp
     src/driver/pipeline_front.cpp
+    src/driver/pipeline_report.cpp
     src/driver/pipeline_internal.hpp
 )
 set(SPIKE_CODEGEN_SOURCES
@@ -93,6 +95,7 @@ set(SPIKE_RUNTIME_SOURCES
 set(SPIKE_PUBLIC_HEADERS
     include/spike/ast.hpp
     include/spike/ast_enums.hpp
+    include/spike/ast_printer.hpp
     include/spike/cc_driver.hpp
     include/spike/cli.hpp
     include/spike/codegen.hpp
@@ -140,6 +143,7 @@ add_executable(spike_tests
     tests/main.cpp
     tests/ast/ast_test.cpp
     tests/ast/ast_enums_test.cpp
+    tests/ast/ast_printer_test.cpp
     tests/cli/cli_test.cpp
     tests/cli/console_test.cpp
     tests/codegen/codegen_compile_test.cpp

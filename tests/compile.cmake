@@ -39,6 +39,20 @@ spike_add_expect_test(run_compiled_hello
 )
 set_tests_properties(run_compiled_hello PROPERTIES FIXTURES_REQUIRED hello_executable)
 
+spike_add_expect_test(verbose_lists_every_step
+    -DPROGRAM=$<TARGET_FILE:spike>
+    "-DARGS=${CMAKE_SOURCE_DIR}/examples/hello.por|--verbose|-o|${SPIKE_E2E_DIR}/hello_verbose"
+    -DEXPECT_CODE=0
+    "-DEXPECT_STDERR=1/5.*lendo arquivo.*2/5.*tokens.*3/5.*1 comando.*4/5.*0 vari.*5/5.*gerando C.*compilador C: "
+)
+
+spike_add_expect_test(time_lists_every_phase
+    -DPROGRAM=$<TARGET_FILE:spike>
+    "-DARGS=${CMAKE_SOURCE_DIR}/examples/hello.por|--time|-o|${SPIKE_E2E_DIR}/hello_time"
+    -DEXPECT_CODE=0
+    "-DEXPECT_STDERR=tempo por etapa:.*xico.*sint.*tico.*sem.*ntico.*de C.*compilador C.*total.* ms"
+)
+
 spike_add_expect_test(compile_and_run_hello
     -DPROGRAM=$<TARGET_FILE:spike>
     "-DARGS=${CMAKE_SOURCE_DIR}/examples/hello.por|--run|-o|${SPIKE_E2E_DIR}/hello_run"

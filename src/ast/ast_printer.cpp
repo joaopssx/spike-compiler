@@ -1,0 +1,192 @@
+#include "spike/ast_printer.hpp"
+
+#include <cstdio>
+#include <cstdlib>
+#include <string>
+#include <type_traits>
+#include <variant>
+
+namespace spike {
+
+namespace {
+
+std::string position(int line, int col) {
+    return " (" + std::to_string(line) + ":" + std::to_string(col) + ")";
+}
+
+std::string number_text(const NumberExpr& node) {
+    char buffer[40];
+    if (node.is_integer) {
+        std::snprintf(buffer, sizeof buffer, "%lld", static_cast<long long>(node.value));
+        return buffer;
+    }
+    for (int precision = 1; precision <= 17; ++precision) {
+        std::snprintf(buffer, sizeof buffer, "%.*g", precision, node.value);
+        if (std::strtod(buffer, nullptr) == node.value) break;
+    }
+    std::string text = buffer;
+    if (text.find_first_of(".e") == std::string::npos) text += ".0";
+    return text;
+}
+
+std::string quoted_text(const std::string& value) {
+    std::string out = "\"";
+    for (char c : value) {
+        if (c == '"' || c == '\\') {
+            out += '\\';
+            out += c;
+        } else if (c == '\n') {
+            out += "\\n";
+        } else if (c == '\t') {
+            out += "\\t";
+        } else {
+            out += c;
+        }
+    }
+    return out + "\"";
+}
+
+class Printer {
+public:
+    std::string out;
+
+    void line(int depth, const std::string& text) {
+        out.append(static_cast<std::size_t>(depth) * 2, ' ');
+        out += text;
+        out += '\n';
+    }
+
+    void expr(const ExprPtr& value, int depth) {
+        if (!value) {
+            line(depth, "<vazio>");
+            return;
+        }
+        std::visit(
+            [this, depth](const auto& node) {
+                using Node = std::decay_t<decltype(node)>;
+                if constexpr (std::is_same_v<Node, NumberExpr>) {
+                    line(depth, "Number " + number_text(node));
+                } else if constexpr (std::is_same_v<Node, StringExpr>) {
+                    line(depth, "String " + quoted_text(node.value));
+                } else if constexpr (std::is_same_v<Node, BoolExpr>) {
+                    line(depth, std::string("Bool ") + (node.value ? "verdadeiro" : "falso"));
+                } else if constexpr (std::is_same_v<Node, VarExpr>) {
+                    line(depth, "Var " + node.name);
+                } else if constexpr (std::is_same_v<Node, BinaryExpr>) {
+                    line(depth, std::string("Binary ") + to_string(node.op) +
+                                    position(node.line, node.col));
+                    expr(node.left, depth + 1);
+                    expr(node.right, depth + 1);
+                } else {
+                    line(depth, std::string("Unary ") + to_string(node.op) +
+                                    position(node.line, node.col));
+                    expr(node.operand, depth + 1);
+                }
+            },
+            value->node);
+    }
+
+    void labeled_block(const char* label, const StmtList& stmts, int depth) {
+        line(depth, label);
+        block(stmts, depth + 1);
+    }
+
+    void labeled_expr(const char* label, const ExprPtr& value, int depth) {
+        line(depth, label);
+        expr(value, depth + 1);
+    }
+
+    void block(const StmtList& stmts, int depth) {
+        for (const StmtPtr& stmt : stmts) {
+            if (stmt) statement(*stmt, depth);
+        }
+    }
+
+    void statement(const Stmt& stmt, int depth) {
+        std::visit([this, depth](const auto& node) { visit_stmt(node, depth); }, stmt.node);
+    }
+
+    void visit_stmt(const AssignStmt& node, int depth) {
+        line(depth, "Assign " + node.var_name + position(node.line, node.col));
+        expr(node.value, depth + 1);
+    }
+
+    void visit_stmt(const EscrevaStmt& node, int depth) {
+        line(depth, (node.newline ? "Escreval" : "Escreva") + position(node.line, node.col));
+        for (const ExprPtr& arg : node.args) expr(arg, depth + 1);
+    }
+
+    void visit_stmt(const LeiaStmt& node, int depth) {
+        std::string names;
+        for (const std::string& name : node.var_names) names += (names.empty() ? "" : ", ") + name;
+        line(depth, "Leia " + names + position(node.line, node.col));
+    }
+
+    void visit_stmt(const SeStmt& node, int depth) {
+        line(depth, "Se" + position(node.line, node.col));
+        expr(node.condition, depth + 1);
+        labeled_block("entao", node.then_branch, depth + 1);
+        if (!node.else_branch.empty()) labeled_block("senao", node.else_branch, depth + 1);
+    }
+
+    void visit_stmt(const EnquantoStmt& node, int depth) {
+        line(depth, "Enquanto" + position(node.line, node.col));
+        expr(node.condition, depth + 1);
+        labeled_block("faca", node.body, depth + 1);
+    }
+
+    void visit_stmt(const ParaStmt& node, int depth) {
+        line(depth, "Para " + node.var_name + position(node.line, node.col));
+        labeled_expr("de", node.from, depth + 1);
+        labeled_expr("ate", node.to, depth + 1);
+        if (node.step) labeled_expr("passo", node.step, depth + 1);
+        labeled_block("faca", node.body, depth + 1);
+    }
+
+    void visit_stmt(const RepitaStmt& node, int depth) {
+        line(depth, "Repita" + position(node.line, node.col));
+        labeled_block("corpo", node.body, depth + 1);
+        labeled_expr("ate", node.condition, depth + 1);
+    }
+};
+
+std::size_t count_in(const Stmt& stmt) {
+    return 1 + std::visit(
+                   [](const auto& node) -> std::size_t {
+                       using Node = std::decay_t<decltype(node)>;
+                       if constexpr (std::is_same_v<Node, SeStmt>) {
+                           return count_statements(node.then_branch) +
+                                  count_statements(node.else_branch);
+                       } else if constexpr (std::is_same_v<Node, EnquantoStmt> ||
+                                            std::is_same_v<Node, ParaStmt> ||
+                                            std::is_same_v<Node, RepitaStmt>) {
+                           return count_statements(node.body);
+                       } else {
+                           return 0;
+                       }
+                   },
+                   stmt.node);
+}
+
+} // namespace
+
+std::string print_ast(const Program& program) {
+    Printer printer;
+    printer.line(0, "Program " + quoted_text(program.name) + position(program.line, 1));
+    for (const VarDecl& decl : program.globals) {
+        printer.line(1, "Var " + decl.name + " : " + type_name(decl.type) +
+                            position(decl.line, decl.col));
+    }
+    printer.block(program.body, 1);
+    return printer.out;
+}
+
+std::size_t count_statements(const StmtList& stmts) {
+    std::size_t total = 0;
+    for (const StmtPtr& stmt : stmts) {
+        if (stmt) total += count_in(*stmt);
+    }
+    return total;
+}
+
+} // namespace spike

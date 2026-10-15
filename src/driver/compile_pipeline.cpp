@@ -1,12 +1,12 @@
 #include "spike/compile_pipeline.hpp"
 #include "driver/pipeline_internal.hpp"
+#include "spike/ast_printer.hpp"
 #include "spike/cc_driver.hpp"
 #include "spike/codegen.hpp"
 #include "spike/colors.hpp"
 #include "spike/process.hpp"
 #include "spike/temp_dir.hpp"
 
-#include <chrono>
 #include <cstdio>
 #include <filesystem>
 #include <iostream>
@@ -22,12 +22,18 @@ namespace {
 
 namespace fs = std::filesystem;
 
-std::string seconds_since(std::chrono::steady_clock::time_point start) {
-    const double seconds =
-        std::chrono::duration<double>(std::chrono::steady_clock::now() - start).count();
+std::string seconds(double ms) {
     char buffer[32];
-    std::snprintf(buffer, sizeof buffer, "%.1fs", seconds);
+    std::snprintf(buffer, sizeof buffer, "%.1fs", ms / 1000.0);
     return buffer;
+}
+
+std::size_t line_count(const std::string& text) {
+    std::size_t lines = 0;
+    for (char c : text) {
+        if (c == '\n') ++lines;
+    }
+    return lines;
 }
 
 bool clear_old_output(const std::string& output) {
@@ -55,32 +61,34 @@ int run_program(const std::string& output) {
     return result.exit_code;
 }
 
-} // namespace
-
-int run_check(const CliArgs& args) {
+int print_tree(const CliArgs& args, Reporter& reporter) {
     Analysis analysis;
-    const int status = analyze_file(args.input_file, analysis);
+    const int status = analyze_file(args.input_file, analysis, reporter, true);
     if (status != kExitOk) return status;
-    print_success("nenhum erro encontrado");
+    std::cout << print_ast(analysis.program) << std::flush;
     return kExitOk;
 }
 
-int run_compile(const CliArgs& args) {
-    const auto start = std::chrono::steady_clock::now();
+int build(const CliArgs& args, const std::string& output, Reporter& reporter) {
+    const Stopwatch total;
     Analysis analysis;
-    const int status = analyze_file(args.input_file, analysis);
+    const int status = analyze_file(args.input_file, analysis, reporter);
     if (status != kExitOk) return status;
 
+    const Stopwatch codegen_time;
     const std::string source_name = fs::u8path(args.input_file).filename().u8string();
     const CodegenResult generated =
         generate_c(analysis.program, analysis.semantic->expr_types(), source_name);
+    reporter.add_phase("geração de C", codegen_time.ms());
     if (!generated.ok) return report_codegen_error(analysis, generated);
+    reporter.step(5, "gerando C: " + count_text(line_count(generated.c_source), "linha", "linhas"));
 
     const std::optional<CompilerInfo> compiler = find_c_compiler();
     if (!compiler) {
         print_driver_error(no_compiler_error());
         return kExitInternalError;
     }
+    reporter.note("compilador C: " + compiler->kind + " (" + compiler->path + ")");
 
     TempDir temp;
     if (!temp.ok()) {
@@ -94,10 +102,11 @@ int run_compile(const CliArgs& args) {
         return kExitInternalError;
     }
 
-    const std::string output = output_path_for(args.input_file, args.output_file);
     if (!clear_old_output(output)) return kExitInternalError;
+    const Stopwatch compile_time;
     const CompileResult compiled =
         compile_c(*compiler, CompileRequest{c_file.u8string(), output, false});
+    reporter.add_phase("compilador C", compile_time.ms());
     if (!compiled.ok) {
         print_driver_error(compiled.error);
         return kExitInternalError;
@@ -113,9 +122,33 @@ int run_compile(const CliArgs& args) {
         }
     }
 
-    print_success("gerado '" + output + "' (compilado em " + seconds_since(start) + ")");
+    print_success("gerado '" + output + "' (compilado em " + seconds(total.ms()) + ")");
     if (args.flag_keep_c) print_success("código C em '" + c_file_path_for(output) + "'");
-    if (!args.flag_run) return kExitOk;
+    return kExitOk;
+}
+
+} // namespace
+
+int run_check(const CliArgs& args) {
+    Reporter reporter(false, false);
+    Analysis analysis;
+    const int status = analyze_file(args.input_file, analysis, reporter);
+    if (status != kExitOk) return status;
+    print_success("nenhum erro encontrado");
+    return kExitOk;
+}
+
+int run_compile(const CliArgs& args) {
+    Reporter reporter(args.flag_verbose, args.flag_time);
+    if (args.flag_ast) {
+        const int status = print_tree(args, reporter);
+        reporter.finish();
+        return status;
+    }
+    const std::string output = output_path_for(args.input_file, args.output_file);
+    const int status = build(args, output, reporter);
+    reporter.finish();
+    if (status != kExitOk || !args.flag_run) return status;
     return run_program(output);
 }
 
