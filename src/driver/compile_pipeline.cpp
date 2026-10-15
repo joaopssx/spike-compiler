@@ -36,9 +36,18 @@ std::size_t line_count(const std::string& text) {
     return lines;
 }
 
-bool clear_old_output(const std::string& output) {
+bool prepare_output(const std::string& output) {
     std::error_code ec;
     const fs::path path = fs::u8path(output);
+    const fs::path folder = path.parent_path();
+    if (!folder.empty() && !fs::exists(folder, ec)) {
+        fs::create_directories(folder, ec);
+        if (ec) {
+            print_driver_error(write_failed_error(
+                output, "não foi possível criar a pasta '" + folder.u8string() + "': " + ec.message()));
+            return false;
+        }
+    }
     if (!fs::exists(path, ec)) return true;
     fs::remove(path, ec);
     if (!ec) return true;
@@ -102,7 +111,7 @@ int build(const CliArgs& args, const std::string& output, Reporter& reporter) {
         return kExitInternalError;
     }
 
-    if (!clear_old_output(output)) return kExitInternalError;
+    if (!prepare_output(output)) return kExitInternalError;
     const Stopwatch compile_time;
     const CompileResult compiled =
         compile_c(*compiler, CompileRequest{c_file.u8string(), output, false});

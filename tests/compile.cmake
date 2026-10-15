@@ -60,6 +60,13 @@ spike_add_expect_test(compile_and_run_hello
     "-DEXPECT_STDOUT=ok:.*gerado.*Ol.+, mundo!$"
 )
 
+spike_add_expect_test(compile_creates_output_folder
+    -DPROGRAM=$<TARGET_FILE:spike>
+    "-DARGS=${CMAKE_SOURCE_DIR}/examples/hello.por|--c|-o|${SPIKE_E2E_DIR}/nova/pasta/hello"
+    -DEXPECT_CODE=0
+    "-DEXPECT_FILE=${SPIKE_E2E_DIR}/nova/pasta/hello${SPIKE_EXE_SUFFIX}"
+)
+
 spike_add_expect_test(compile_keeps_c_file
     -DPROGRAM=$<TARGET_FILE:spike>
     "-DARGS=${CMAKE_SOURCE_DIR}/examples/hello.por|--c|-o|${SPIKE_E2E_DIR}/hello_c"

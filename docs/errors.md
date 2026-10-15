@@ -281,6 +281,23 @@ fimalgoritmo
 
 **Como corrigir:** use `x <- 42` ou `x := 42`.
 
+## E306 — leia com algo que não é variável
+
+**Mensagem:** `nome de variável esperado em leia`
+
+**Quando acontece:** dentro do `leia` há um número, um texto ou uma conta. O `leia` guarda o que foi digitado, então só aceita nomes de variáveis.
+
+**Como corrigir:** escreva só nomes de variáveis, separados por vírgula: `leia(x, y)`.
+
+```
+algoritmo "exemplo"
+var
+  x : inteiro
+inicio
+  leia(1)
+fimalgoritmo
+```
+
 ## E400 — falta 'entao'
 
 **Mensagem:** `'entao' esperado após condição do 'se'`

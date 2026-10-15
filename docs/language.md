@@ -8,7 +8,7 @@ Sections marked **proposed** describe syntax that does not exist yet. They are w
 
 - Spike is for students taking their first programming course. When a rule could go either way, it goes the way that surprises a beginner less.
 - The dialect follows VisuAlg (`algoritmo`, `var`, `inicio`, `<-`, `fimalgoritmo`). Where Spike differs or adds something, this file says so.
-- A program compiles to a standalone executable. Spike ships with its own C compiler, so the student does not install anything else.
+- A program compiles to a standalone executable. Spike turns it into C and calls a C compiler (GCC or Clang). Today that compiler has to be installed; from v0.4 Spike will ship with its own, so the student installs nothing else.
 - Windows, Linux and macOS get the same level of support: same features, installer and tests on all three.
 - Integers are 64 bits. `/` always produces a real number (`7 / 2` is `3.5`); `div` is integer division.
 - Keywords and names ignore case. Names use ASCII letters only.

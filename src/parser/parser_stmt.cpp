@@ -137,7 +137,7 @@ StmtPtr Parser::parse_leia() {
         while (true) {
             if (!check(TokenType::IDENTIFIER)) {
                 const Token& t = peek();
-                diags_.error("Exxx", "nome de variável esperado em leia",
+                diags_.error("E306", "nome de variável esperado em leia",
                              t.line, t.col,
                              "leia só aceita nomes de variáveis: leia(x, y).");
                 // Consome pra evitar travar e sai.

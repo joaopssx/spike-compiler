@@ -1,87 +1,156 @@
 # Spike
 
-Spike is a compiler for Portugol, the pseudo-language used to teach programming in Brazilian schools and universities. It reads a `.por` file, turns the program into C and builds a standalone executable that runs without Spike installed.
+Spike compiles Portugol, the pseudo-language used to teach programming in Brazilian schools and universities, into a real executable. It is made for students in their first programming course.
 
-It is made for students in their first programming course. Error messages are in Portuguese, point at the exact spot in the code and come with a hint on how to fix it:
+## Why
 
-```
-erro[E400]: 'entao' esperado após condição do 'se'
- --> media.por:6:5
-     |
-   5 |   se nota >= 7
-   6 |     escreval("Aprovado")
-     |     ^
-   7 |   fimse
-     |
-     = dica: sintaxe: se <condicao> entao ... fimse.
-```
+- **It produces a program you can run anywhere.** `spike media.por` leaves a standalone executable next to your file. Send it to a friend; they do not need Spike to run it.
+- **Errors are in Portuguese and point at the problem.** Every error shows the line, an arrow under the exact spot and a hint on how to fix it.
+- **You can read what it generated.** Spike turns Portugol into C. With `--c` you keep that C file and can compare it with your program, which is a gentle first look at a "real" language.
 
-## Status
+## A first program
 
-Spike is early work. Today it reads and checks programs: the lexer and the parser are done, and the error messages above already work. It does not generate executables yet. The next milestone (v0.2) adds type checking, C generation and the first `.exe`.
-
-The language follows the VisuAlg dialect. The full reference, including the syntax planned for vectors, functions and the rest, is in [docs/language.md](docs/language.md).
-
-## A Portugol program
+`media.por`:
 
 ```
 algoritmo "media"
 var
   nota1, nota2, media : real
 inicio
-  escreva("Digite as duas notas: ")
-  leia(nota1, nota2)
+  escreva("Primeira nota: ")
+  leia(nota1)
+  escreva("Segunda nota: ")
+  leia(nota2)
   media <- (nota1 + nota2) / 2
   se media >= 7 entao
-    escreval("Aprovado com ", media)
+    escreval("Aprovado com média ", media)
   senao
-    escreval("Reprovado com ", media)
+    escreval("Reprovado com média ", media)
   fimse
 fimalgoritmo
 ```
 
-More examples, one idea each, are in [examples/](examples/).
+```
+$ spike media.por
+ok: gerado 'media' (compilado em 0.4s)
+$ ./media
+Primeira nota: 8
+Segunda nota: 6,5
+Aprovado com média 7.25
+```
 
-## Building
+Real numbers can be typed with a comma or a point. On Windows the executable is `media.exe`.
 
-You need CMake 3.16 or newer and a C++17 compiler (GCC or Clang).
+## What errors look like
 
-On Windows, the project is developed with MSYS2 UCRT64 and Ninja:
+A typo in a variable name (`meida` instead of `media`):
 
 ```
-cmake -S . -B build -G Ninja
+$ spike erro.por
+erro[E700]: variável 'meida' não foi declarada
+ --> erro.por:7:24
+     |
+   6 |   media <- (nota1 + nota2) / 2
+   7 |   escreval("Média: ", meida)
+     |                        ^
+   8 | fimalgoritmo
+     |
+     = dica: declare 'meida' na seção var.
+```
+
+Every error code is explained, with an example, in [docs/errors.md](docs/errors.md).
+
+## Installing
+
+There are no installers yet. You build Spike from source, and you need a C compiler (GCC or Clang) installed, because Spike uses it to produce the executable.
+
+**Debian / Ubuntu**
+
+```
+sudo apt install build-essential cmake git
+git clone https://github.com/joaopssx/spike-compiler.git
+cd spike-compiler
+cmake -S . -B build
 cmake --build build -j
 ```
 
-On Linux and macOS, drop `-G Ninja`.
-
-Run the tests with:
+**macOS**
 
 ```
-ctest --test-dir build --output-on-failure
+xcode-select --install
 ```
 
-On Windows, `C:\msys64\ucrt64\bin` has to come before any other MinGW folder in `PATH`. Git for Windows ships its own `mingw64\bin`, and if that one wins, the programs load the wrong `libstdc++-6.dll` and fail with `0xc0000139`.
+That installs Clang. Install CMake from [cmake.org](https://cmake.org/download/) or with `brew install cmake`, then run the same `git clone` and `cmake` commands as above.
+
+**Windows**
+
+1. Install [MSYS2](https://www.msys2.org/).
+2. Open the "MSYS2 UCRT64" terminal and install the tools:
+   ```
+   pacman -S mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-ninja git
+   ```
+3. In the same terminal, clone and build:
+   ```
+   git clone https://github.com/joaopssx/spike-compiler.git
+   cd spike-compiler
+   cmake -S . -B build -G Ninja
+   cmake --build build -j
+   ```
+
+To use Spike from PowerShell or `cmd`, add `C:\msys64\ucrt64\bin` to your `PATH`, before any other MinGW folder. Git for Windows ships its own `mingw64\bin`; if that one comes first, programs fail to start with error `0xc0000139`.
+
+The compiler ends up in `build/spike` (`build\spike.exe` on Windows). Run it from there or copy it to a folder in your `PATH`.
 
 ## Usage
 
+| Command | What it does |
+| --- | --- |
+| `spike programa.por` | Compiles to an executable next to the file (`programa`, or `programa.exe` on Windows). |
+| `spike programa.por -o caminho` | Writes the executable to `caminho`. |
+| `spike programa.por --run` | Compiles and runs the program right away. Spike exits with the program's exit code. |
+| `spike programa.por --c` | Also keeps the generated C, as `programa.c`. |
+| `spike programa.por --time` | Shows how long each step took. |
+| `spike programa.por --verbose` | Describes each step as it happens. |
+| `spike programa.por --ast` | Prints the program's syntax tree and does not compile. |
+| `spike check programa.por` | Only checks the program for errors. Does not need a C compiler. |
+| `spike tokens programa.por` | Lists the tokens of the file (for debugging). |
+| `spike --help`, `spike --version` | Help and version. |
+
+Flags can be combined: `spike programa.por --c --time -o saida/prog`.
+
+Exit codes: 0 when everything worked, 1 when the program has errors, 2 when the command line is wrong, 3 when the C compiler is missing or fails. A compiled program that stops on a runtime error, such as a division by zero, exits with 101.
+
+## The language
+
+Spike follows the VisuAlg dialect. The full reference is [docs/language.md](docs/language.md).
+
+What works today: the types `inteiro`, `real`, `caractere` and `logico`; variables; arithmetic, comparisons, `e`, `ou`, `nao` and joining texts with `+`; `escreva`, `escreval` and `leia`; `se`/`senao`, `enquanto`, `repita ... ate` and `para ... passo`. Names ignore upper and lower case. `/` always gives a real number.
+
+Planned next, with the syntax already proposed in the reference: `div`, `mod` and `^`, constants, `interrompa`, `escolha`, vectors and matrices, procedures and functions, and built-in functions such as `raiz`, `abs` and `tamanho`.
+
+## Status
+
+**v0.2.** Spike compiles programs with variables, expressions, `se`, `enquanto`, `repita`, `para`, `leia` and `escreva`. It checks names and types before generating code, and a compiled program stops with a clear message on division by zero, invalid input or a `para` with step zero.
+
+What comes next:
+
+- **v0.3:** the rest of the language listed above, warnings, and better recovery after the first error.
+- **v0.4:** a C compiler bundled with Spike, installers for Windows, Linux and macOS, and automated builds on all three.
+- **Later:** a VS Code extension, a formatter and a playground in the browser.
+
+## Contributing
+
+Issues and pull requests are welcome at [github.com/joaopssx/spike-compiler](https://github.com/joaopssx/spike-compiler/issues).
+
+Build and run the tests:
+
 ```
-spike --help                  list commands and flags
-spike --version               show the version
-spike tokens programa.por     list the tokens and check that the program parses
+cmake -S . -B build
+cmake --build build -j
+ctest --test-dir build --output-on-failure
 ```
 
-`spike tokens` ends with `parse: OK` when the program is valid, or prints the errors found. `spike programa.por` is accepted but only runs the lexer for now; the compile flags (`-o`, `--run`, `--c`, `--ast`, `--time`, `--verbose`) are listed in the help and do nothing yet.
-
-## Project layout
-
-```
-include/spike/   public headers
-src/             one folder per module: lexer, parser, ast, diagnostics, cli, io
-tests/           unit tests, one folder per module, plus programs/valid and programs/invalid
-examples/        sample programs, also run as tests
-docs/            language reference and product decisions
-```
+On Windows with MSYS2, add `-G Ninja` to the first command. `ctest --test-dir build -L e2e` runs only the end-to-end tests, which compile real programs and compare their output with the expected one. To add one, see [tests/e2e/README.md](tests/e2e/README.md). How the compiler works inside is in [docs/internals.md](docs/internals.md).
 
 ## License
 
