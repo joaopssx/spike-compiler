@@ -713,3 +713,53 @@ Estes erros acontecem quando o programa já compilou e está rodando. A mensagem
 **Quando acontece:** o programa criou textos demais e o computador ficou sem memória. Na prática, só acontece num laço que junta textos sem parar.
 
 **Como corrigir:** confira se o laço termina.
+
+---
+
+# Erros do gerador e do compilador C
+
+Estes erros não são do seu programa: ou o Spike tem um defeito, ou falta alguma coisa no computador.
+
+## E900 — erro interno do gerador
+
+**Mensagem:** `erro interno do gerador: expressão sem tipo válido` (ou outra descrição começando com `erro interno do gerador`)
+
+**Quando acontece:** o gerador de C encontrou algo que a análise deveria ter barrado. Nunca deveria acontecer com um programa que passou na análise.
+
+**Como corrigir:** é um defeito do Spike. Abra uma issue em https://github.com/joaopssx/spike-compiler/issues com o arquivo `.por` que provoca o erro.
+
+## E901 — comando ainda não suportado pelo gerador
+
+**Mensagem:** `comando ainda não suportado pelo gerador: 'leia'`
+
+**Quando acontece:** o programa usa um comando que o Spike já entende, mas ainda não sabe transformar em C. Enquanto a v0.2 não fica pronta, isso vale para `leia`, `se`, `enquanto`, `para` e `repita`.
+
+**Como corrigir:** por enquanto, não há como. O comando passa a funcionar numa versão próxima.
+
+## E902 — nenhum compilador C encontrado
+
+**Mensagem:** `nenhum compilador C encontrado (procurei em SPIKE_CC e no PATH)` ou `SPIKE_CC aponta para '...', mas esse programa não foi encontrado`
+
+**Quando acontece:** o Spike transforma o programa em C e precisa de um compilador C (GCC ou Clang) para gerar o executável. Ele procura primeiro na variável de ambiente `SPIKE_CC` e depois no `PATH`.
+
+**Como corrigir:**
+- No Linux: `sudo apt install build-essential` (ou instale o `clang`).
+- No macOS: `xcode-select --install`.
+- No Windows: instale o MinGW-w64 (por exemplo pelo MSYS2) e coloque a pasta `bin` dele no `PATH`, ou defina `SPIKE_CC` com o caminho do `gcc.exe`.
+- Se você definiu `SPIKE_CC`, confira o caminho ou apague a variável.
+
+## E903 — o compilador C recusou o código gerado
+
+**Mensagem:** `o compilador C recusou o código gerado`
+
+**Quando acontece:** o C que o Spike gerou não compilou. Se o programa passou na análise do Spike, isso é sempre um defeito do Spike, nunca do seu programa. A mensagem mostra as 20 primeiras linhas do que o compilador C reclamou.
+
+**Como corrigir:** rode de novo com `--c` para guardar o arquivo C e abra uma issue em https://github.com/joaopssx/spike-compiler/issues com o `.por` e o `.c`.
+
+## E904 — não foi possível gravar um arquivo
+
+**Mensagem:** `não foi possível gravar '...'`
+
+**Quando acontece:** o Spike não conseguiu criar o arquivo C temporário, a pasta temporária ou o executável. Em geral é falta de permissão na pasta, disco cheio, ou o executável ainda aberto de uma execução anterior (no Windows, um programa rodando não pode ser sobrescrito).
+
+**Como corrigir:** feche o programa se ele ainda estiver rodando, confira se você pode escrever na pasta e se há espaço em disco.

@@ -54,6 +54,16 @@ set(SPIKE_SEMANTIC_SOURCES
     src/semantic/semantic_control.cpp
     src/semantic/semantic_internal.hpp
 )
+set(SPIKE_PROCESS_SOURCES
+    src/process/executable_search.cpp
+    src/process/process_posix.cpp
+    src/process/process_windows.cpp
+    src/process/temp_dir.cpp
+    src/process/utf8_path.hpp
+)
+set(SPIKE_DRIVER_SOURCES
+    src/driver/cc_driver.cpp
+)
 set(SPIKE_CODEGEN_SOURCES
     src/codegen/codegen_core.cpp
     src/codegen/codegen_expr.cpp
@@ -79,6 +89,7 @@ set(SPIKE_RUNTIME_SOURCES
 set(SPIKE_PUBLIC_HEADERS
     include/spike/ast.hpp
     include/spike/ast_enums.hpp
+    include/spike/cc_driver.hpp
     include/spike/cli.hpp
     include/spike/codegen.hpp
     include/spike/colors.hpp
@@ -87,9 +98,11 @@ set(SPIKE_PUBLIC_HEADERS
     include/spike/file_reader.hpp
     include/spike/lexer.hpp
     include/spike/parser.hpp
+    include/spike/process.hpp
     include/spike/runtime_text.hpp
     include/spike/semantic.hpp
     include/spike/symbol_table.hpp
+    include/spike/temp_dir.hpp
     include/spike/token.hpp
 )
 
@@ -103,6 +116,8 @@ add_library(spike_core STATIC
     ${SPIKE_SEMANTIC_SOURCES}
     ${SPIKE_RUNTIME_SOURCES}
     ${SPIKE_CODEGEN_SOURCES}
+    ${SPIKE_PROCESS_SOURCES}
+    ${SPIKE_DRIVER_SOURCES}
     ${SPIKE_PUBLIC_HEADERS}
 )
 target_include_directories(spike_core PUBLIC include PRIVATE src)
@@ -141,6 +156,8 @@ add_executable(spike_tests
     tests/parser/stmt_basic_test.cpp
     tests/parser/stmt_if_test.cpp
     tests/parser/stmt_loops_test.cpp
+    tests/process/cc_driver_test.cpp
+    tests/process/process_test.cpp
     tests/semantic/semantic_assign_test.cpp
     tests/semantic/semantic_control_test.cpp
     tests/semantic/semantic_names_test.cpp
@@ -170,3 +187,4 @@ set_tests_properties(spike_unit_tests PROPERTIES
 
 include(tests/programs.cmake)
 include(tests/runtime.cmake)
+include(tests/process.cmake)

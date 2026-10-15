@@ -34,6 +34,8 @@ void run_codegen_program_tests();
 void run_codegen_expr_tests();
 void run_codegen_output_tests();
 void run_codegen_compile_tests();
+void run_process_tests();
+void run_cc_driver_tests();
 
 } // namespace spike_tests
 
