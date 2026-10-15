@@ -1,0 +1,2 @@
+erro de execução[R003]: esperava um número inteiro, mas recebeu 'doze'
+  --> linha 6

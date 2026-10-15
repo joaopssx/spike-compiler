@@ -1,0 +1,2 @@
+erro de execução[R007]: a entrada acabou antes de leia() conseguir ler 'b'
+  --> linha 5

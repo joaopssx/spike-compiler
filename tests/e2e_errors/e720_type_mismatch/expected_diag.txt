@@ -1,0 +1,3 @@
+erro[E720]: não é possível guardar 'caractere' em 'n', que é 'inteiro'
+   5 |   n <- "dez"
+     |        ^

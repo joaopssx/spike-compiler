@@ -69,9 +69,9 @@ spike_add_expect_test(compile_keeps_c_file
 
 spike_add_expect_test(run_exit_code_is_forwarded
     -DPROGRAM=$<TARGET_FILE:spike>
-    "-DARGS=${CMAKE_SOURCE_DIR}/tests/programs/runtime/r001_division_by_zero.por|--run|-o|${SPIKE_E2E_DIR}/divide"
+    "-DARGS=${CMAKE_SOURCE_DIR}/tests/e2e/integer_division_by_zero/program.por|--run|-o|${SPIKE_E2E_DIR}/divide"
     -DEXPECT_CODE=101
-    "-DEXPECT_STDERR=R001.*linha 5"
+    "-DEXPECT_STDERR=R001.*linha 8"
 )
 
 spike_add_expect_test(compile_reports_semantic_errors
@@ -80,51 +80,3 @@ spike_add_expect_test(compile_reports_semantic_errors
     -DEXPECT_CODE=1
     "-DEXPECT_STDERR=E700"
 )
-
-file(GLOB SPIKE_RUN_PROGRAMS CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/tests/programs/run/*.por")
-foreach(program IN LISTS SPIKE_RUN_PROGRAMS)
-    get_filename_component(name "${program}" NAME_WE)
-    get_filename_component(dir "${program}" DIRECTORY)
-    if(NOT EXISTS "${dir}/${name}.out")
-        message(FATAL_ERROR "tests/programs/run/${name}.por needs ${name}.out with the expected output")
-    endif()
-    add_test(NAME run_${name}
-        COMMAND ${CMAKE_COMMAND}
-            -DSPIKE=$<TARGET_FILE:spike>
-            "-DSOURCE=${program}"
-            "-DEXE=${SPIKE_E2E_DIR}/run_${name}"
-            "-DEXE_SUFFIX=${CMAKE_EXECUTABLE_SUFFIX}"
-            "-DEXPECTED_OUTPUT=${dir}/${name}.out"
-            "-DINPUT=${dir}/${name}.in"
-            -DWORK_DIR=${SPIKE_E2E_DIR}
-            -DNAME=run_${name}
-            -P "${CMAKE_SOURCE_DIR}/tests/e2e/run_program.cmake"
-    )
-    set_tests_properties(run_${name} PROPERTIES ENVIRONMENT "SPIKE_CC=${CMAKE_C_COMPILER}")
-endforeach()
-
-file(GLOB SPIKE_RUNTIME_ERROR_PROGRAMS CONFIGURE_DEPENDS
-    "${CMAKE_SOURCE_DIR}/tests/programs/runtime/*.por"
-)
-foreach(program IN LISTS SPIKE_RUNTIME_ERROR_PROGRAMS)
-    get_filename_component(name "${program}" NAME_WE)
-    string(REGEX MATCH "^[rR][0-9][0-9][0-9]" expected_code "${name}")
-    if(NOT expected_code)
-        message(FATAL_ERROR "runtime program '${name}.por' must start with its code, e.g. r001_")
-    endif()
-    string(TOUPPER "${expected_code}" expected_code)
-    add_test(NAME runtime_error_${name}
-        COMMAND ${CMAKE_COMMAND}
-            -DSPIKE=$<TARGET_FILE:spike>
-            "-DSOURCE=${program}"
-            "-DEXE=${SPIKE_E2E_DIR}/runtime_${name}"
-            "-DEXE_SUFFIX=${CMAKE_EXECUTABLE_SUFFIX}"
-            -DEXPECT_CODE=101
-            "-DEXPECT_STDERR=\\[${expected_code}\\].*linha [0-9]+"
-            "-DINPUT=${CMAKE_SOURCE_DIR}/tests/programs/runtime/${name}.in"
-            -DWORK_DIR=${SPIKE_E2E_DIR}
-            -DNAME=runtime_${name}
-            -P "${CMAKE_SOURCE_DIR}/tests/e2e/run_program.cmake"
-    )
-    set_tests_properties(runtime_error_${name} PROPERTIES ENVIRONMENT "SPIKE_CC=${CMAKE_C_COMPILER}")
-endforeach()

@@ -1,0 +1,3 @@
+erro[E400]: 'entao' esperado após condição do 'se'
+   6 |     x <- 2
+     |     ^

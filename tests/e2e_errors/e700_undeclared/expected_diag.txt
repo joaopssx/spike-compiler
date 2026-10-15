@@ -1,0 +1,4 @@
+erro[E700]: variável 'y' não foi declarada
+   5 |   x <- y + 1
+     |        ^
+     = dica: declare 'y' na seção var.
