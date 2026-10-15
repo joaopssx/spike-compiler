@@ -1,6 +1,6 @@
 # The C runtime
 
-Every program Spike generates is a single C file. Its first part is the runtime: `runtime/spike_runtime.h`, a header-only C99 library with the helpers the generated code calls. Everything in it is `static inline`, so the C compiler drops what a program does not use and the result is still one standalone executable.
+Every program Spike generates is a single C file. Its first part is the runtime, a header-only C99 library with the helpers the generated code calls. It lives in two files, `runtime/spike_runtime_core.h` (types, errors, memory, texts, arithmetic, `para` helpers) and `runtime/spike_runtime_io.h` (writing, reading, parsing). `runtime/spike_runtime.h` includes both, in that order, for the C tests; `io` relies on `core` being included first. Everything in it is `static inline`, so the C compiler drops what a program does not use and the result is still one standalone executable.
 
 ## Rules
 
@@ -36,6 +36,8 @@ Texts are immutable. Literals are plain C strings. Texts built while the program
 | `spike_div_int(a, b, line)` | Integer division truncated toward zero; R001 if `b` is 0. `LLONG_MIN div -1` wraps instead of crashing. |
 | `spike_mod_int(a, b, line)` | Remainder with the sign of `a`, as in C; R001 if `b` is 0. |
 | `spike_div_real(a, b, line)` | Real division; R001 if `b` is 0. |
+| `spike_check_step(step, line)` | R006 if the step of a `para` is 0. Generated only when the step is not a literal. |
+| `spike_for_advance(&counter, step)` | Adds the step to a `para` counter and returns 1, or returns 0 without changing it when the sum would overflow. The generated loop `break`s on 0, so a `para` near the `inteiro` limits never loops forever. |
 | `spike_write_int(v)` | Prints an integer. |
 | `spike_write_real(v)` | Prints a real with `%.10g`: `3` for 3.0, `3.5`, `0.3` for 0.1 + 0.2. Negative zero prints `0`. |
 | `spike_write_str(v)` | Prints a text. |
@@ -55,14 +57,15 @@ Every read function takes the `.por` line of the `leia`, so an error message can
 | --- | --- |
 | R001 | Division by zero in `/`, `div` or `mod`. |
 | R003 | `leia` got text that does not fit the variable's type. |
+| R006 | The step of a `para` is 0 when the loop starts. |
 | R007 | The input ended before `leia` could read a line. |
 | R008 | Out of memory. |
 
-R002 and R004 to R006 are reserved by `language.md` for vectors, conversions, math functions and `passo 0`, and arrive with those features. A program that stops on a runtime error always exits with code 101.
+R002, R004 and R005 are reserved by `language.md` for vectors, conversions and math functions, and arrive with those features. A program that stops on a runtime error always exits with code 101.
 
 ## How it gets into the compiler
 
-`cmake/embed_runtime.cmake` runs at build time (`cmake -P`). It reads `runtime/spike_runtime.h`, turns `\r\n` into `\n`, and writes `build/generated/runtime_text.cpp` with the file as a byte array. A byte array avoids the length limit some compilers put on string literals. `spike_core` compiles that file, and `include/spike/runtime_text.hpp` exposes it as `runtime_source()` and `runtime_source_size()`. The generated file is rebuilt whenever the header or the script changes, and it is never committed.
+`cmake/embed_runtime.cmake` runs at build time (`cmake -P`). It reads `spike_runtime_core.h` and `spike_runtime_io.h`, joins them in that order, turns `\r\n` into `\n`, and writes `build/generated/runtime_text.cpp` with the file as a byte array. A byte array avoids the length limit some compilers put on string literals. `spike_core` compiles that file, and `include/spike/runtime_text.hpp` exposes it as `runtime_source()` and `runtime_source_size()`. The generated file is rebuilt whenever the header or the script changes, and it is never committed.
 
 ## Tests
 

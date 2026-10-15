@@ -67,6 +67,22 @@ void Generator::emit_stmt(const Stmt& stmt) {
         emit_escreva(*escreva);
         return;
     }
+    if (const auto* se = std::get_if<SeStmt>(&stmt.node)) {
+        emit_se(*se);
+        return;
+    }
+    if (const auto* enquanto = std::get_if<EnquantoStmt>(&stmt.node)) {
+        emit_enquanto(*enquanto);
+        return;
+    }
+    if (const auto* repita = std::get_if<RepitaStmt>(&stmt.node)) {
+        emit_repita(*repita);
+        return;
+    }
+    if (const auto* para = std::get_if<ParaStmt>(&stmt.node)) {
+        emit_para(*para);
+        return;
+    }
     const SourcePos pos = stmt_pos(stmt);
     fail("E901",
          std::string("comando ainda não suportado pelo gerador: '") + command_name(stmt) + "'",

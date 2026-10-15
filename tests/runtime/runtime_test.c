@@ -54,6 +54,20 @@ static void test_wrapping_arithmetic(void) {
     CHECK(spike_sub_int(0, LLONG_MIN) == LLONG_MIN);
 }
 
+static void test_for_advance(void) {
+    spike_int counter = 1;
+    CHECK(spike_for_advance(&counter, 2) && counter == 3);
+    CHECK(spike_for_advance(&counter, -5) && counter == -2);
+    counter = LLONG_MAX - 1;
+    CHECK(spike_for_advance(&counter, 1) && counter == LLONG_MAX);
+    CHECK(!spike_for_advance(&counter, 1) && counter == LLONG_MAX);
+    counter = LLONG_MIN + 2;
+    CHECK(!spike_for_advance(&counter, -3) && counter == LLONG_MIN + 2);
+    CHECK(spike_for_advance(&counter, -2) && counter == LLONG_MIN);
+    spike_check_step(1, 1);
+    spike_check_step(-1, 1);
+}
+
 static void test_arithmetic(void) {
     CHECK(spike_div_int(7, 2, 1) == 3);
     CHECK(spike_div_int(-7, 2, 1) == -3);
@@ -108,6 +122,7 @@ int main(void) {
     test_real_format();
     test_strings();
     test_wrapping_arithmetic();
+    test_for_advance();
     test_arithmetic();
     test_parse_int();
     test_parse_real();

@@ -45,6 +45,7 @@ private:
     std::unordered_map<std::string, TypeKind> var_types_;
     CWriter out_;
     CodegenResult result_;
+    int loop_count_ = 0;
 
     bool failed() const;
     void fail(const char* code, const std::string& message, int line, int col);
@@ -56,6 +57,13 @@ private:
     void emit_stmt(const Stmt& stmt);
     void emit_assign(const AssignStmt& stmt);
     void emit_escreva(const EscrevaStmt& stmt);
+    void emit_se(const SeStmt& stmt);
+    void emit_enquanto(const EnquantoStmt& stmt);
+    void emit_repita(const RepitaStmt& stmt);
+    void emit_para(const ParaStmt& stmt);
+    void emit_body(const StmtList& stmts);
+    std::string condition(const ExprPtr& value);
+    int next_loop_id();
 
     TypeKind type_of(const Expr& expr);
     std::string expr(const ExprPtr& expr);

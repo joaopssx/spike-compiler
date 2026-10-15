@@ -698,6 +698,14 @@ Estes erros acontecem quando o programa já compilou e está rodando. A mensagem
 
 **Como corrigir:** digite um valor do tipo certo. Para `real`, valem `3.5` e `3,5`.
 
+## R006 — passo zero no para
+
+**Mensagem:** `o passo do 'para' não pode ser zero`
+
+**Quando acontece:** o `passo` de um `para` é uma variável ou conta que vale zero quando o laço começa. Com passo zero a variável nunca muda e o laço nunca terminaria. Quando o `passo 0` está escrito direto no programa, o Spike já avisa antes de compilar (E733).
+
+**Como corrigir:** garanta que o passo seja diferente de zero antes do `para`, por exemplo com `se p <> 0 entao ... fimse`.
+
 ## R007 — a entrada terminou
 
 **Mensagem:** `a entrada terminou antes do 'leia'`

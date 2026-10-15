@@ -48,6 +48,7 @@ const std::vector<Group> kGroups = {
     {"codegen_program", spike_tests::run_codegen_program_tests},
     {"codegen_expr", spike_tests::run_codegen_expr_tests},
     {"codegen_output", spike_tests::run_codegen_output_tests},
+    {"codegen_control", spike_tests::run_codegen_control_tests},
     {"codegen_compile", spike_tests::run_codegen_compile_tests},
     {"process", spike_tests::run_process_tests},
     {"cc_driver", spike_tests::run_cc_driver_tests},

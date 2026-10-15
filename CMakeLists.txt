@@ -74,6 +74,7 @@ set(SPIKE_CODEGEN_SOURCES
     src/codegen/codegen_core.cpp
     src/codegen/codegen_expr.cpp
     src/codegen/codegen_stmt.cpp
+    src/codegen/codegen_control.cpp
     src/codegen/codegen_names.cpp
     src/codegen/codegen_internal.hpp
 )
@@ -81,16 +82,21 @@ set(SPIKE_RUNTIME_TEXT_CPP "${CMAKE_BINARY_DIR}/generated/runtime_text.cpp")
 add_custom_command(
     OUTPUT "${SPIKE_RUNTIME_TEXT_CPP}"
     COMMAND ${CMAKE_COMMAND}
-        "-DINPUT=${CMAKE_SOURCE_DIR}/runtime/spike_runtime.h"
+        "-DINPUTS=${CMAKE_SOURCE_DIR}/runtime/spike_runtime_core.h|${CMAKE_SOURCE_DIR}/runtime/spike_runtime_io.h"
         "-DOUTPUT=${SPIKE_RUNTIME_TEXT_CPP}"
         -P "${CMAKE_SOURCE_DIR}/cmake/embed_runtime.cmake"
-    DEPENDS "${CMAKE_SOURCE_DIR}/runtime/spike_runtime.h" "${CMAKE_SOURCE_DIR}/cmake/embed_runtime.cmake"
+    DEPENDS
+        "${CMAKE_SOURCE_DIR}/runtime/spike_runtime_core.h"
+        "${CMAKE_SOURCE_DIR}/runtime/spike_runtime_io.h"
+        "${CMAKE_SOURCE_DIR}/cmake/embed_runtime.cmake"
     COMMENT "Embedding the C runtime"
     VERBATIM
 )
 set(SPIKE_RUNTIME_SOURCES
     "${SPIKE_RUNTIME_TEXT_CPP}"
     runtime/spike_runtime.h
+    runtime/spike_runtime_core.h
+    runtime/spike_runtime_io.h
 )
 set(SPIKE_PUBLIC_HEADERS
     include/spike/ast.hpp
@@ -147,6 +153,7 @@ add_executable(spike_tests
     tests/cli/cli_test.cpp
     tests/cli/console_test.cpp
     tests/codegen/codegen_compile_test.cpp
+    tests/codegen/codegen_control_test.cpp
     tests/codegen/codegen_expr_test.cpp
     tests/codegen/codegen_output_test.cpp
     tests/codegen/codegen_program_test.cpp
