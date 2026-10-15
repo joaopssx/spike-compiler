@@ -107,8 +107,6 @@ int run_tokens(const spike::CliArgs& args) {
     std::cout << spike::gray(summary.str()) << std::endl;
 
     // Smoke test do parser — só pra confirmar que ele aceita/rejeita.
-    // (PROMPT 014: estrutura do programa + var section. Statements e
-    // expressões ainda não.)
     spike::Parser parser(lo->tokens, args.input_file, lo->source);
     parser.parse();
     if (parser.had_error()) {
@@ -129,7 +127,7 @@ int run_compile(const spike::CliArgs& args) {
         return 1;
     }
 
-    // TODO(prompts seguintes): parser + codegen.
+    // TODO: parser + codegen.
     std::cerr << spike::yellow(
                      "compilação ainda não implementada — só análise léxica por enquanto.")
               << std::endl;

@@ -8,7 +8,7 @@ namespace {
 
 using spike_tests::tokens_of;
 
-// ---- lexer: operators, punctuation, comments (PROMPT 007) -----------------
+// ---- lexer: operators, punctuation, comments ------------------------------
 
 void test_lexer_single_char_operators() {
     auto toks = tokens_of("+ - * / ( ) , . =");

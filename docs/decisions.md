@@ -16,5 +16,5 @@ Decisions that shape what Spike does. Each one was answered by the author; none 
 
 The original plan assumed the opposite on both.
 
-- **Decision 3.** The plan required an installed compiler in v0.2 and downloaded one with `spike setup` in v0.4. Now the Spike package carries a C compiler. Prompt 035 (C compiler driver) looks for the bundled compiler first and falls back to one on the `PATH` during development. Prompt 061 changes from "download a compiler" to "package a compiler with Spike". Which compiler to bundle, and its license, is decided in prompt 061.
-- **Decision 4.** Linux and macOS are no longer "it works". CI (prompt 059) builds and tests on all three systems, and the release (prompt 062) produces an installable package for each.
+- **Decision 3.** The plan required an installed compiler in v0.2 and downloaded one with `spike setup` in v0.4. Now the Spike package carries a C compiler. The C compiler driver looks for the bundled compiler first and falls back to one on the `PATH` during development. In v0.4, instead of downloading a compiler, Spike is packaged with one. Which compiler to bundle, and its license, is decided then.
+- **Decision 4.** Linux and macOS are no longer "it works". CI builds and tests on all three systems, and each release produces an installable package for each one.

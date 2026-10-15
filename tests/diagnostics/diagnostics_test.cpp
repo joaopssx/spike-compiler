@@ -9,7 +9,7 @@
 
 namespace {
 
-// ---- diagnostics (PROMPT 009) ---------------------------------------------
+// ---- diagnostics ----------------------------------------------------------
 
 void test_diag_empty_starts_clean() {
     spike::Diagnostics d("foo.por", "linha 1\nlinha 2\n");

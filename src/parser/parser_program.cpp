@@ -78,7 +78,7 @@ Program Parser::parse_program() {
     }
     advance();
 
-    // corpo (vazio até PROMPT 015+) — só consome tokens até fimalgoritmo.
+    // corpo: comandos até fimalgoritmo.
     prog.body = parse_stmt_list(TokenType::FIM_ALGORITMO);
 
     // fimalgoritmo

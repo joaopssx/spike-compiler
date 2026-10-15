@@ -8,7 +8,7 @@
 
 namespace {
 
-// ---- cli (PROMPT 011) ------------------------------------------------------
+// ---- cli -------------------------------------------------------------------
 
 // Helper para chamar parse_args com um vetor de strings (em vez de argv).
 // const_cast é seguro aqui porque parse_args só lê argv.

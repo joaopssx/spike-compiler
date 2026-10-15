@@ -11,7 +11,7 @@ namespace {
 
 using spike_tests::parse_source;
 
-// ---- parser: statements (PROMPT 016) --------------------------------------
+// ---- parser: statements ---------------------------------------------------
 
 void test_stmt_assignment_arrow() {
     auto r = parse_source(

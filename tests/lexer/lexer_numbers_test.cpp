@@ -8,7 +8,7 @@ namespace {
 
 using spike_tests::tokens_of;
 
-// ---- lexer: numbers (PROMPT 006) ------------------------------------------
+// ---- lexer: numbers -------------------------------------------------------
 
 void test_lexer_integer_literal() {
     auto toks = tokens_of("42");

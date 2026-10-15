@@ -1,6 +1,6 @@
 # The Spike language
 
-This is the reference for the Portugol dialect that Spike compiles. Every prompt from 029 on follows it. When the code and this file disagree, one of them is a bug.
+This is the reference for the Portugol dialect that Spike compiles. When the code and this file disagree, one of them is a bug.
 
 Sections marked **proposed** describe syntax that does not exist yet. They are written down so they can be confirmed before anyone implements them.
 
@@ -41,7 +41,7 @@ fimalgoritmo
 - Letters with accents (`média`, `ação`) are not allowed. They produce E001, and the hint suggests writing the name without the accent.
 - Names ignore case: `Idade`, `idade` and `IDADE` are the same variable. Error messages show the name as it was declared.
 - A name cannot be a keyword. Keywords also ignore case, and `caracter` is accepted as a spelling of `caractere`.
-- Each name is declared once. Declaring the same name twice is an error (checked from prompt 029).
+- Each name is declared once. Declaring the same name twice is an error (checked from v0.2).
 
 ## Types
 
@@ -53,7 +53,7 @@ fimalgoritmo
 | `logico` | `verdadeiro` or `falso` | | `falso` |
 
 - Every variable starts with its default value, so a program never reads garbage.
-- Reading a variable before the program assigns it is still almost always a mistake. The compiler warns about it (prompt 055); it is not an error.
+- Reading a variable before the program assigns it is still almost always a mistake. The compiler warns about it (from v0.3); it is not an error.
 - Integer overflow is not checked yet. The result wraps around, as in C.
 
 ## Literals
@@ -152,7 +152,7 @@ fimpara
 - The counter must be an `inteiro` variable. The start, end and step must be `inteiro`.
 - Start, end and step are evaluated once, before the loop begins.
 - Without `passo`, the step is 1. With a positive step the loop runs while `i <= fim`; with a negative step, while `i >= fim`. A step of 0 is runtime error R006.
-- Assigning to the counter inside the loop is an error (checked from prompt 031).
+- Assigning to the counter inside the loop is an error (checked from v0.2).
 - After the loop, the counter holds the first value that failed the test (`11` in the example above).
 
 ### repita
@@ -169,24 +169,24 @@ The body runs at least once. The loop stops when the condition becomes `verdadei
 
 - Today every variable is global: it is declared in `var` and can be used anywhere in the body.
 - Using a name that was not declared is an error.
-- When subprograms arrive (prompts 048 to 050), they get their own `var` section. A local name hides a global with the same name inside that subprogram.
+- When subprograms arrive (v0.3), they get their own `var` section. A local name hides a global with the same name inside that subprogram.
 
 ## Language roadmap (proposed)
 
-Each item below is **proposed, waiting for the prompt listed**. The syntax is final only when that prompt is done.
+Each item below is **proposed**. The syntax is final only when the feature ships, in v0.3.
 
-| Feature | Proposed syntax | Prompt |
-| --- | --- | --- |
-| Extra operators | `a div b`, `a mod b`, `a ^ b` | 042 |
-| Constants | `const` section before `var`, lines `NOME = valor` | 043 |
-| Break | `interrompa` inside `enquanto`, `para`, `repita` | 044 |
-| Multiple choice | `escolha` / `caso` / `outrocaso` / `fimescolha` | 045 |
-| Vectors | `v : vetor[1..10] de inteiro` | 046 |
-| Matrices | `m : vetor[1..3, 1..3] de real` | 047 |
-| Procedures | `procedimento nome(...)` ... `fimprocedimento` | 048 |
-| Functions | `funcao nome(...): tipo` ... `retorne x` ... `fimfuncao` | 049 |
-| By-reference parameters | `var` before a parameter | 050 |
-| Initial value | `x : inteiro <- 5` in the `var` section | 043 |
+| Feature | Proposed syntax |
+| --- | --- |
+| Extra operators | `a div b`, `a mod b`, `a ^ b` |
+| Constants | `const` section before `var`, lines `NOME = valor` |
+| Break | `interrompa` inside `enquanto`, `para`, `repita` |
+| Multiple choice | `escolha` / `caso` / `outrocaso` / `fimescolha` |
+| Vectors | `v : vetor[1..10] de inteiro` |
+| Matrices | `m : vetor[1..3, 1..3] de real` |
+| Procedures | `procedimento nome(...)` ... `fimprocedimento` |
+| Functions | `funcao nome(...): tipo` ... `retorne x` ... `fimfuncao` |
+| By-reference parameters | `var` before a parameter |
+| Initial value | `x : inteiro <- 5` in the `var` section |
 
 ```
 algoritmo "roadmap"
@@ -237,7 +237,7 @@ fimalgoritmo
 
 ## Built-in functions (proposed)
 
-Names ignore case, like everything else. Math functions arrive in prompt 051, text and utilities in prompt 052.
+Names ignore case, like everything else. They arrive in v0.3.
 
 | Function | Returns | Description |
 | --- | --- | --- |
@@ -276,4 +276,4 @@ A compiled program stops at the first runtime error. It prints a message in Port
 | R005 | math function outside its domain (`raiz` of a negative, `log` of zero or less) |
 | R006 | `para` with a step of 0 |
 
-The numbering is proposed and becomes final in prompt 053.
+The numbering is proposed and becomes final in v0.3.

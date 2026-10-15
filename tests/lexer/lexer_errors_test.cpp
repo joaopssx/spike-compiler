@@ -30,7 +30,7 @@ bool lexer_diag_contains_code(const spike::Lexer& lex, const std::string& code) 
     return sink.str().find(code) != std::string::npos;
 }
 
-// ---- lexer ↔ diagnostics integration (PROMPT 010) -------------------------
+// ---- lexer ↔ diagnostics integration --------------------------------------
 
 void test_lexer_diag_codes_are_wired() {
     {

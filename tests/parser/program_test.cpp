@@ -11,7 +11,7 @@ namespace {
 
 using spike_tests::parse_source;
 
-// ---- parser (PROMPT 014) --------------------------------------------------
+// ---- parser ---------------------------------------------------------------
 
 void test_parser_empty_program() {
     auto r = parse_source("algoritmo \"vazio\"\ninicio\nfimalgoritmo\n");

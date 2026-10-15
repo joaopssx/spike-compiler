@@ -8,7 +8,7 @@
 
 namespace {
 
-// ---- ast (PROMPT 013) -----------------------------------------------------
+// ---- ast ------------------------------------------------------------------
 
 void test_ast_leaf_exprs_carry_position() {
     auto n = spike::make_expr(spike::NumberExpr{42.0, true, 3, 5});

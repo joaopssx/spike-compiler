@@ -18,8 +18,8 @@ public:
 
     Program parse();
 
-    // Entrada pública pra parsear uma única expressão. Usada por testes e,
-    // eventualmente, pelos parsers de statement (PROMPTs seguintes).
+    // Entrada pública pra parsear uma única expressão. Usada pelos testes e
+    // pelos parsers de statement.
     ExprPtr parse_expr();
 
     bool had_error() const;

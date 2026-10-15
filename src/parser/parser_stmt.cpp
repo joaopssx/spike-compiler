@@ -7,7 +7,7 @@
 
 namespace spike {
 
-// ─── Statements (PROMPT 016: atribuição, escreva/escreval, leia) ───────────
+// ─── Statements (atribuição, escreva/escreval, leia) ───────────────────────
 
 StmtList Parser::parse_stmt_list(TokenType stop_at) {
     StmtList list;

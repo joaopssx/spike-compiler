@@ -8,7 +8,7 @@ namespace {
 
 using spike_tests::tokens_of;
 
-// ---- lexer: strings (PROMPT 006) ------------------------------------------
+// ---- lexer: strings -------------------------------------------------------
 
 void test_lexer_string_simple() {
     auto toks = tokens_of("\"ola mundo\"");

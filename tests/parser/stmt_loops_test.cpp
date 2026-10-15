@@ -11,8 +11,8 @@ namespace {
 
 using spike_tests::parse_source;
 
-// ---- parser: enquanto/para (PROMPT 018) -----------------------------------
-// ---- parser: repita statement (PROMPT 019) --------------------------------
+// ---- parser: enquanto/para ------------------------------------------------
+// ---- parser: repita statement ---------------------------------------------
 
 void test_stmt_enquanto_basic() {
     auto r = parse_source(

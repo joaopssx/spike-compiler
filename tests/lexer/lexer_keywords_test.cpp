@@ -8,7 +8,7 @@ namespace {
 
 using spike_tests::tokens_of;
 
-// ---- lexer: keywords & identifiers (PROMPT 005) ---------------------------
+// ---- lexer: keywords & identifiers ----------------------------------------
 
 void test_lexer_keywords_are_case_insensitive() {
     auto toks = tokens_of("Algoritmo SE entao");

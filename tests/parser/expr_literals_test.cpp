@@ -11,7 +11,7 @@ namespace {
 
 using spike_tests::parse_expression;
 
-// ---- parser: expressions (PROMPT 015) -------------------------------------
+// ---- parser: expressions --------------------------------------------------
 
 void test_expr_number_literal() {
     auto r = parse_expression("42");

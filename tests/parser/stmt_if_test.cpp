@@ -11,7 +11,7 @@ namespace {
 
 using spike_tests::parse_source;
 
-// ---- parser: se statement (PROMPT 017) ------------------------------------
+// ---- parser: se statement -------------------------------------------------
 
 void test_stmt_se_then_only() {
     auto r = parse_source(

@@ -27,7 +27,7 @@ BinaryOp binary_op_for(TokenType t) {
 
 } // namespace
 
-// ─── Expressões (PROMPT 015) ────────────────────────────────────────────────
+// ─── Expressões ─────────────────────────────────────────────────────────────
 
 ExprPtr Parser::parse_expr() {
     return parse_or();
