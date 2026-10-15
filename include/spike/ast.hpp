@@ -16,6 +16,11 @@ namespace spike {
 struct Expr;
 struct Stmt;
 
+struct SourcePos {
+    int line = 0;
+    int col = 0;
+};
+
 using ExprPtr  = std::unique_ptr<Expr>;
 using StmtPtr  = std::unique_ptr<Stmt>;
 using StmtList = std::vector<StmtPtr>;
@@ -85,6 +90,7 @@ struct EscrevaStmt {
 struct LeiaStmt {
     std::vector<std::string> var_names;
     int line = 0, col = 0;
+    std::vector<SourcePos> var_positions;
 };
 
 struct SeStmt {
@@ -107,6 +113,7 @@ struct ParaStmt {
     ExprPtr     step;   // nullptr = passo 1 implícito
     StmtList    body;
     int line = 0, col = 0;
+    SourcePos   var_pos;
 };
 
 struct RepitaStmt {

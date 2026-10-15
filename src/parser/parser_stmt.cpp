@@ -132,6 +132,7 @@ StmtPtr Parser::parse_leia() {
     }
 
     std::vector<std::string> names;
+    std::vector<SourcePos> positions;
     if (!check(TokenType::RPAREN)) {
         while (true) {
             if (!check(TokenType::IDENTIFIER)) {
@@ -143,7 +144,9 @@ StmtPtr Parser::parse_leia() {
                 if (!is_at_end()) advance();
                 break;
             }
-            names.push_back(advance().lexeme);
+            const Token& name_tok = advance();
+            names.push_back(name_tok.lexeme);
+            positions.push_back(SourcePos{name_tok.line, name_tok.col});
             if (!match(TokenType::COMMA)) break;
         }
     }
@@ -157,6 +160,7 @@ StmtPtr Parser::parse_leia() {
 
     LeiaStmt s;
     s.var_names = std::move(names);
+    s.var_positions = std::move(positions);
     s.line = op_tok.line;
     s.col = op_tok.col;
     return make_stmt(std::move(s));

@@ -119,6 +119,7 @@ StmtPtr Parser::parse_para() {
 
     ParaStmt s;
     s.var_name = name_tok.lexeme;
+    s.var_pos = SourcePos{name_tok.line, name_tok.col};
     s.from = std::move(from);
     s.to = std::move(to);
     s.step = std::move(step);

@@ -1,0 +1,57 @@
+#include "spike/semantic.hpp"
+
+#include <string>
+
+namespace spike {
+
+SemanticAnalyzer::SemanticAnalyzer(const Program& program, const std::string& filename,
+                                   const std::string& source)
+    : program_(program), diags_(filename, source) {}
+
+void SemanticAnalyzer::analyze() {
+    declare_globals();
+    check_block(program_.body);
+}
+
+bool SemanticAnalyzer::had_error() const {
+    return diags_.has_errors();
+}
+
+const Diagnostics& SemanticAnalyzer::diagnostics() const {
+    return diags_;
+}
+
+const SymbolTable& SemanticAnalyzer::symbols() const {
+    return symbols_;
+}
+
+void SemanticAnalyzer::declare_globals() {
+    for (const VarDecl& decl : program_.globals) {
+        if (symbols_.declare(decl.name, decl.type, decl.line, decl.col)) continue;
+        const Symbol* first = symbols_.lookup(decl.name);
+        diags_.error("E701", "variável '" + decl.name + "' já foi declarada",
+                     decl.line, decl.col,
+                     "a primeira declaração de '" + first->name + "' está na linha " +
+                         std::to_string(first->line) + ". Apague uma das duas.");
+    }
+}
+
+Symbol* SemanticAnalyzer::resolve(const std::string& name, int line, int col) {
+    Symbol* symbol = symbols_.lookup(name);
+    if (symbol) return symbol;
+    if (reported_undeclared_.insert({symbol_key(name), line}).second) {
+        diags_.error("E700", "variável '" + name + "' não foi declarada",
+                     line, col, "declare '" + name + "' na seção var.");
+    }
+    return nullptr;
+}
+
+void SemanticAnalyzer::mark_read(const std::string& name, int line, int col) {
+    if (Symbol* symbol = resolve(name, line, col)) symbol->used = true;
+}
+
+void SemanticAnalyzer::mark_assigned(const std::string& name, int line, int col) {
+    if (Symbol* symbol = resolve(name, line, col)) symbol->assigned = true;
+}
+
+} // namespace spike

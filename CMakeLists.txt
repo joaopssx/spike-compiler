@@ -45,6 +45,12 @@ set(SPIKE_PARSER_SOURCES
     src/parser/parser_control.cpp
     src/parser/parser_expr.cpp
 )
+set(SPIKE_SEMANTIC_SOURCES
+    src/semantic/symbol_table.cpp
+    src/semantic/semantic_core.cpp
+    src/semantic/semantic_expr.cpp
+    src/semantic/semantic_stmt.cpp
+)
 set(SPIKE_PUBLIC_HEADERS
     include/spike/ast.hpp
     include/spike/ast_enums.hpp
@@ -55,6 +61,8 @@ set(SPIKE_PUBLIC_HEADERS
     include/spike/file_reader.hpp
     include/spike/lexer.hpp
     include/spike/parser.hpp
+    include/spike/semantic.hpp
+    include/spike/symbol_table.hpp
     include/spike/token.hpp
 )
 
@@ -65,6 +73,7 @@ add_library(spike_core STATIC
     ${SPIKE_DIAGNOSTICS_SOURCES}
     ${SPIKE_CLI_SOURCES}
     ${SPIKE_PARSER_SOURCES}
+    ${SPIKE_SEMANTIC_SOURCES}
     ${SPIKE_PUBLIC_HEADERS}
 )
 target_include_directories(spike_core PUBLIC include PRIVATE src)
@@ -94,10 +103,13 @@ add_executable(spike_tests
     tests/lexer/lexer_strings_test.cpp
     tests/parser/expr_literals_test.cpp
     tests/parser/expr_operators_test.cpp
+    tests/parser/name_positions_test.cpp
     tests/parser/program_test.cpp
     tests/parser/stmt_basic_test.cpp
     tests/parser/stmt_if_test.cpp
     tests/parser/stmt_loops_test.cpp
+    tests/semantic/semantic_names_test.cpp
+    tests/semantic/symbol_table_test.cpp
     tests/token/token_test.cpp
 )
 target_include_directories(spike_tests PRIVATE tests)
