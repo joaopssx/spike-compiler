@@ -152,7 +152,8 @@ fimpara
 - The counter must be an `inteiro` variable. The start, end and step must be `inteiro`.
 - Start, end and step are evaluated once, before the loop begins.
 - Without `passo`, the step is 1. With a positive step the loop runs while `i <= fim`; with a negative step, while `i >= fim`. A step of 0 is runtime error R006.
-- Assigning to the counter inside the loop is an error (checked from v0.2).
+- Assigning to the counter inside the loop (with `<-` or `leia`) is allowed, as in VisuAlg, but it is almost always a mistake. The compiler warns about it (from v0.3).
+- `passo 0` written as a literal is a compile error, because the loop would never end. A step that only turns out to be 0 while the program runs is runtime error R006.
 - After the loop, the counter holds the first value that failed the test (`11` in the example above).
 
 ### repita

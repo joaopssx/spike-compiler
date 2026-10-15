@@ -36,7 +36,7 @@ void test_semantic_invalid_programs_emit_their_code() {
         SPIKE_EXPECT(ok);
         ++checked;
     }
-    SPIKE_EXPECT(checked >= 8);
+    SPIKE_EXPECT(checked >= 12);
 }
 
 } // namespace

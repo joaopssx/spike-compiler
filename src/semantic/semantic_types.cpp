@@ -113,9 +113,8 @@ TypeKind SemanticAnalyzer::check_unary(const UnaryExpr& node, TypeKind operand) 
 
 void SemanticAnalyzer::check_assign(const AssignStmt& stmt) {
     const TypeKind value = check_expr(stmt.value);
-    Symbol* target = resolve(stmt.var_name, stmt.line, stmt.col);
+    Symbol* target = mark_assigned(stmt.var_name, stmt.line, stmt.col);
     if (!target) return;
-    target->assigned = true;
 
     const TypeKind declared = target->type;
     if (value == TypeKind::Invalid || declared == TypeKind::Invalid ||

@@ -28,23 +28,17 @@ void SemanticAnalyzer::check_stmt(const Stmt& stmt) {
                     mark_assigned(node.var_names[i], line, col);
                 }
             } else if constexpr (std::is_same_v<Node, SeStmt>) {
-                check_expr(node.condition);
+                check_condition(node.condition, "se");
                 check_block(node.then_branch);
                 check_block(node.else_branch);
             } else if constexpr (std::is_same_v<Node, EnquantoStmt>) {
-                check_expr(node.condition);
+                check_condition(node.condition, "enquanto");
                 check_block(node.body);
             } else if constexpr (std::is_same_v<Node, ParaStmt>) {
-                const int line = node.var_pos.line != 0 ? node.var_pos.line : node.line;
-                const int col = node.var_pos.line != 0 ? node.var_pos.col : node.col;
-                mark_assigned(node.var_name, line, col);
-                check_expr(node.from);
-                check_expr(node.to);
-                check_expr(node.step);
-                check_block(node.body);
+                check_para(node);
             } else if constexpr (std::is_same_v<Node, RepitaStmt>) {
                 check_block(node.body);
-                check_expr(node.condition);
+                check_condition(node.condition, "repita");
             }
         },
         stmt.node);

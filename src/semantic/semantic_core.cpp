@@ -29,6 +29,10 @@ const std::unordered_map<const Expr*, TypeKind>& SemanticAnalyzer::expr_types() 
     return expr_types_;
 }
 
+const std::vector<LoopVarWrite>& SemanticAnalyzer::loop_var_writes() const {
+    return loop_var_writes_;
+}
+
 void SemanticAnalyzer::declare_globals() {
     for (const VarDecl& decl : program_.globals) {
         if (symbols_.declare(decl.name, decl.type, decl.line, decl.col)) continue;
@@ -50,8 +54,18 @@ Symbol* SemanticAnalyzer::resolve(const std::string& name, int line, int col) {
     return nullptr;
 }
 
-void SemanticAnalyzer::mark_assigned(const std::string& name, int line, int col) {
-    if (Symbol* symbol = resolve(name, line, col)) symbol->assigned = true;
+Symbol* SemanticAnalyzer::mark_assigned(const std::string& name, int line, int col) {
+    Symbol* symbol = resolve(name, line, col);
+    if (!symbol) return nullptr;
+    symbol->assigned = true;
+    const std::string key = symbol_key(name);
+    for (const std::string& loop_var : active_loop_vars_) {
+        if (loop_var == key) {
+            loop_var_writes_.push_back(LoopVarWrite{name, line, col});
+            break;
+        }
+    }
+    return symbol;
 }
 
 } // namespace spike

@@ -27,6 +27,7 @@ void run_symbol_table_tests();
 void run_semantic_name_tests();
 void run_semantic_operator_tests();
 void run_semantic_assign_tests();
+void run_semantic_control_tests();
 void run_semantic_program_tests();
 
 } // namespace spike_tests

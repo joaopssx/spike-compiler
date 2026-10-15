@@ -599,3 +599,79 @@ inicio
   x <- 7 / 2
 fimalgoritmo
 ```
+
+## E730 — condição que não é logica
+
+**Mensagem:** `a condição do 'se' precisa ser logica, mas é 'inteiro'` (o comando citado pode ser `se`, `enquanto` ou `repita`)
+
+**Quando acontece:** a condição de um `se`, `enquanto` ou do `ate` de um `repita` não dá `verdadeiro` ou `falso`. No Spike, um número não vale como condição.
+
+**Como corrigir:** escreva uma comparação. Se a condição era uma variável inteira, a dica sugere `x <> 0` ou `x = 1`.
+
+```
+algoritmo "exemplo"
+var
+  x : inteiro
+inicio
+  se x entao
+    escreval("x")
+  fimse
+fimalgoritmo
+```
+
+## E731 — variável do para não é inteiro
+
+**Mensagem:** `a variável do 'para' precisa ser 'inteiro', mas 'r' é 'real'`
+
+**Quando acontece:** a variável que conta as voltas do `para` foi declarada com outro tipo.
+
+**Como corrigir:** declare a variável do `para` como `inteiro`.
+
+```
+algoritmo "exemplo"
+var
+  r : real
+inicio
+  para r de 1 ate 3 faca
+    escreval(r)
+  fimpara
+fimalgoritmo
+```
+
+## E732 — início, fim ou passo do para não é inteiro
+
+**Mensagem:** `o fim do 'para' precisa ser 'inteiro', mas é 'real'` (ou `o início`, `o passo`)
+
+**Quando acontece:** o valor inicial, o valor final ou o passo do `para` não é um `inteiro`. Lembre que `/` sempre dá `real`.
+
+**Como corrigir:** use valores inteiros. Para um valor real, converta com `trunca()` ou `arredonda()`.
+
+```
+algoritmo "exemplo"
+var
+  i : inteiro
+inicio
+  para i de 1 ate 2.5 faca
+    escreval(i)
+  fimpara
+fimalgoritmo
+```
+
+## E733 — passo 0
+
+**Mensagem:** `'passo 0' faz o 'para' repetir para sempre`
+
+**Quando acontece:** o `para` foi escrito com `passo 0`. A variável nunca muda e o laço nunca termina. Se o passo for uma variável que vale zero, o Spike só percebe quando o programa roda.
+
+**Como corrigir:** use um passo diferente de zero: `passo 1` para contar para cima, `passo -1` para contar para baixo.
+
+```
+algoritmo "exemplo"
+var
+  i : inteiro
+inicio
+  para i de 1 ate 10 passo 0 faca
+    escreval(i)
+  fimpara
+fimalgoritmo
+```
