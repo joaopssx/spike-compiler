@@ -5,6 +5,7 @@ if(NOT CMAKE_C_COMPILER)
     return()
 endif()
 enable_language(C)
+target_compile_definitions(spike_tests PRIVATE SPIKE_TEST_C_COMPILER="${CMAKE_C_COMPILER}")
 
 function(spike_add_runtime_program target source)
     add_executable(${target} ${source})

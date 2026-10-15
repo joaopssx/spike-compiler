@@ -54,6 +54,13 @@ set(SPIKE_SEMANTIC_SOURCES
     src/semantic/semantic_control.cpp
     src/semantic/semantic_internal.hpp
 )
+set(SPIKE_CODEGEN_SOURCES
+    src/codegen/codegen_core.cpp
+    src/codegen/codegen_expr.cpp
+    src/codegen/codegen_stmt.cpp
+    src/codegen/codegen_names.cpp
+    src/codegen/codegen_internal.hpp
+)
 set(SPIKE_RUNTIME_TEXT_CPP "${CMAKE_BINARY_DIR}/generated/runtime_text.cpp")
 add_custom_command(
     OUTPUT "${SPIKE_RUNTIME_TEXT_CPP}"
@@ -73,6 +80,7 @@ set(SPIKE_PUBLIC_HEADERS
     include/spike/ast.hpp
     include/spike/ast_enums.hpp
     include/spike/cli.hpp
+    include/spike/codegen.hpp
     include/spike/colors.hpp
     include/spike/console.hpp
     include/spike/diagnostics.hpp
@@ -94,6 +102,7 @@ add_library(spike_core STATIC
     ${SPIKE_PARSER_SOURCES}
     ${SPIKE_SEMANTIC_SOURCES}
     ${SPIKE_RUNTIME_SOURCES}
+    ${SPIKE_CODEGEN_SOURCES}
     ${SPIKE_PUBLIC_HEADERS}
 )
 target_include_directories(spike_core PUBLIC include PRIVATE src)
@@ -113,6 +122,9 @@ add_executable(spike_tests
     tests/ast/ast_enums_test.cpp
     tests/cli/cli_test.cpp
     tests/cli/console_test.cpp
+    tests/codegen/codegen_compile_test.cpp
+    tests/codegen/codegen_expr_test.cpp
+    tests/codegen/codegen_program_test.cpp
     tests/diagnostics/diagnostics_test.cpp
     tests/file_reader/file_reader_test.cpp
     tests/lexer/lexer_comments_test.cpp
@@ -137,8 +149,11 @@ add_executable(spike_tests
     tests/runtime/runtime_text_test.cpp
     tests/token/token_test.cpp
 )
-target_include_directories(spike_tests PRIVATE tests)
-target_compile_definitions(spike_tests PRIVATE SPIKE_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
+target_include_directories(spike_tests PRIVATE tests src)
+target_compile_definitions(spike_tests PRIVATE
+    SPIKE_SOURCE_DIR="${CMAKE_SOURCE_DIR}"
+    SPIKE_BINARY_DIR="${CMAKE_BINARY_DIR}"
+)
 target_link_libraries(spike_tests PRIVATE spike_core spike_warnings)
 
 string(REPLACE "." "\\." SPIKE_VERSION_REGEX "${PROJECT_VERSION}")

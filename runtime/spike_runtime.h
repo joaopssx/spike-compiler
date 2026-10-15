@@ -110,6 +110,18 @@ static inline int spike_str_cmp(spike_str a, spike_str b) {
     return (result > 0) - (result < 0);
 }
 
+static inline spike_int spike_add_int(spike_int a, spike_int b) {
+    return (spike_int)((unsigned long long)a + (unsigned long long)b);
+}
+
+static inline spike_int spike_sub_int(spike_int a, spike_int b) {
+    return (spike_int)((unsigned long long)a - (unsigned long long)b);
+}
+
+static inline spike_int spike_mul_int(spike_int a, spike_int b) {
+    return (spike_int)((unsigned long long)a * (unsigned long long)b);
+}
+
 static inline spike_int spike_div_int(spike_int a, spike_int b, int line) {
     if (b == 0) spike_fail(SPIKE_R_DIV_ZERO, line, "divisão por zero");
     if (b == -1) return (spike_int)(0ULL - (unsigned long long)a);

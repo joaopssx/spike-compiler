@@ -44,6 +44,16 @@ static void test_strings(void) {
     CHECK(spike_str_cmp("abc", "abcd") == -1);
 }
 
+static void test_wrapping_arithmetic(void) {
+    CHECK(spike_add_int(2, 3) == 5);
+    CHECK(spike_sub_int(2, 3) == -1);
+    CHECK(spike_mul_int(-4, 5) == -20);
+    CHECK(spike_add_int(LLONG_MAX, 1) == LLONG_MIN);
+    CHECK(spike_sub_int(LLONG_MIN, 1) == LLONG_MAX);
+    CHECK(spike_mul_int(LLONG_MAX, 2) == -2);
+    CHECK(spike_sub_int(0, LLONG_MIN) == LLONG_MIN);
+}
+
 static void test_arithmetic(void) {
     CHECK(spike_div_int(7, 2, 1) == 3);
     CHECK(spike_div_int(-7, 2, 1) == -3);
@@ -97,6 +107,7 @@ int main(void) {
     spike_init();
     test_real_format();
     test_strings();
+    test_wrapping_arithmetic();
     test_arithmetic();
     test_parse_int();
     test_parse_real();

@@ -32,6 +32,7 @@ Texts are immutable. Literals are plain C strings. Texts built while the program
 | `spike_str_concat(a, b)` | `a` followed by `b`, runtime-owned. |
 | `spike_str_eq(a, b)` | 1 if the texts are equal. |
 | `spike_str_cmp(a, b)` | -1, 0 or 1, comparing byte by byte. |
+| `spike_add_int`, `spike_sub_int`, `spike_mul_int` | `+`, `-` and `*` on `inteiro`. They compute in unsigned arithmetic and convert back, so overflow wraps around instead of being undefined behavior in C. |
 | `spike_div_int(a, b, line)` | Integer division truncated toward zero; R001 if `b` is 0. `LLONG_MIN div -1` wraps instead of crashing. |
 | `spike_mod_int(a, b, line)` | Remainder with the sign of `a`, as in C; R001 if `b` is 0. |
 | `spike_div_real(a, b, line)` | Real division; R001 if `b` is 0. |
