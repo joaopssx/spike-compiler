@@ -2,9 +2,12 @@
 #include "support/registry.hpp"
 #include "support/test_support.hpp"
 
+#include "spike/file_reader.hpp"
+
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
+#include <iterator>
 #include <string>
 
 namespace {
@@ -20,6 +23,33 @@ int run_shell(std::string command) {
     return std::system(command.c_str());
 }
 
+std::string read_all(const std::string& path) {
+    std::ifstream file(path, std::ios::binary);
+    std::string text((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+    std::string without_cr;
+    for (char c : text) {
+        if (c != '\r') without_cr += c;
+    }
+    return without_cr;
+}
+
+bool compile_c(const std::string& c_source, const std::string& base) {
+    {
+        std::ofstream file(base + ".c", std::ios::binary);
+        file << c_source;
+    }
+    const std::string compile = std::string("\"") + SPIKE_TEST_C_COMPILER +
+                                "\" -std=c99 -Wall -Wextra -pedantic -Werror \"" + base +
+                                ".c\" -o \"" + base + ".exe\"";
+    const int status = run_shell(compile);
+    if (status != 0) std::cerr << "  compile command failed: " << compile << "\n";
+    return status == 0;
+}
+
+int run_to_file(const std::string& base) {
+    return run_shell("\"" + base + ".exe\" > \"" + base + ".out\"");
+}
+
 void test_generated_c_compiles_without_warnings() {
     const auto gen = generate_from_source(
         "algoritmo \"compila\"\n"
@@ -28,30 +58,42 @@ void test_generated_c_compiles_without_warnings() {
         "  a <- 10\n  i <- a * 2 - -3\n  r <- a / 4 + 0.5\n  r <- -r\n"
         "  t <- \"Olá, \\\"mundo\\\"\\n\"\n  u <- t + \"!\"\n"
         "  b <- (t < u) e nao (a = i) ou (r >= 2)\n  usado <- b = falso\n"
+        "  escreval(a, \" \", i, \" \", r, \" \", b, \" \", usado)\n"
         "fimalgoritmo\n",
         "compila.por");
     SPIKE_EXPECT(gen.result.ok);
     if (!gen.result.ok) return;
 
     const std::string base = std::string(SPIKE_BINARY_DIR) + "/codegen_compile_test";
-    {
-        std::ofstream file(base + ".c", std::ios::binary);
-        file << gen.result.c_source;
-    }
-    const std::string exe = base + ".exe";
-    const std::string compile = std::string("\"") + SPIKE_TEST_C_COMPILER +
-                                "\" -std=c99 -Wall -Wextra -pedantic -Werror \"" + base +
-                                ".c\" -o \"" + exe + "\"";
-    const int compiled = run_shell(compile);
-    if (compiled != 0) std::cerr << "  compile command failed: " << compile << "\n";
-    SPIKE_EXPECT(compiled == 0);
-    if (compiled != 0) return;
-    SPIKE_EXPECT(run_shell("\"" + exe + "\"") == 0);
+    const bool compiled = compile_c(gen.result.c_source, base);
+    SPIKE_EXPECT(compiled);
+    if (!compiled) return;
+    SPIKE_EXPECT(run_to_file(base) == 0);
+    SPIKE_EXPECT(read_all(base + ".out") == "10 23 -3 verdadeiro falso\n");
+}
+
+void test_hello_example_runs() {
+    const auto file = spike::read_file(std::string(SPIKE_SOURCE_DIR) + "/examples/hello.por");
+    SPIKE_EXPECT(file.ok);
+    const auto gen = generate_from_source(file.content, "hello.por");
+    SPIKE_EXPECT(gen.result.ok);
+    if (!gen.result.ok) return;
+
+    const std::string base = std::string(SPIKE_BINARY_DIR) + "/codegen_hello_test";
+    const bool compiled = compile_c(gen.result.c_source, base);
+    SPIKE_EXPECT(compiled);
+    if (!compiled) return;
+    SPIKE_EXPECT(run_to_file(base) == 0);
+    const std::string output = read_all(base + ".out");
+    if (output != "Olá, mundo!\n") std::cerr << "  hello printed: " << output << "\n";
+    SPIKE_EXPECT(output == "Olá, mundo!\n");
 }
 
 #else
 
 void test_generated_c_compiles_without_warnings() {}
+
+void test_hello_example_runs() {}
 
 #endif
 
@@ -61,6 +103,7 @@ namespace spike_tests {
 
 void run_codegen_compile_tests() {
     test_generated_c_compiles_without_warnings();
+    test_hello_example_runs();
 }
 
 } // namespace spike_tests

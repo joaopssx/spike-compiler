@@ -124,6 +124,7 @@ add_executable(spike_tests
     tests/cli/console_test.cpp
     tests/codegen/codegen_compile_test.cpp
     tests/codegen/codegen_expr_test.cpp
+    tests/codegen/codegen_output_test.cpp
     tests/codegen/codegen_program_test.cpp
     tests/diagnostics/diagnostics_test.cpp
     tests/file_reader/file_reader_test.cpp

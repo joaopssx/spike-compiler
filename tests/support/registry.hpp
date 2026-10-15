@@ -32,6 +32,7 @@ void run_semantic_program_tests();
 void run_runtime_text_tests();
 void run_codegen_program_tests();
 void run_codegen_expr_tests();
+void run_codegen_output_tests();
 void run_codegen_compile_tests();
 
 } // namespace spike_tests

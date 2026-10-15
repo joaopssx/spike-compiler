@@ -87,12 +87,12 @@ void test_codegen_invalid_type_is_internal_error() {
 
 void test_codegen_unsupported_command_is_e901() {
     const auto gen = generate_from_source(
-        "algoritmo \"t\"\ninicio\n  escreval(\"oi\")\nfimalgoritmo\n");
+        "algoritmo \"t\"\nvar\n  x : inteiro\ninicio\n  leia(x)\nfimalgoritmo\n");
     SPIKE_EXPECT(gen.front_end_ok);
     SPIKE_EXPECT(!gen.result.ok);
     SPIKE_EXPECT(gen.result.error_code == "E901");
-    SPIKE_EXPECT(contains(gen.result.error_message, "'escreval'"));
-    SPIKE_EXPECT(gen.result.error_line == 3);
+    SPIKE_EXPECT(contains(gen.result.error_message, "'leia'"));
+    SPIKE_EXPECT(gen.result.error_line == 5);
 }
 
 } // namespace

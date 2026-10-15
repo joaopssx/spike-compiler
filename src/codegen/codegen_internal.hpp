@@ -55,6 +55,7 @@ private:
     void emit_block(const StmtList& stmts);
     void emit_stmt(const Stmt& stmt);
     void emit_assign(const AssignStmt& stmt);
+    void emit_escreva(const EscrevaStmt& stmt);
 
     TypeKind type_of(const Expr& expr);
     std::string expr(const ExprPtr& expr);
