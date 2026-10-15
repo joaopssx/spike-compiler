@@ -692,11 +692,11 @@ Estes erros acontecem quando o programa já compilou e está rodando. A mensagem
 
 ## R003 — entrada inválida
 
-**Mensagem:** `o valor digitado não é um número inteiro` (ou `não é um número`, ou `digite verdadeiro ou falso (também valem v, f, sim e nao)`)
+**Mensagem:** `esperava um número inteiro, mas recebeu 'abc'` (ou `esperava um número`, ou `esperava verdadeiro ou falso (ou v, f, sim, nao)`; para uma linha em branco, `mas recebeu uma linha vazia`)
 
 **Quando acontece:** o `leia` recebeu um texto que não combina com o tipo da variável. Por exemplo, `abc` para uma variável `inteiro`, ou `3.5` para um `inteiro`.
 
-**Como corrigir:** digite um valor do tipo certo. Para `real`, valem `3.5` e `3,5`.
+**Como corrigir:** digite um valor do tipo certo, um por linha. Para `real`, valem `3.5` e `3,5`.
 
 ## R006 — passo zero no para
 
@@ -708,7 +708,7 @@ Estes erros acontecem quando o programa já compilou e está rodando. A mensagem
 
 ## R007 — a entrada terminou
 
-**Mensagem:** `a entrada terminou antes do 'leia'`
+**Mensagem:** `a entrada acabou antes de leia() conseguir ler 'b'`
 
 **Quando acontece:** o programa pediu um valor, mas não havia mais nada para ler. Isso aparece quando a entrada vem de um arquivo (`programa < dados.txt`) com menos linhas do que o programa precisa.
 

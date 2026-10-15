@@ -45,9 +45,13 @@ spike_add_runtime_io_test(read_real_whole real "7\\n" 0 "-DEXPECT_STDOUT=^7$")
 spike_add_runtime_io_test(read_bool_sim bool "Sim\\n" 0 "-DEXPECT_STDOUT=^verdadeiro$")
 spike_add_runtime_io_test(read_str_crlf str "ola mundo\\r\\n" 0 "-DEXPECT_STDOUT=^ola mundo$")
 spike_add_runtime_io_test(bad_int int "abc\\n" 101
-    "-DEXPECT_STDERR=R003.*linha 5")
+    "-DEXPECT_STDERR=R003\\]: esperava um n.+mero inteiro, mas recebeu 'abc'.*linha 5")
+spike_add_runtime_io_test(empty_int int "\\n" 101 "-DEXPECT_STDERR=R003.*uma linha vazia")
+spike_add_runtime_io_test(long_bad_real real "0123456789012345678901234567890123456789XYZ\\n" 101
+    "-DEXPECT_STDERR=R003.*recebeu '0123456789012345678901234567890123456789[.][.][.]'")
 spike_add_runtime_io_test(bad_bool bool "talvez\\n" 101 "-DEXPECT_STDERR=R003")
-spike_add_runtime_io_test(end_of_input int "" 101 "-DEXPECT_STDERR=R007.*linha 5")
+spike_add_runtime_io_test(end_of_input int "" 101
+    "-DEXPECT_STDERR=R007\\]: a entrada acabou antes de leia\\(\\) conseguir ler 'x'.*linha 5")
 spike_add_runtime_io_test(div_by_zero div "" 101
     "-DEXPECT_STDERR=R001\\]: divis.+o por zero.*linha 7")
 spike_add_runtime_io_test(div_real_by_zero divreal "" 101 "-DEXPECT_STDERR=R001.*linha 9")

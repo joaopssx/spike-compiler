@@ -112,12 +112,16 @@ From the loosest binding to the tightest:
 
 ### leia
 
-`leia(a, b, ...)` reads one line from the keyboard for each variable, in order.
+`leia(a, b, ...)` reads one line from the keyboard for each variable, in order. Two values on the same line (`3 4`) are not split: the first variable gets the whole line. One value per line keeps the rule simple and predictable.
+
+Whatever was written with `escreva` before the `leia` appears on the screen before the program waits. A UTF-8 byte order mark at the very start of the input (added by Notepad and by PowerShell pipes) is ignored.
 
 - `inteiro` and `real` accept spaces around the number. `real` accepts `3.5` and `3,5`.
 - `caractere` takes the whole line as typed.
 - `logico` accepts `verdadeiro`, `falso`, `v`, `f`, `sim` or `nao`, in any case.
-- Anything else is runtime error R003. If the input ends before a line could be read, it is R007.
+- Anything else is runtime error R003, and the message shows what was typed: `esperava um número inteiro, mas recebeu 'abc'`. An empty line is also R003.
+- If the input ends before a line could be read, it is R007, and the message names the variable: `a entrada acabou antes de leia() conseguir ler 'b'`.
+- Output always uses a point for decimals, even when the input used a comma.
 
 ### se
 

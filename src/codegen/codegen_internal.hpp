@@ -57,6 +57,7 @@ private:
     void emit_stmt(const Stmt& stmt);
     void emit_assign(const AssignStmt& stmt);
     void emit_escreva(const EscrevaStmt& stmt);
+    void emit_leia(const LeiaStmt& stmt);
     void emit_se(const SeStmt& stmt);
     void emit_enquanto(const EnquantoStmt& stmt);
     void emit_repita(const RepitaStmt& stmt);

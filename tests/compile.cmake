@@ -121,6 +121,7 @@ foreach(program IN LISTS SPIKE_RUNTIME_ERROR_PROGRAMS)
             "-DEXE_SUFFIX=${CMAKE_EXECUTABLE_SUFFIX}"
             -DEXPECT_CODE=101
             "-DEXPECT_STDERR=\\[${expected_code}\\].*linha [0-9]+"
+            "-DINPUT=${CMAKE_SOURCE_DIR}/tests/programs/runtime/${name}.in"
             -DWORK_DIR=${SPIKE_E2E_DIR}
             -DNAME=runtime_${name}
             -P "${CMAKE_SOURCE_DIR}/tests/e2e/run_program.cmake"

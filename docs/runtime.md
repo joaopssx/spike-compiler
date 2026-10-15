@@ -43,13 +43,13 @@ Texts are immutable. Literals are plain C strings. Texts built while the program
 | `spike_write_str(v)` | Prints a text. |
 | `spike_write_bool(v)` | Prints `verdadeiro` or `falso`. |
 | `spike_write_newline()` | Prints a line break. |
-| `spike_read_int(line)` | Reads a line and parses an integer (spaces around it are fine). |
-| `spike_read_real(line)` | Reads a line and parses a real; accepts `3.5` and `3,5`. |
-| `spike_read_str(line)` | Reads a whole line, without the line break (`\r\n` or `\n`). |
-| `spike_read_bool(line)` | Reads `verdadeiro`, `falso`, `v`, `f`, `sim` or `nao`, in any case. |
+| `spike_read_int(line, name)` | Reads a line and parses an integer (spaces around it are fine). |
+| `spike_read_real(line, name)` | Reads a line and parses a real; accepts `3.5` and `3,5`. |
+| `spike_read_str(line, name)` | Reads a whole line, without the line break (`\r\n` or `\n`). |
+| `spike_read_bool(line, name)` | Reads `verdadeiro`, `falso`, `v`, `f`, `sim` or `nao`, in any case. |
 | `spike_format_real`, `spike_parse_int`, `spike_parse_real`, `spike_parse_bool` | The pure helpers behind the functions above, exposed so they can be tested without a console. |
 
-Every read function takes the `.por` line of the `leia`, so an error message can point at it.
+Every read function takes the `.por` line of the `leia` and the variable name as written, so error messages can point at both: R003 shows what was typed (cut at 40 bytes, never in the middle of a UTF-8 character), R007 names the variable. Reading flushes stdout first, so a prompt written with `escreva` shows up before the program waits. The first read skips a UTF-8 byte order mark if the input starts with one.
 
 ## Runtime errors
 

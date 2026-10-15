@@ -44,6 +44,18 @@ const char* write_function(TypeKind type) {
     return "";
 }
 
+const char* read_function(TypeKind type) {
+    switch (type) {
+        case TypeKind::Integer: return "spike_read_int";
+        case TypeKind::Real:    return "spike_read_real";
+        case TypeKind::String:  return "spike_read_str";
+        case TypeKind::Bool:    return "spike_read_bool";
+        case TypeKind::None:
+        case TypeKind::Invalid: return nullptr;
+    }
+    return nullptr;
+}
+
 SourcePos stmt_pos(const Stmt& stmt) {
     return std::visit([](const auto& node) { return SourcePos{node.line, node.col}; },
                       stmt.node);
@@ -65,6 +77,10 @@ void Generator::emit_stmt(const Stmt& stmt) {
     }
     if (const auto* escreva = std::get_if<EscrevaStmt>(&stmt.node)) {
         emit_escreva(*escreva);
+        return;
+    }
+    if (const auto* leia = std::get_if<LeiaStmt>(&stmt.node)) {
+        emit_leia(*leia);
         return;
     }
     if (const auto* se = std::get_if<SeStmt>(&stmt.node)) {
@@ -99,6 +115,22 @@ void Generator::emit_assign(const AssignStmt& stmt) {
     const std::string value = expr_as(stmt.value, it->second);
     if (failed()) return;
     out_.line(c_name(stmt.var_name) + " = " + value + ";");
+}
+
+void Generator::emit_leia(const LeiaStmt& stmt) {
+    for (std::size_t i = 0; i < stmt.var_names.size(); ++i) {
+        const std::string& name = stmt.var_names[i];
+        const int line = i < stmt.var_positions.size() ? stmt.var_positions[i].line : stmt.line;
+        const auto it = var_types_.find(symbol_key(name));
+        const char* reader = it == var_types_.end() ? nullptr : read_function(it->second);
+        if (!reader) {
+            fail("E900", "erro interno do gerador: variável '" + name + "' sem tipo para o leia",
+                 stmt.line, stmt.col);
+            return;
+        }
+        out_.line(c_name(name) + " = " + reader + "(" + std::to_string(line) + ", " +
+                  string_literal(name) + ");");
+    }
 }
 
 void Generator::emit_escreva(const EscrevaStmt& stmt) {

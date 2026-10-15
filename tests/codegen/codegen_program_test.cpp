@@ -85,14 +85,22 @@ void test_codegen_invalid_type_is_internal_error() {
     SPIKE_EXPECT(spike::generate_c(program, invalid).error_code == "E900");
 }
 
-void test_codegen_unsupported_command_is_e901() {
+void test_codegen_supports_every_command() {
     const auto gen = generate_from_source(
-        "algoritmo \"t\"\nvar\n  x : inteiro\ninicio\n  leia(x)\nfimalgoritmo\n");
+        "algoritmo \"todos\"\n"
+        "var\n  x : inteiro\n  t : caractere\ninicio\n"
+        "  x <- 1\n"
+        "  escreva(x)\n"
+        "  escreval(t)\n"
+        "  leia(x, t)\n"
+        "  se x > 0 entao\n  senao\n  fimse\n"
+        "  enquanto x < 3 faca\n    x <- x + 1\n  fimenquanto\n"
+        "  para x de 1 ate 2 faca\n  fimpara\n"
+        "  repita\n  ate verdadeiro\n"
+        "fimalgoritmo\n");
     SPIKE_EXPECT(gen.front_end_ok);
-    SPIKE_EXPECT(!gen.result.ok);
-    SPIKE_EXPECT(gen.result.error_code == "E901");
-    SPIKE_EXPECT(contains(gen.result.error_message, "'leia'"));
-    SPIKE_EXPECT(gen.result.error_line == 5);
+    SPIKE_EXPECT(gen.result.ok);
+    SPIKE_EXPECT(gen.result.error_code.empty());
 }
 
 } // namespace
@@ -105,7 +113,7 @@ void run_codegen_program_tests() {
     test_codegen_names_are_prefixed_and_lowercase();
     test_codegen_name_and_literal_helpers();
     test_codegen_invalid_type_is_internal_error();
-    test_codegen_unsupported_command_is_e901();
+    test_codegen_supports_every_command();
 }
 
 } // namespace spike_tests

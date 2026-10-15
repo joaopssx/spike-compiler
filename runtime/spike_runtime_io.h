@@ -104,13 +104,49 @@ static inline spike_bool spike_parse_bool(const char* text, spike_bool* out) {
     return 0;
 }
 
-static inline char* spike_read_line(int line) {
+static inline void spike_input_error(int line, const char* expected, const char* received) {
+    char shown[48];
+    char message[160];
+    size_t length = strlen(received);
+    if (length == 0) {
+        snprintf(message, sizeof message, "esperava %s, mas recebeu uma linha vazia", expected);
+        spike_fail(SPIKE_R_BAD_INPUT, line, message);
+    }
+    if (length > 40) {
+        length = 40;
+        while (length > 0 && ((unsigned char)received[length] & 0xC0) == 0x80) --length;
+        memcpy(shown, received, length);
+        memcpy(shown + length, "...", 4);
+    } else {
+        memcpy(shown, received, length + 1);
+    }
+    snprintf(message, sizeof message, "esperava %s, mas recebeu '%s'", expected, shown);
+    spike_fail(SPIKE_R_BAD_INPUT, line, message);
+}
+
+static int spike_input_started = 0;
+
+static inline void spike_skip_input_bom(void) {
+    int c;
+    if (spike_input_started) return;
+    spike_input_started = 1;
+    c = getchar();
+    if (c != 0xEF) {
+        if (c != EOF) ungetc(c, stdin);
+        return;
+    }
+    if (getchar() == 0xBB && getchar() == 0xBF) return;
+    spike_fail(SPIKE_R_BAD_INPUT, 0, "a entrada começa com bytes inválidos");
+}
+
+static inline char* spike_read_line(int line, const char* name) {
     size_t capacity = 64;
     size_t length = 0;
     char* buffer;
     int c;
     spike_flush();
     buffer = spike_alloc(capacity);
+    spike_skip_input_bom();
     while ((c = getchar()) != EOF && c != '\n') {
         if (length + 1 == capacity) {
             char* bigger = spike_alloc(capacity * 2);
@@ -121,38 +157,39 @@ static inline char* spike_read_line(int line) {
         buffer[length++] = (char)c;
     }
     if (c == EOF && length == 0) {
-        spike_fail(SPIKE_R_END_OF_INPUT, line, "a entrada terminou antes do 'leia'");
+        char message[128];
+        snprintf(message, sizeof message, "a entrada acabou antes de leia() conseguir ler '%s'",
+                 name);
+        spike_fail(SPIKE_R_END_OF_INPUT, line, message);
     }
     if (length > 0 && buffer[length - 1] == '\r') --length;
     buffer[length] = '\0';
     return buffer;
 }
 
-static inline spike_int spike_read_int(int line) {
+static inline spike_int spike_read_int(int line, const char* name) {
     spike_int value = 0;
-    if (!spike_parse_int(spike_read_line(line), &value)) {
-        spike_fail(SPIKE_R_BAD_INPUT, line, "o valor digitado não é um número inteiro");
-    }
+    const char* text = spike_read_line(line, name);
+    if (!spike_parse_int(text, &value)) spike_input_error(line, "um número inteiro", text);
     return value;
 }
 
-static inline spike_real spike_read_real(int line) {
+static inline spike_real spike_read_real(int line, const char* name) {
     spike_real value = 0.0;
-    if (!spike_parse_real(spike_read_line(line), &value)) {
-        spike_fail(SPIKE_R_BAD_INPUT, line, "o valor digitado não é um número");
-    }
+    const char* text = spike_read_line(line, name);
+    if (!spike_parse_real(text, &value)) spike_input_error(line, "um número", text);
     return value;
 }
 
-static inline spike_str spike_read_str(int line) {
-    return spike_read_line(line);
+static inline spike_str spike_read_str(int line, const char* name) {
+    return spike_read_line(line, name);
 }
 
-static inline spike_bool spike_read_bool(int line) {
+static inline spike_bool spike_read_bool(int line, const char* name) {
     spike_bool value = 0;
-    if (!spike_parse_bool(spike_read_line(line), &value)) {
-        spike_fail(SPIKE_R_BAD_INPUT, line,
-                   "digite verdadeiro ou falso (também valem v, f, sim e nao)");
+    const char* text = spike_read_line(line, name);
+    if (!spike_parse_bool(text, &value)) {
+        spike_input_error(line, "verdadeiro ou falso (ou v, f, sim, nao)", text);
     }
     return value;
 }

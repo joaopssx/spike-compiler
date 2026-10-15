@@ -155,6 +155,7 @@ add_executable(spike_tests
     tests/codegen/codegen_compile_test.cpp
     tests/codegen/codegen_control_test.cpp
     tests/codegen/codegen_expr_test.cpp
+    tests/codegen/codegen_input_test.cpp
     tests/codegen/codegen_output_test.cpp
     tests/codegen/codegen_program_test.cpp
     tests/diagnostics/diagnostics_test.cpp
