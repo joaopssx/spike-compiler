@@ -119,6 +119,18 @@ CliArgs parse_args(int argc, char* argv[]) {
         }
         return out;
     }
+    if (eq(a1, "check")) {
+        out.command = Command::CHECK;
+        if (argc != 3) {
+            out.parse_error = true;
+            out.parse_error_msg = argc < 3
+                ? "o comando 'check' precisa de um arquivo .por como argumento."
+                : "o comando 'check' recebe só o arquivo .por.";
+            return out;
+        }
+        out.input_file = argv[2];
+        return out;
+    }
     if (eq(a1, "random")) {
         out.command = Command::RANDOM;
         for (int i = 2; i < argc; ++i) {
@@ -176,14 +188,15 @@ void print_help() {
         << "  spike <comando>\n"
         << "\n"
         << section("flags de compilação:") << "\n"
-        << item("-o <arquivo>", "nome do executável gerado (padrão: mesmo nome do .por)") << "\n"
-        << item("--run       ", "compila e executa na hora") << "\n"
-        << item("--time      ", "mostra quanto tempo cada etapa levou") << "\n"
-        << item("--verbose   ", "mostra o que está fazendo em cada passo") << "\n"
-        << item("--c         ", "salva o código C gerado (não apaga o .c)") << "\n"
-        << item("--ast       ", "imprime a árvore sintática antes de compilar") << "\n"
+        << item("-o <arquivo>", "onde gravar o executável (padrão: o nome do .por, na mesma pasta)") << "\n"
+        << item("--run       ", "depois de compilar, executa o programa") << "\n"
+        << item("--c         ", "guarda o código C gerado ao lado do executável (<nome>.c)") << "\n"
+        << item("--time      ", "(ainda sem efeito) tempo de cada etapa") << "\n"
+        << item("--verbose   ", "(ainda sem efeito) detalha cada etapa") << "\n"
+        << item("--ast       ", "(ainda sem efeito) mostra a árvore sintática") << "\n"
         << "\n"
         << section("comandos:") << "\n"
+        << item("check <arq> ", "só confere o programa, sem gerar executável") << "\n"
         << item("tokens <arq>", "lista os tokens do arquivo (modo debug)") << "\n"
         << item("fetch       ", "info do sistema com o cachorro em ASCII") << "\n"
         << item("dev         ", "quem fez isso aqui") << "\n"

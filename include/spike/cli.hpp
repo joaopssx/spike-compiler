@@ -8,6 +8,7 @@ namespace spike {
 enum class Command {
     COMPILE,   // spike arquivo.por [flags]
     TOKENS,    // spike tokens arquivo.por — lista os tokens (debug)
+    CHECK,
     HELP,      // spike --help
     VERSION,   // spike --version
     FETCH,     // spike fetch

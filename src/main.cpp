@@ -1,5 +1,6 @@
 #include "spike/cli.hpp"
 #include "spike/colors.hpp"
+#include "spike/compile_pipeline.hpp"
 #include "spike/console.hpp"
 #include "spike/file_reader.hpp"
 #include "spike/lexer.hpp"
@@ -118,29 +119,6 @@ int run_tokens(const spike::CliArgs& args) {
     return 0;
 }
 
-int run_compile(const spike::CliArgs& args) {
-    auto lo = read_and_lex(args.input_file);
-    if (!lo) return 1;
-
-    if (lo->lexer->had_error()) {
-        lo->lexer->diagnostics().print_all();
-        return 1;
-    }
-
-    // TODO: parser + codegen.
-    std::cerr << spike::yellow(
-                     "compilação ainda não implementada — só análise léxica por enquanto.")
-              << std::endl;
-    if (!args.output_file.empty()) {
-        std::cerr << spike::gray("  -o " + args.output_file + " (ignorado)") << std::endl;
-    }
-    if (args.flag_run || args.flag_time || args.flag_verbose ||
-        args.flag_keep_c || args.flag_ast) {
-        std::cerr << spike::gray("  flags ainda não têm efeito.") << std::endl;
-    }
-    return 0;
-}
-
 int run_stub(const std::string& label) {
     std::cerr << spike::yellow("'" + label + "' ainda não implementado.") << std::endl;
     return 0;
@@ -163,7 +141,8 @@ int main(int argc, char** argv) {
         case spike::Command::HELP:    spike::print_help();    return 0;
         case spike::Command::VERSION: spike::print_version(); return 0;
         case spike::Command::TOKENS:  return run_tokens(args);
-        case spike::Command::COMPILE: return run_compile(args);
+        case spike::Command::COMPILE: return spike::run_compile(args);
+        case spike::Command::CHECK:   return spike::run_check(args);
         case spike::Command::FETCH:   return run_stub("fetch");
         case spike::Command::DEV:     return run_stub("dev");
         case spike::Command::RANDOM: {

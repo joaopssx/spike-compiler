@@ -8,8 +8,10 @@ string(REPLACE "\\n" "\n" input_text "${input_text}")
 set(input_file "${WORK_DIR}/${NAME}.in")
 file(WRITE "${input_file}" "${input_text}")
 
+string(REPLACE "|" ";" args "${ARGS}")
+
 execute_process(
-    COMMAND "${PROGRAM}" ${ARGS}
+    COMMAND "${PROGRAM}" ${args}
     INPUT_FILE "${input_file}"
     OUTPUT_VARIABLE out
     ERROR_VARIABLE err
@@ -28,4 +30,7 @@ if(DEFINED EXPECT_STDOUT AND NOT out MATCHES "${EXPECT_STDOUT}")
 endif()
 if(DEFINED EXPECT_STDERR AND NOT err MATCHES "${EXPECT_STDERR}")
     message(FATAL_ERROR "stderr '${err}' does not match '${EXPECT_STDERR}'")
+endif()
+if(DEFINED EXPECT_FILE AND NOT EXISTS "${EXPECT_FILE}")
+    message(FATAL_ERROR "expected file '${EXPECT_FILE}' was not created")
 endif()

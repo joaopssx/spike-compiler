@@ -51,6 +51,7 @@ const std::vector<Group> kGroups = {
     {"codegen_compile", spike_tests::run_codegen_compile_tests},
     {"process", spike_tests::run_process_tests},
     {"cc_driver", spike_tests::run_cc_driver_tests},
+    {"output_path", spike_tests::run_output_path_tests},
 };
 
 bool selected(const std::string& name, const std::vector<std::string>& filters) {

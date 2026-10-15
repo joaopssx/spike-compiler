@@ -63,6 +63,10 @@ set(SPIKE_PROCESS_SOURCES
 )
 set(SPIKE_DRIVER_SOURCES
     src/driver/cc_driver.cpp
+    src/driver/compile_pipeline.cpp
+    src/driver/output_paths.cpp
+    src/driver/pipeline_front.cpp
+    src/driver/pipeline_internal.hpp
 )
 set(SPIKE_CODEGEN_SOURCES
     src/codegen/codegen_core.cpp
@@ -92,6 +96,7 @@ set(SPIKE_PUBLIC_HEADERS
     include/spike/cc_driver.hpp
     include/spike/cli.hpp
     include/spike/codegen.hpp
+    include/spike/compile_pipeline.hpp
     include/spike/colors.hpp
     include/spike/console.hpp
     include/spike/diagnostics.hpp
@@ -142,6 +147,7 @@ add_executable(spike_tests
     tests/codegen/codegen_output_test.cpp
     tests/codegen/codegen_program_test.cpp
     tests/diagnostics/diagnostics_test.cpp
+    tests/driver/output_paths_test.cpp
     tests/file_reader/file_reader_test.cpp
     tests/lexer/lexer_comments_test.cpp
     tests/lexer/lexer_errors_test.cpp
@@ -188,3 +194,4 @@ set_tests_properties(spike_unit_tests PROPERTIES
 include(tests/programs.cmake)
 include(tests/runtime.cmake)
 include(tests/process.cmake)
+include(tests/compile.cmake)
