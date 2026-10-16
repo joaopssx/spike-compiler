@@ -3,6 +3,7 @@
 
 #include "spike/ast.hpp"
 #include "spike/codegen.hpp"
+#include "spike/symbol_table.hpp"
 
 #include <string>
 #include <unordered_map>
@@ -47,6 +48,7 @@ private:
     const ConstantMap& constants_;
     std::string source_name_;
     std::unordered_map<std::string, TypeKind> var_types_;
+    std::unordered_map<std::string, std::vector<ArrayBounds>> var_dims_;
     CWriter out_;
     CodegenResult result_;
     int loop_count_ = 0;
@@ -76,6 +78,11 @@ private:
 
     TypeKind type_of(const Expr& expr);
     std::string expr(const ExprPtr& expr);
+    long long bound_value(const ArrayBound& bound) const;
+    void collect_array_dims();
+    long long element_count(const std::string& name) const;
+    std::string element(const IndexExpr& node);
+    std::string lvalue(const ExprPtr& target, std::string& name);
     std::string expr_as(const ExprPtr& expr, TypeKind wanted);
     std::string binary(const BinaryExpr& node, TypeKind result);
     std::string unary(const UnaryExpr& node);

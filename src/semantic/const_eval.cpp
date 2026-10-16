@@ -78,6 +78,10 @@ private:
         return it->second;
     }
 
+    std::variant<ConstValue, Failure> visit(const IndexExpr& node) {
+        return Failure{"'" + node.name + "' não tem valor fixo", {node.line, node.col}};
+    }
+
     std::variant<ConstValue, Failure> visit(const UnaryExpr& node) {
         auto operand = eval(*node.operand);
         if (std::holds_alternative<Failure>(operand)) return operand;

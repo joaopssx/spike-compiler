@@ -90,6 +90,8 @@ std::string Generator::expr(const ExprPtr& value) {
                 return node.value ? "1" : "0";
             } else if constexpr (std::is_same_v<Node, VarExpr>) {
                 return c_name(node.name);
+            } else if constexpr (std::is_same_v<Node, IndexExpr>) {
+                return element(node);
             } else if constexpr (std::is_same_v<Node, BinaryExpr>) {
                 return binary(node, type);
             } else {

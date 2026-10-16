@@ -43,7 +43,7 @@ void test_ast_binary_expr_is_recursive() {
 void test_ast_program_assembles() {
     spike::Program prog;
     prog.name = "calc";
-    prog.globals.push_back(spike::VarDecl{"x", spike::TypeKind::Integer, nullptr, 2, 4});
+    prog.globals.push_back(spike::VarDecl{"x", spike::TypeKind::Integer, nullptr, 2, 4, {}});
 
     // x <- 42
     auto val = spike::make_expr(spike::NumberExpr{42.0, true, 4, 9});

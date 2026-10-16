@@ -707,6 +707,14 @@ Estes erros acontecem quando o programa já compilou e está rodando. A mensagem
 
 **Como corrigir:** confira o divisor antes de dividir: `se b <> 0 entao ... fimse`.
 
+## R002 — índice fora do vetor
+
+**Mensagem:** `índice 11 fora do vetor 'notas' (válido: 1 a 5)`
+
+**Quando acontece:** com o programa rodando, um índice calculado (por exemplo `notas[i]` com `i` valendo 11) fica fora dos limites da declaração.
+
+**Como corrigir:** confira os limites do `para` ou da conta que calcula o índice. Um erro comum é o laço ir até um a mais do que o tamanho do vetor.
+
 ## R003 — entrada inválida
 
 **Mensagem:** `esperava um número inteiro, mas recebeu 'abc'` (ou `esperava um número`, ou `esperava verdadeiro ou falso (ou v, f, sim, nao)`; para uma linha em branco, `mas recebeu uma linha vazia`)
@@ -932,6 +940,115 @@ inicio
 fimalgoritmo
 ```
 
+## E770 — vetor sem índice
+
+**Mensagem:** `o vetor 'v' precisa de um índice`
+
+**Quando acontece:** um vetor aparece sem `[ ]` numa conta, num `escreva`, numa atribuição ou num `leia`. O Spike não trabalha com o vetor inteiro de uma vez.
+
+**Como corrigir:** use um elemento por vez, como `v[i]`, normalmente dentro de um `para`.
+
+```
+algoritmo "exemplo"
+var
+  v : vetor[1..5] de inteiro
+  i : inteiro
+  x : real
+inicio
+  escreval(v)
+fimalgoritmo
+```
+
+## E771 — índice em algo que não é vetor
+
+**Mensagem:** `'i' não é um vetor`
+
+**Quando acontece:** um nome declarado como variável simples aparece com `[ ]`.
+
+**Como corrigir:** tire o `[ ]`, ou declare o nome como vetor: `i : vetor[1..10] de inteiro`.
+
+```
+algoritmo "exemplo"
+var
+  v : vetor[1..5] de inteiro
+  i : inteiro
+  x : real
+inicio
+  i[1] <- 2
+fimalgoritmo
+```
+
+## E772 — índice que não é inteiro
+
+**Mensagem:** `o índice precisa ser inteiro, mas é 'real'`
+
+**Quando acontece:** o valor dentro de `[ ]` é real, texto ou lógico. As posições de um vetor são números inteiros.
+
+**Como corrigir:** use um inteiro; para um real, `trunca()` o transforma.
+
+```
+algoritmo "exemplo"
+var
+  v : vetor[1..5] de inteiro
+  i : inteiro
+  x : real
+inicio
+  escreval(v[x])
+fimalgoritmo
+```
+
+## E773 — quantidade errada de índices
+
+**Mensagem:** `'v' tem 1 dimensão, mas recebeu 2 índices`
+
+**Quando acontece:** o número de valores dentro de `[ ]` não bate com a declaração do vetor.
+
+**Como corrigir:** use um índice para cada dimensão da declaração.
+
+```
+algoritmo "exemplo"
+var
+  v : vetor[1..5] de inteiro
+  i : inteiro
+  x : real
+inicio
+  escreval(v[1, 2])
+fimalgoritmo
+```
+
+## E774 — índice fixo fora do vetor
+
+**Mensagem:** `índice 6 fora do vetor 'notas' (válido: 1 a 5)`
+
+**Quando acontece:** o índice é um número (ou conta só com constantes) que fica fora dos limites da declaração. Como o valor já é conhecido, o Spike avisa antes de compilar.
+
+**Como corrigir:** use um índice entre os limites, ou aumente o vetor.
+
+```
+algoritmo "exemplo"
+var
+  notas : vetor[1..5] de real
+inicio
+  notas[6] <- 7
+fimalgoritmo
+```
+
+## E775 — limites do vetor inválidos
+
+**Mensagem:** `o vetor 'w' termina antes de começar (de 3 a 1)`
+
+**Quando acontece:** o fim do vetor é menor que o início, o vetor teria mais de 10 milhões de elementos, ou um limite usa algo que não é uma constante inteira (a mensagem diz qual dos três).
+
+**Como corrigir:** escreva o menor limite primeiro, use um vetor menor, ou use números inteiros e constantes inteiras nos limites.
+
+```
+algoritmo "exemplo"
+var
+  w : vetor[3..1] de inteiro
+inicio
+fimalgoritmo
+```
+
 ## E800 — falta o nome da constante
 
 **Mensagem:** `nome da constante esperado` (ou `nome da constante esperado depois de 'const'`, quando a seção está vazia)
@@ -1071,6 +1188,103 @@ var
 inicio
   escolha x
   fimescolha
+fimalgoritmo
+```
+
+## E820 — falta o '[' do vetor
+
+**Mensagem:** `'[' esperado depois de 'vetor'`
+
+**Quando acontece:** depois de `vetor` não veio `[`.
+
+**Como corrigir:** escreva `vetor[1..10] de tipo`.
+
+```
+algoritmo "exemplo"
+var
+  v : vetor 1..5] de real
+inicio
+fimalgoritmo
+```
+
+## E821 — limite do vetor faltando
+
+**Mensagem:** `limite do vetor esperado (um número inteiro ou uma constante)`
+
+**Quando acontece:** no lugar de um limite veio outra coisa, como um número real ou nada.
+
+**Como corrigir:** use um número inteiro (pode ser negativo) ou uma constante inteira.
+
+```
+algoritmo "exemplo"
+var
+  v : vetor[..5] de real
+inicio
+fimalgoritmo
+```
+
+## E822 — falta o '..' entre os limites
+
+**Mensagem:** `'..' esperado entre os limites do vetor`
+
+**Quando acontece:** os dois limites não estão separados por `..`.
+
+**Como corrigir:** escreva os dois pontos colados: `vetor[1..5]`.
+
+```
+algoritmo "exemplo"
+var
+  v : vetor[1 5] de real
+inicio
+fimalgoritmo
+```
+
+## E823 — falta o ']' na declaração
+
+**Mensagem:** `']' esperado depois dos limites do vetor`
+
+**Quando acontece:** os limites do vetor não foram fechados com `]`.
+
+**Como corrigir:** feche com `]`: `vetor[1..5] de real`.
+
+```
+algoritmo "exemplo"
+var
+  v : vetor[1..5 de real
+inicio
+fimalgoritmo
+```
+
+## E824 — falta o 'de' do vetor
+
+**Mensagem:** `'de' esperado depois de ']'`
+
+**Quando acontece:** depois de `]` veio o tipo sem a palavra `de`.
+
+**Como corrigir:** escreva `vetor[1..5] de real`.
+
+```
+algoritmo "exemplo"
+var
+  v : vetor[1..5] real
+inicio
+fimalgoritmo
+```
+
+## E825 — falta o ']' no uso do vetor
+
+**Mensagem:** `']' esperado depois do índice de 'v'`
+
+**Quando acontece:** o índice de um vetor foi aberto com `[` e não foi fechado.
+
+**Como corrigir:** feche com `]`: `v[1]`.
+
+```
+algoritmo "exemplo"
+var
+  v : vetor[1..5] de real
+inicio
+  v[1 <- 2
 fimalgoritmo
 ```
 

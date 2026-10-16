@@ -55,6 +55,12 @@ struct BinaryExpr {
     int line = 0, col = 0;
 };
 
+struct IndexExpr {
+    std::string name;
+    std::vector<ExprPtr> indices;
+    int line = 0, col = 0;
+};
+
 struct UnaryExpr {
     UnaryOp op = UnaryOp::Neg;
     ExprPtr operand;
@@ -69,7 +75,8 @@ struct Expr {
         BoolExpr,
         VarExpr,
         BinaryExpr,
-        UnaryExpr
+        UnaryExpr,
+        IndexExpr
     > node;
 };
 
@@ -166,11 +173,24 @@ struct Stmt {
 
 // --- DECLARACOES -----------------------------------------------------------
 
+struct ArrayBound {
+    long long value = 0;
+    std::string constant;
+    bool negative = false;
+    int line = 0, col = 0;
+};
+
+struct ArrayDim {
+    ArrayBound low;
+    ArrayBound high;
+};
+
 struct VarDecl {
     std::string name;
     TypeKind    type = TypeKind::None;
     ExprPtr     initializer;  // nullptr se nao tem valor inicial
     int line = 0, col = 0;
+    std::vector<ArrayDim> dims;
 };
 
 struct ConstDecl {

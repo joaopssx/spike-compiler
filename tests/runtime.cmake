@@ -61,3 +61,5 @@ spike_add_runtime_io_test(div_real_by_zero divreal "" 101 "-DEXPECT_STDERR=R001.
 spike_add_runtime_io_test(pow_infinite pow "" 101
     "-DEXPECT_STDERR=R005\\]: resultado inv.+lido na pot.+ncia.*linha 11")
 spike_add_runtime_io_test(pow_not_a_number powneg "" 101 "-DEXPECT_STDERR=R005.*linha 12")
+spike_add_runtime_io_test(index_out_of_range index "" 101
+    "-DEXPECT_STDERR=R002\\]: .+ndice 11 fora do vetor 'notas' \\(v.+lido: 1 a 5\\).*linha 13")

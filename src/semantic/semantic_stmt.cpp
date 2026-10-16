@@ -27,11 +27,7 @@ void SemanticAnalyzer::check_stmt(const Stmt& stmt) {
             } else if constexpr (std::is_same_v<Node, EscrevaStmt>) {
                 for (const ExprPtr& arg : node.args) check_expr(arg);
             } else if constexpr (std::is_same_v<Node, LeiaStmt>) {
-                for (const ExprPtr& target : node.targets) {
-                    if (const VarExpr* var = target_variable(target)) {
-                        mark_assigned(var->name, var->line, var->col);
-                    }
-                }
+                for (const ExprPtr& target : node.targets) check_target(target);
             } else if constexpr (std::is_same_v<Node, SeStmt>) {
                 check_condition(node.condition, "se");
                 check_block(node.then_branch);

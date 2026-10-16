@@ -10,6 +10,11 @@
 
 namespace spike {
 
+struct ArrayBounds {
+    long long low = 0;
+    long long high = 0;
+};
+
 struct Symbol {
     std::string name;
     TypeKind type = TypeKind::None;
@@ -18,6 +23,7 @@ struct Symbol {
     bool used = false;
     bool assigned = false;
     bool is_const = false;
+    std::vector<ArrayBounds> dims;
 };
 
 std::string symbol_key(const std::string& name);

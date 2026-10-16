@@ -18,7 +18,7 @@ bool SymbolTable::declare(const std::string& name, TypeKind type, int line, int 
     const std::string key = symbol_key(name);
     if (index_.count(key) != 0) return false;
     index_.emplace(key, symbols_.size());
-    symbols_.push_back(Symbol{name, type, line, col, false, false, is_const});
+    symbols_.push_back(Symbol{name, type, line, col, false, false, is_const, {}});
     return true;
 }
 

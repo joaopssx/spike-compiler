@@ -37,6 +37,8 @@ Texts are immutable. Literals are plain C strings. Texts built while the program
 | `spike_mod_int(a, b, line)` | Remainder with the sign of `a`, as in C; R001 if `b` is 0. |
 | `spike_div_real(a, b, line)` | Real division; R001 if `b` is 0. |
 | `spike_pow(base, exponent, line)` | `^`. Calls `pow` from `<math.h>` (the driver links with `-lm`); a NaN or infinite result is R005. |
+| `spike_index(index, low, high, line, name)` | Turns a Portugol index into a C offset (`index - low`); an index outside `low..high` is R002, with the vector's name and limits in the message. The generated code evaluates the index once, as an argument. |
+| `spike_fill_str(items, count)` | Sets every element of a `caractere` vector to `""`. The generated `main` calls it for each such vector before anything else, since C would leave them as null pointers. |
 | `spike_check_step(step, line)` | R006 if the step of a `para` is 0. Generated only when the step is not a literal. |
 | `spike_for_advance(&counter, step)` | Adds the step to a `para` counter and returns 1, or returns 0 without changing it when the sum would overflow. The generated loop `break`s on 0, so a `para` near the `inteiro` limits never loops forever. |
 | `spike_write_int(v)` | Prints an integer. |
@@ -57,13 +59,14 @@ Every read function takes the `.por` line of the `leia` and the variable name as
 | Code | Meaning |
 | --- | --- |
 | R001 | Division by zero in `/`, `div` or `mod`. |
+| R002 | A vector index is outside the declared limits. |
 | R003 | `leia` got text that does not fit the variable's type. |
 | R005 | `^` produced a result that is not a number or is infinite. |
 | R006 | The step of a `para` is 0 when the loop starts. |
 | R007 | The input ended before `leia` could read a line. |
 | R008 | Out of memory. |
 
-R002 and R004 are reserved by `language.md` for vectors and conversions, and arrive with those features. A program that stops on a runtime error always exits with code 101.
+R004 is reserved by `language.md` for conversions, and arrives with those features. A program that stops on a runtime error always exits with code 101.
 
 ## How it gets into the compiler
 

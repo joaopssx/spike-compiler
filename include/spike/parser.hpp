@@ -62,6 +62,9 @@ namespace spike
         StmtPtr parse_para();
         StmtPtr parse_repita();
         StmtPtr parse_escolha();
+        ExprPtr parse_name_reference(const Token& name);
+        bool parse_array_type(std::vector<ArrayDim>& dims);
+        bool parse_array_bound(ArrayBound& bound);
         bool parse_case_labels(CaseClause& clause);
 
         // Precedencia crescente - cada nivel chama o nivel abaixo.

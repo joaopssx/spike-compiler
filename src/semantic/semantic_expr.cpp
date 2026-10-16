@@ -45,7 +45,16 @@ TypeKind SemanticAnalyzer::check_expr(const ExprPtr& expr) {
                 Symbol* symbol = resolve(node.name, node.line, node.col);
                 if (!symbol) return TypeKind::Invalid;
                 symbol->used = true;
+                if (!symbol->dims.empty()) {
+                    diags_.error("E770", "o vetor '" + symbol->name + "' precisa de um índice",
+                                 node.line, node.col,
+                                 "use " + node.name + "[i] para um elemento; o vetor inteiro não "
+                                 "pode ser usado de uma vez.");
+                    return TypeKind::Invalid;
+                }
                 return symbol->type;
+            } else if constexpr (std::is_same_v<Node, IndexExpr>) {
+                return check_index(node);
             } else if constexpr (std::is_same_v<Node, BinaryExpr>) {
                 const TypeKind left = check_expr(node.left);
                 const TypeKind right = check_expr(node.right);

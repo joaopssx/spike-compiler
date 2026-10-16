@@ -129,7 +129,16 @@ bool Lexer::scan_one_token(Token& out) {
         case '(': advance(); out = make_token(TokenType::LPAREN, "("); return true;
         case ')': advance(); out = make_token(TokenType::RPAREN, ")"); return true;
         case ',': advance(); out = make_token(TokenType::COMMA,  ","); return true;
-        case '.': advance(); out = make_token(TokenType::DOT,    "."); return true;
+        case '.':
+            advance();
+            if (match('.')) {
+                out = make_token(TokenType::DOTDOT, "..");
+            } else {
+                out = make_token(TokenType::DOT, ".");
+            }
+            return true;
+        case '[': advance(); out = make_token(TokenType::LBRACKET, "["); return true;
+        case ']': advance(); out = make_token(TokenType::RBRACKET, "]"); return true;
         case '=': advance(); out = make_token(TokenType::EQUAL,  "="); return true;
         default: break;
     }

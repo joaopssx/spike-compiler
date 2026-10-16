@@ -6,6 +6,7 @@
 #include "spike/diagnostics.hpp"
 #include "spike/symbol_table.hpp"
 
+#include <optional>
 #include <set>
 #include <string>
 #include <unordered_map>
@@ -13,6 +14,12 @@
 #include <vector>
 
 namespace spike {
+
+struct NameRef {
+    std::string name;
+    int line = 0;
+    int col = 0;
+};
 
 struct LoopVarWrite {
     std::string name;
@@ -47,7 +54,11 @@ private:
 
     void declare_consts();
     void declare_const(const ConstDecl& decl);
-    const VarExpr* first_non_constant(const ExprPtr& expr) const;
+    std::optional<NameRef> first_non_constant(const ExprPtr& expr) const;
+    bool resolve_dims(const VarDecl& decl, std::vector<ArrayBounds>& dims);
+    long long bound_value(const ArrayBound& bound, bool& ok);
+    TypeKind check_index(const IndexExpr& node, bool reading = true);
+    Symbol* check_target(const ExprPtr& target);
     bool declared_anywhere(const std::string& name) const;
     void declare_globals();
     Symbol* resolve(const std::string& name, int line, int col);

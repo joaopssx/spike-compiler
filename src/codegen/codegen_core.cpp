@@ -44,6 +44,7 @@ Generator::Generator(const Program& program, const TypeMap& types, const Constan
     for (const VarDecl& decl : program_.globals) {
         var_types_.emplace(symbol_key(decl.name), decl.type);
     }
+    collect_array_dims();
 }
 
 CodegenResult Generator::run() {
@@ -107,8 +108,13 @@ void Generator::emit_globals() {
                  decl.line, decl.col);
             return;
         }
-        out_.line(std::string(type) + " " + c_name(decl.name) + " = " +
-                  default_value(decl.type) + ";");
+        if (decl.dims.empty()) {
+            out_.line(std::string(type) + " " + c_name(decl.name) + " = " +
+                      default_value(decl.type) + ";");
+        } else {
+            out_.line(std::string(type) + " " + c_name(decl.name) + "[" +
+                      std::to_string(element_count(decl.name)) + "];");
+        }
     }
     out_.blank();
 }
@@ -117,6 +123,12 @@ void Generator::emit_main() {
     out_.line("int main(void) {");
     out_.indent();
     out_.line("spike_init();");
+    for (const VarDecl& decl : program_.globals) {
+        if (!decl.dims.empty() && decl.type == TypeKind::String) {
+            out_.line("spike_fill_str(" + c_name(decl.name) + ", " +
+                      std::to_string(element_count(decl.name)) + ");");
+        }
+    }
     emit_block(program_.body);
     out_.line("spike_flush();");
     out_.line("spike_cleanup();");

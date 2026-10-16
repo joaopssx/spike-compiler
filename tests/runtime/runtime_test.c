@@ -76,6 +76,17 @@ static void test_power(void) {
     CHECK(spike_pow(0.0, 0.0, 1) == 1.0);
 }
 
+static void test_index(void) {
+    spike_str names[3] = {NULL, NULL, NULL};
+    CHECK(spike_index(1, 1, 5, 1, "v") == 0);
+    CHECK(spike_index(5, 1, 5, 1, "v") == 4);
+    CHECK(spike_index(0, 0, 9, 1, "v") == 0);
+    CHECK(spike_index(-5, -5, 5, 1, "v") == 0);
+    CHECK(spike_index(5, -5, 5, 1, "v") == 10);
+    spike_fill_str(names, 3);
+    CHECK(spike_str_eq(names[0], "") && spike_str_eq(names[2], ""));
+}
+
 static void test_arithmetic(void) {
     CHECK(spike_div_int(7, 2, 1) == 3);
     CHECK(spike_div_int(-7, 2, 1) == -3);
@@ -134,6 +145,7 @@ int main(void) {
     test_wrapping_arithmetic();
     test_for_advance();
     test_arithmetic();
+    test_index();
     test_power();
     test_parse_int();
     test_parse_real();

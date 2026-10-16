@@ -46,7 +46,7 @@ Token Lexer::scan_number() {
         while (!is_at_end() && is_digit(peek())) {
             advance();
         }
-    } else if (peek() == '.') {
+    } else if (peek() == '.' && peek_next() != '.') {
         add_error("E003", "número malformado: '.' sem dígito decimal",
                   kE003Hint);
         advance();
@@ -129,6 +129,7 @@ TokenType Lexer::keyword_type(const std::string& word) const {
         {"caso",          TokenType::CASO},
         {"outrocaso",     TokenType::OUTROCASO},
         {"fimescolha",    TokenType::FIM_ESCOLHA},
+        {"vetor",         TokenType::VETOR},
         {"escreva",       TokenType::ESCREVA},
         {"escreval",      TokenType::ESCREVAL},
         {"leia",          TokenType::LEIA},

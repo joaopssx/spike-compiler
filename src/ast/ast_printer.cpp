@@ -29,6 +29,21 @@ std::string number_text(const NumberExpr& node) {
     return text;
 }
 
+std::string bound_text(const ArrayBound& bound) {
+    const std::string sign = bound.negative && !bound.constant.empty() ? "-" : "";
+    return bound.constant.empty() ? std::to_string(bound.value) : sign + bound.constant;
+}
+
+std::string array_text(const VarDecl& decl) {
+    if (decl.dims.empty()) return "";
+    std::string text = "vetor[";
+    for (std::size_t i = 0; i < decl.dims.size(); ++i) {
+        if (i > 0) text += ", ";
+        text += bound_text(decl.dims[i].low) + ".." + bound_text(decl.dims[i].high);
+    }
+    return text + "] de ";
+}
+
 std::string quoted_text(const std::string& value) {
     std::string out = "\"";
     for (char c : value) {
@@ -72,6 +87,9 @@ public:
                     line(depth, std::string("Bool ") + (node.value ? "verdadeiro" : "falso"));
                 } else if constexpr (std::is_same_v<Node, VarExpr>) {
                     line(depth, "Var " + node.name);
+                } else if constexpr (std::is_same_v<Node, IndexExpr>) {
+                    line(depth, "Index " + node.name + position(node.line, node.col));
+                    for (const ExprPtr& index : node.indices) expr(index, depth + 1);
                 } else if constexpr (std::is_same_v<Node, BinaryExpr>) {
                     line(depth, std::string("Binary ") + to_string(node.op) +
                                     position(node.line, node.col));
@@ -211,7 +229,7 @@ std::string print_ast(const Program& program) {
         printer.expr(decl.value, 2);
     }
     for (const VarDecl& decl : program.globals) {
-        printer.line(1, "Var " + decl.name + " : " + type_name(decl.type) +
+        printer.line(1, "Var " + decl.name + " : " + array_text(decl) + type_name(decl.type) +
                             position(decl.line, decl.col));
     }
     printer.block(program.body, 1);

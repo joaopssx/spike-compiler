@@ -118,27 +118,27 @@ void Generator::emit_stmt(const Stmt& stmt) {
 }
 
 void Generator::emit_assign(const AssignStmt& stmt) {
-    const VarExpr* var = target_variable(stmt.target);
-    if (!var) {
-        fail("E900", "erro interno do gerador: atribuição sem alvo", stmt.line, stmt.col);
-        return;
-    }
-    const auto it = var_types_.find(symbol_key(var->name));
+    std::string name;
+    const std::string target = lvalue(stmt.target, name);
+    if (failed()) return;
+    const auto it = var_types_.find(symbol_key(name));
     if (it == var_types_.end()) {
-        fail("E900", "erro interno do gerador: variável '" + var->name + "' não declarada",
-             stmt.line, stmt.col);
+        fail("E900", "erro interno do gerador: variável '" + name + "' não declarada", stmt.line,
+             stmt.col);
         return;
     }
     const std::string value = expr_as(stmt.value, it->second);
     if (failed()) return;
-    out_.line(c_name(var->name) + " = " + value + ";");
+    out_.line(target + " = " + value + ";");
 }
 
 void Generator::emit_leia(const LeiaStmt& stmt) {
     for (const ExprPtr& target : stmt.targets) {
-        const VarExpr* var = target_variable(target);
-        const std::string name = var ? var->name : std::string();
-        const int line = var ? var->line : stmt.line;
+        std::string name;
+        const std::string destination = lvalue(target, name);
+        if (failed()) return;
+        const int line = target ? std::visit([](const auto& node) { return node.line; }, target->node)
+                                : stmt.line;
         const auto it = var_types_.find(symbol_key(name));
         const char* reader = it == var_types_.end() ? nullptr : read_function(it->second);
         if (!reader) {
@@ -146,7 +146,7 @@ void Generator::emit_leia(const LeiaStmt& stmt) {
                  stmt.line, stmt.col);
             return;
         }
-        out_.line(c_name(name) + " = " + reader + "(" + std::to_string(line) + ", " +
+        out_.line(destination + " = " + reader + "(" + std::to_string(line) + ", " +
                   string_literal(name) + ");");
     }
 }

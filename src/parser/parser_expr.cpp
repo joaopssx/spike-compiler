@@ -152,7 +152,7 @@ ExprPtr Parser::parse_primary() {
     }
     if (check(TokenType::IDENTIFIER)) {
         advance();
-        return make_expr(VarExpr{tok.lexeme, tok.line, tok.col});
+        return parse_name_reference(tok);
     }
     if (check(TokenType::LPAREN)) {
         advance();

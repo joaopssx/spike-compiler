@@ -11,21 +11,24 @@ void SemanticAnalyzer::declare_consts() {
     for (const ConstDecl& decl : program_.consts) declare_const(decl);
 }
 
-const VarExpr* SemanticAnalyzer::first_non_constant(const ExprPtr& expr) const {
-    if (!expr) return nullptr;
+std::optional<NameRef> SemanticAnalyzer::first_non_constant(const ExprPtr& expr) const {
+    if (!expr) return std::nullopt;
     return std::visit(
-        [this](const auto& node) -> const VarExpr* {
+        [this](const auto& node) -> std::optional<NameRef> {
             using Node = std::decay_t<decltype(node)>;
             if constexpr (std::is_same_v<Node, VarExpr>) {
                 const Symbol* symbol = symbols_.lookup(node.name);
-                return symbol && symbol->is_const ? nullptr : &node;
+                if (symbol && symbol->is_const) return std::nullopt;
+                return NameRef{node.name, node.line, node.col};
+            } else if constexpr (std::is_same_v<Node, IndexExpr>) {
+                return NameRef{node.name, node.line, node.col};
             } else if constexpr (std::is_same_v<Node, BinaryExpr>) {
-                if (const VarExpr* left = first_non_constant(node.left)) return left;
+                if (auto left = first_non_constant(node.left)) return left;
                 return first_non_constant(node.right);
             } else if constexpr (std::is_same_v<Node, UnaryExpr>) {
                 return first_non_constant(node.operand);
             } else {
-                return nullptr;
+                return std::nullopt;
             }
         },
         expr->node);
@@ -51,7 +54,7 @@ void SemanticAnalyzer::declare_const(const ConstDecl& decl) {
     }
 
     TypeKind type = TypeKind::Invalid;
-    if (const VarExpr* bad = first_non_constant(decl.value)) {
+    if (const auto bad = first_non_constant(decl.value)) {
         if (declared_anywhere(bad->name)) {
             diags_.error("E741",
                          "o valor de uma constante precisa ser fixo (literais e outras constantes)",

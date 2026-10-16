@@ -45,6 +45,7 @@ namespace spike
         CASO,
         OUTROCASO,
         FIM_ESCOLHA,
+        VETOR,
         ATE_QUE, // usado no repita...ate
 
         // Keywords - I/O
@@ -88,6 +89,9 @@ namespace spike
         COMMA,  // ,
         COLON,  // :
         DOT,    // .
+        DOTDOT,
+        LBRACKET,
+        RBRACKET,
 
         // Especiais
         END_OF_FILE,

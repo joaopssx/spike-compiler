@@ -190,6 +190,12 @@ std::vector<VarDecl> Parser::parse_var_section() {
             continue;
         }
 
+        std::vector<ArrayDim> dims;
+        if (match(TokenType::VETOR) && !parse_array_type(dims)) {
+            skip_line(names.front().line);
+            continue;
+        }
+
         TypeKind type = TypeKind::Invalid;
         if (is_type_keyword(peek().type)) {
             type = type_kind_for(peek().type);
@@ -210,6 +216,7 @@ std::vector<VarDecl> Parser::parse_var_section() {
             vd.initializer = nullptr;
             vd.line = nt.line;
             vd.col = nt.col;
+            vd.dims = dims;
             result.push_back(std::move(vd));
         }
     }

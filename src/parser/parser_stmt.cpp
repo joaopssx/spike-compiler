@@ -36,8 +36,8 @@ StmtList Parser::parse_stmt_list(std::initializer_list<TokenType> stop_tokens) {
 StmtPtr Parser::parse_stmt() {
     // Atribuicao: IDENTIFIER seguido de <- ou :=.
     if (check(TokenType::IDENTIFIER) &&
-        (peek_next().type == TokenType::ARROW ||
-         peek_next().type == TokenType::ASSIGN)) {
+        (peek_next().type == TokenType::ARROW || peek_next().type == TokenType::ASSIGN ||
+         peek_next().type == TokenType::LBRACKET)) {
         return parse_assign();
     }
     if (match(TokenType::ESCREVA))   return parse_escreva(false);
@@ -67,6 +67,7 @@ StmtPtr Parser::parse_assign() {
     // Pre-condicao (verificada pelo dispatcher): peek e IDENTIFIER, peek_next
     // e ARROW ou ASSIGN. Mesmo assim, validamos pra nao depender disso.
     const Token name_tok = advance();  // IDENTIFIER
+    ExprPtr target = parse_name_reference(name_tok);
 
     if (!(match(TokenType::ARROW) || match(TokenType::ASSIGN))) {
         const Token& t = peek();
@@ -79,7 +80,7 @@ StmtPtr Parser::parse_assign() {
     ExprPtr value = parse_expr();
 
     AssignStmt s;
-    s.target = make_expr(VarExpr{name_tok.lexeme, name_tok.line, name_tok.col});
+    s.target = std::move(target);
     s.value = std::move(value);
     s.line = name_tok.line;
     s.col = name_tok.col;
@@ -149,7 +150,7 @@ StmtPtr Parser::parse_leia() {
                 break;
             }
             const Token& name_tok = advance();
-            targets.push_back(make_expr(VarExpr{name_tok.lexeme, name_tok.line, name_tok.col}));
+            targets.push_back(parse_name_reference(name_tok));
             if (!match(TokenType::COMMA)) break;
         }
     }

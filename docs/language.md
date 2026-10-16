@@ -208,6 +208,27 @@ fimenquanto
 
 `interrompa` leaves the innermost `enquanto`, `repita` or `para` right away; the program continues after its `fimenquanto`, `ate` or `fimpara`. In nested loops only the inner one stops. Inside a `se` it still refers to the loop around it. Outside any loop it is error E750. After `interrompa` in a `para`, the counter keeps the value it had.
 
+## Vectors
+
+```
+const
+  TOTAL = 5
+var
+  notas : vetor[1..TOTAL] de real
+  nomes : vetor[0..9] de caractere
+inicio
+  notas[1] <- 8.5
+  leia(notas[2])
+  escreval(notas[1] + notas[2])
+```
+
+- `vetor[inicio..fim] de tipo` declares a numbered list of values of one type. The limits are integer literals or integer constants, may be negative (`vetor[-5..5]`), and the end cannot be smaller than the start (E775). A vector holds at most 10 million elements (E775).
+- `notas[i]` is one element. It works anywhere a variable of the element type works: in expressions, on the left of `<-`, and in `leia`. The index must be `inteiro` (E772).
+- A vector cannot be used whole, without an index, in an expression, an assignment, `escreva` or `leia` (E770), and it cannot be the counter of a `para` (E731). `[ ]` on something that is not a vector is E771.
+- Every element starts with the default value of its type (`0`, `0.0`, `""`, `falso`).
+- An index written with fixed values (`notas[6]`, `notas[TOTAL + 1]`) is checked while compiling (E774). Any other index is checked when the program runs: going outside the limits stops the program with runtime error R002, `índice 11 fora do vetor 'notas' (válido: 1 a 5)`.
+- `vetor` is a reserved word. `..` is its own symbol, so `1..10` reads as `1`, `..`, `10`; a real number still needs a digit after the point (`1.5`).
+
 ## Constants
 
 A `const` section, before `var`, gives a name to a value that never changes:
@@ -246,7 +267,6 @@ Each item below is **proposed**. The syntax is final only when the feature ships
 
 | Feature | Proposed syntax |
 | --- | --- |
-| Vectors | `v : vetor[1..10] de inteiro` |
 | Matrices | `m : vetor[1..3, 1..3] de real` |
 | Procedures | `procedimento nome(...)` ... `fimprocedimento` |
 | Functions | `funcao nome(...): tipo` ... `retorne x` ... `fimfuncao` |
@@ -297,7 +317,6 @@ fimalgoritmo
 
 - Parameters follow VisuAlg: names of the same type share a group (`a, b: inteiro`) and groups are separated by `;` (`a: inteiro; var b: real`). `var` before a group makes those parameters by reference.
 - Subprograms are declared between the `var` section and the main `inicio`.
-- Vector indexes start at the lower bound written in the declaration. Indexing is checked at run time (R002).
 
 ## Built-in functions (proposed)
 

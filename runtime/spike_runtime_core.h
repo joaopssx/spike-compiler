@@ -22,6 +22,7 @@ typedef int spike_bool;
 typedef const char *spike_str;
 
 #define SPIKE_R_DIV_ZERO 1
+#define SPIKE_R_INDEX 2
 #define SPIKE_R_BAD_INPUT 3
 #define SPIKE_R_MATH_DOMAIN 5
 #define SPIKE_R_ZERO_STEP 6
@@ -179,6 +180,22 @@ static inline spike_real spike_pow(spike_real base, spike_real exponent, int lin
         spike_fail(SPIKE_R_MATH_DOMAIN, line, "resultado inválido na potência");
     }
     return result;
+}
+
+static inline size_t spike_index(spike_int index, spike_int low, spike_int high, int line,
+                                 const char* name) {
+    if (index < low || index > high) {
+        char message[200];
+        snprintf(message, sizeof message, "índice %lld fora do vetor '%s' (válido: %lld a %lld)",
+                 index, name, low, high);
+        spike_fail(SPIKE_R_INDEX, line, message);
+    }
+    return (size_t)(index - low);
+}
+
+static inline void spike_fill_str(spike_str* items, size_t count) {
+    size_t i;
+    for (i = 0; i < count; ++i) items[i] = "";
 }
 
 static inline void spike_check_step(spike_int step, int line)

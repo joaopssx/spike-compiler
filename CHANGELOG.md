@@ -11,10 +11,11 @@ All notable changes to Spike are recorded here. The format follows [Keep a Chang
 - Constants: a `const` section before `var`, with lines like `PI = 3.14159`. Spike computes their values while compiling, and changing a constant is an error (E740).
 - `interrompa`, which leaves the innermost `enquanto`, `repita` or `para` right away. Using it outside a loop is an error (E750).
 - `escolha` / `caso` / `outrocaso` / `fimescolha`, with lists (`caso 2, 3`) and ranges (`caso 4 ate 6`). Only the matching case runs, and the value can be an `inteiro` or a `caractere`.
+- Vectors: `notas : vetor[1..5] de real`, used as `notas[i]` in expressions, assignments and `leia`. Limits can be negative or constants. An index outside the limits stops the program with runtime error R002, or is reported while compiling when the index is a fixed value (E774).
 
 ### Changed
 
-- `div`, `mod`, `const`, `interrompa`, `escolha`, `caso`, `outrocaso` and `fimescolha` are now reserved words. A program that used any of them as a variable name has to rename it.
+- `div`, `mod`, `const`, `interrompa`, `escolha`, `caso`, `outrocaso`, `fimescolha` and `vetor` are now reserved words. A program that used any of them as a variable name has to rename it.
 
 ## [0.2.0] - 2026-10-15
 

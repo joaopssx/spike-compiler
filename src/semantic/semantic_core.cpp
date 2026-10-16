@@ -40,7 +40,13 @@ const ConstantMap& SemanticAnalyzer::constants() const {
 
 void SemanticAnalyzer::declare_globals() {
     for (const VarDecl& decl : program_.globals) {
-        if (symbols_.declare(decl.name, decl.type, decl.line, decl.col)) continue;
+        std::vector<ArrayBounds> dims;
+        const bool dims_ok = resolve_dims(decl, dims);
+        const TypeKind type = dims_ok ? decl.type : TypeKind::Invalid;
+        if (symbols_.declare(decl.name, type, decl.line, decl.col)) {
+            symbols_.lookup(decl.name)->dims = std::move(dims);
+            continue;
+        }
         const Symbol* first = symbols_.lookup(decl.name);
         diags_.error("E701",
                      first->is_const ? "'" + decl.name + "' já foi declarada como constante"
