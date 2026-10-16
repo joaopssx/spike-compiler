@@ -8,6 +8,7 @@ namespace spike {
 
 using semantic_detail::expr_start;
 using semantic_detail::quoted;
+using semantic_detail::sample_indices;
 
 namespace {
 
@@ -17,7 +18,21 @@ std::string count_text(std::size_t count, const char* singular, const char* plur
     return std::to_string(count) + " " + (count == 1 ? singular : plural);
 }
 
+std::string place_text(const Symbol& symbol, std::size_t dimension) {
+    if (symbol.dims.size() == 1) return "do vetor '" + symbol.name + "'";
+    return "da dimensão " + std::to_string(dimension + 1) + " de '" + symbol.name + "'";
+}
+
 } // namespace
+
+namespace semantic_detail {
+
+std::string sample_indices(std::size_t dimensions) {
+    if (dimensions >= 3) return "i, j, k";
+    return dimensions == 2 ? "i, j" : "i";
+}
+
+} // namespace semantic_detail
 
 long long SemanticAnalyzer::bound_value(const ArrayBound& bound, bool& ok) {
     if (bound.constant.empty()) return bound.value;
@@ -85,7 +100,9 @@ TypeKind SemanticAnalyzer::check_index(const IndexExpr& node, bool reading) {
                      "'" + symbol->name + "' tem " +
                          count_text(symbol->dims.size(), "dimensão", "dimensões") +
                          ", mas recebeu " + count_text(node.indices.size(), "índice", "índices"),
-                     node.line, node.col, "use um índice para cada dimensão.");
+                     node.line, node.col,
+                     "use um índice para cada dimensão: " + symbol->name + "[" +
+                         sample_indices(symbol->dims.size()) + "].");
         return TypeKind::Invalid;
     }
     for (std::size_t i = 0; i < node.indices.size(); ++i) {
@@ -98,9 +115,9 @@ TypeKind SemanticAnalyzer::check_index(const IndexExpr& node, bool reading) {
         if (value.ok && (value.value.integer < bounds.low || value.value.integer > bounds.high)) {
             const SourcePos pos = expr_start(*index);
             diags_.error("E774",
-                         "índice " + std::to_string(value.value.integer) + " fora do vetor '" +
-                             symbol->name + "' (válido: " + std::to_string(bounds.low) + " a " +
-                             std::to_string(bounds.high) + ")",
+                         "índice " + std::to_string(value.value.integer) + " fora " +
+                             place_text(*symbol, i) + " (válido: " + std::to_string(bounds.low) +
+                             " a " + std::to_string(bounds.high) + ")",
                          pos.line, pos.col, "use um índice entre os limites da declaração.");
         }
     }
@@ -114,7 +131,8 @@ Symbol* SemanticAnalyzer::check_target(const ExprPtr& target) {
         if (symbol && !symbol->dims.empty()) {
             diags_.error("E770", "o vetor '" + symbol->name + "' precisa de um índice", var->line,
                          var->col,
-                         "guarde um elemento por vez: " + var->name + "[i] <- valor.");
+                         "guarde um elemento por vez: " + var->name + "[" +
+                             sample_indices(symbol->dims.size()) + "] <- valor.");
             return nullptr;
         }
         return symbol;

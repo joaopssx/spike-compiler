@@ -38,6 +38,7 @@ Texts are immutable. Literals are plain C strings. Texts built while the program
 | `spike_div_real(a, b, line)` | Real division; R001 if `b` is 0. |
 | `spike_pow(base, exponent, line)` | `^`. Calls `pow` from `<math.h>` (the driver links with `-lm`); a NaN or infinite result is R005. |
 | `spike_index(index, low, high, line, name)` | Turns a Portugol index into a C offset (`index - low`); an index outside `low..high` is R002, with the vector's name and limits in the message. The generated code evaluates the index once, as an argument. |
+| `spike_index_dim(index, low, high, line, name, dimension)` | The same check for one index of a matrix. The message names the dimension (`índice 5 fora da dimensão 2 de 'm'`). The generated code combines the offsets in row order: `(spike_index_dim(i, ...) * 4) + spike_index_dim(j, ...)`. |
 | `spike_fill_str(items, count)` | Sets every element of a `caractere` vector to `""`. The generated `main` calls it for each such vector before anything else, since C would leave them as null pointers. |
 | `spike_check_step(step, line)` | R006 if the step of a `para` is 0. Generated only when the step is not a literal. |
 | `spike_for_advance(&counter, step)` | Adds the step to a `para` counter and returns 1, or returns 0 without changing it when the sum would overflow. The generated loop `break`s on 0, so a `para` near the `inteiro` limits never loops forever. |

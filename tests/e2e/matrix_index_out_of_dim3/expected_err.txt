@@ -1,0 +1,2 @@
+erro de execução[R002]: índice 2 fora da dimensão 3 de 'c' (válido: 0 a 1)
+  --> linha 9

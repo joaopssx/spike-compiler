@@ -62,6 +62,32 @@ void test_array_declaration() {
                  std::string::npos);
 }
 
+void test_matrix_declaration() {
+    auto r = parse_source(with_var("  m : vetor[1..3, 1..4] de inteiro\n"
+                                   "  c : vetor[0..1, -1..1, 1..N] de real\n"));
+    SPIKE_EXPECT(!r.had_error);
+    SPIKE_EXPECT(r.program.globals.size() == 2);
+    if (r.program.globals.size() != 2) return;
+    const auto& m = r.program.globals[0];
+    SPIKE_EXPECT(m.dims.size() == 2 && m.dims[1].low.value == 1 && m.dims[1].high.value == 4);
+    const auto& c = r.program.globals[1];
+    SPIKE_EXPECT(c.dims.size() == 3 && c.dims[1].low.value == -1 && c.dims[2].high.constant == "N");
+    SPIKE_EXPECT(spike::print_ast(r.program).find("Var m : vetor[1..3, 1..4] de inteiro (5:3)") !=
+                 std::string::npos);
+}
+
+void test_matrix_use() {
+    auto r = parse_source("algoritmo \"t\"\nvar\n  m : vetor[1..2, 1..2] de inteiro\n  i : inteiro\n"
+                          "inicio\n  m[i, 2] <- m[1, i + 1]\nfimalgoritmo\n");
+    SPIKE_EXPECT(!r.had_error);
+    const auto& assign = std::get<spike::AssignStmt>(r.program.body[0]->node);
+    const auto* target = std::get_if<spike::IndexExpr>(&assign.target->node);
+    SPIKE_EXPECT(target && target->indices.size() == 2);
+    const auto* value = std::get_if<spike::IndexExpr>(&assign.value->node);
+    SPIKE_EXPECT(value && value->indices.size() == 2 &&
+                 std::holds_alternative<spike::BinaryExpr>(value->indices[1]->node));
+}
+
 void test_array_use_in_expressions_and_targets() {
     auto r = parse_source("algoritmo \"t\"\nvar\n  v : vetor[1..3] de inteiro\n  i : inteiro\ninicio\n"
                           "  v[i + 1] <- v[1] * 2\n  leia(v[2], i)\nfimalgoritmo\n");
@@ -89,6 +115,9 @@ void test_declaration_errors() {
     expect_error("  v : vetor[1 5] de real\n", "E822");
     expect_error("  v : vetor[1..5 de real\n", "E823");
     expect_error("  v : vetor[1..5] real\n", "E824");
+    expect_error("  v : vetor[1..2, 1..2, 1..2, 1..2] de real\n", "E826");
+    expect_error("  v : vetor[1..3 1..4] de real\n", "E827");
+    expect_error("  v : vetor[1..3, 1..4 de real\n", "E823");
 }
 
 void test_declaration_error_skips_to_next_line() {
@@ -110,6 +139,8 @@ namespace spike_tests {
 void run_parser_array_tests() {
     test_lexer_range_dots();
     test_array_declaration();
+    test_matrix_declaration();
+    test_matrix_use();
     test_array_use_in_expressions_and_targets();
     test_declaration_errors();
     test_declaration_error_skips_to_next_line();

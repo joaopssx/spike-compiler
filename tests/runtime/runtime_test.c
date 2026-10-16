@@ -83,6 +83,9 @@ static void test_index(void) {
     CHECK(spike_index(0, 0, 9, 1, "v") == 0);
     CHECK(spike_index(-5, -5, 5, 1, "v") == 0);
     CHECK(spike_index(5, -5, 5, 1, "v") == 10);
+    CHECK(spike_index_dim(1, 1, 4, 1, "m", 2) == 0);
+    CHECK(spike_index_dim(4, 1, 4, 1, "m", 2) == 3);
+    CHECK(spike_index_dim(0, -1, 1, 1, "m", 3) == 1);
     spike_fill_str(names, 3);
     CHECK(spike_str_eq(names[0], "") && spike_str_eq(names[2], ""));
 }

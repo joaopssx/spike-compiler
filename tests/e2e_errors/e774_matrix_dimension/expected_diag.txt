@@ -1,0 +1,3 @@
+erro[E774]: índice 5 fora da dimensão 2 de 'm' (válido: 1 a 4)
+   5 |   m[2, 5] <- 7
+     |        ^

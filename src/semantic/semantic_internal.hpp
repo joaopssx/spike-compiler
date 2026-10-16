@@ -13,6 +13,8 @@ std::string quoted(TypeKind type);
 
 SourcePos expr_start(const Expr& expr);
 
+std::string sample_indices(std::size_t dimensions);
+
 } // namespace spike::semantic_detail
 
 #endif // SPIKE_SEMANTIC_INTERNAL_HPP

@@ -9,6 +9,7 @@ namespace spike {
 namespace {
 
 constexpr const char* kHintVetor = "formato: nome : vetor[1..10] de tipo.";
+constexpr std::size_t kMaxDimensions = 3;
 
 } // namespace
 
@@ -62,16 +63,30 @@ bool Parser::parse_array_type(std::vector<ArrayDim>& dims) {
         diags_.error("E820", "'[' esperado depois de 'vetor'", t.line, t.col, kHintVetor);
         return false;
     }
-    ArrayDim dim;
-    if (!parse_array_bound(dim.low)) return false;
-    if (!match(TokenType::DOTDOT)) {
+    do {
+        if (dims.size() == kMaxDimensions) {
+            const Token& t = previous();
+            diags_.error("E826", "um vetor pode ter no máximo 3 dimensões", t.line, t.col,
+                         "use até três pares de limites: vetor[1..2, 1..3, 1..4].");
+            return false;
+        }
+        ArrayDim dim;
+        if (!parse_array_bound(dim.low)) return false;
+        if (!match(TokenType::DOTDOT)) {
+            const Token& t = peek();
+            diags_.error("E822", "'..' esperado entre os limites do vetor", t.line, t.col,
+                         kHintVetor);
+            return false;
+        }
+        if (!parse_array_bound(dim.high)) return false;
+        dims.push_back(dim);
+    } while (match(TokenType::COMMA));
+    if (check(TokenType::NUMBER) || check(TokenType::IDENTIFIER) || check(TokenType::MINUS)) {
         const Token& t = peek();
-        diags_.error("E822", "'..' esperado entre os limites do vetor", t.line, t.col,
-                     kHintVetor);
+        diags_.error("E827", "',' esperado entre as dimensões do vetor", t.line, t.col,
+                     "separe as dimensões com vírgula: vetor[1..3, 1..4].");
         return false;
     }
-    if (!parse_array_bound(dim.high)) return false;
-    dims.push_back(dim);
     if (!match(TokenType::RBRACKET)) {
         const Token& t = peek();
         diags_.error("E823", "']' esperado depois dos limites do vetor", t.line, t.col,

@@ -12,6 +12,7 @@ All notable changes to Spike are recorded here. The format follows [Keep a Chang
 - `interrompa`, which leaves the innermost `enquanto`, `repita` or `para` right away. Using it outside a loop is an error (E750).
 - `escolha` / `caso` / `outrocaso` / `fimescolha`, with lists (`caso 2, 3`) and ranges (`caso 4 ate 6`). Only the matching case runs, and the value can be an `inteiro` or a `caractere`.
 - Vectors: `notas : vetor[1..5] de real`, used as `notas[i]` in expressions, assignments and `leia`. Limits can be negative or constants. An index outside the limits stops the program with runtime error R002, or is reported while compiling when the index is a fixed value (E774).
+- Matrices: vectors with 2 or 3 dimensions, `m : vetor[1..3, 1..4] de inteiro`, used as `m[i, j]`. Each index is checked against its own dimension, and the runtime error says which one failed.
 
 ### Changed
 

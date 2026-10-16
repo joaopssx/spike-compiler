@@ -709,9 +709,9 @@ Estes erros acontecem quando o programa já compilou e está rodando. A mensagem
 
 ## R002 — índice fora do vetor
 
-**Mensagem:** `índice 11 fora do vetor 'notas' (válido: 1 a 5)`
+**Mensagem:** `índice 11 fora do vetor 'notas' (válido: 1 a 5)` (numa matriz: `índice 5 fora da dimensão 2 de 'm' (válido: 1 a 4)`)
 
-**Quando acontece:** com o programa rodando, um índice calculado (por exemplo `notas[i]` com `i` valendo 11) fica fora dos limites da declaração.
+**Quando acontece:** com o programa rodando, um índice calculado (por exemplo `notas[i]` com `i` valendo 11) fica fora dos limites da declaração. Numa matriz, cada índice é conferido com a sua própria dimensão, e a mensagem diz qual delas falhou.
 
 **Como corrigir:** confira os limites do `para` ou da conta que calcula o índice. Um erro comum é o laço ir até um a mais do que o tamanho do vetor.
 
@@ -999,9 +999,9 @@ fimalgoritmo
 
 ## E773 — quantidade errada de índices
 
-**Mensagem:** `'v' tem 1 dimensão, mas recebeu 2 índices`
+**Mensagem:** `'v' tem 1 dimensão, mas recebeu 2 índices` (ou `'m' tem 2 dimensões, mas recebeu 1 índice`)
 
-**Quando acontece:** o número de valores dentro de `[ ]` não bate com a declaração do vetor.
+**Quando acontece:** o número de valores dentro de `[ ]` não bate com a declaração do vetor. Uma matriz `vetor[1..3, 1..4]` precisa de dois índices: `m[i, j]`.
 
 **Como corrigir:** use um índice para cada dimensão da declaração.
 
@@ -1018,9 +1018,9 @@ fimalgoritmo
 
 ## E774 — índice fixo fora do vetor
 
-**Mensagem:** `índice 6 fora do vetor 'notas' (válido: 1 a 5)`
+**Mensagem:** `índice 6 fora do vetor 'notas' (válido: 1 a 5)` (numa matriz: `índice 5 fora da dimensão 2 de 'm' (válido: 1 a 4)`)
 
-**Quando acontece:** o índice é um número (ou conta só com constantes) que fica fora dos limites da declaração. Como o valor já é conhecido, o Spike avisa antes de compilar.
+**Quando acontece:** o índice é um número (ou conta só com constantes) que fica fora dos limites da declaração. Como o valor já é conhecido, o Spike avisa antes de compilar. Numa matriz, cada índice é comparado com a sua dimensão.
 
 **Como corrigir:** use um índice entre os limites, ou aumente o vetor.
 
@@ -1037,7 +1037,7 @@ fimalgoritmo
 
 **Mensagem:** `o vetor 'w' termina antes de começar (de 3 a 1)`
 
-**Quando acontece:** o fim do vetor é menor que o início, o vetor teria mais de 10 milhões de elementos, ou um limite usa algo que não é uma constante inteira (a mensagem diz qual dos três).
+**Quando acontece:** o fim do vetor é menor que o início, o vetor teria mais de 10 milhões de elementos (numa matriz, contando todas as dimensões juntas), ou um limite usa algo que não é uma constante inteira (a mensagem diz qual dos três).
 
 **Como corrigir:** escreva o menor limite primeiro, use um vetor menor, ou use números inteiros e constantes inteiras nos limites.
 
@@ -1285,6 +1285,38 @@ var
   v : vetor[1..5] de real
 inicio
   v[1 <- 2
+fimalgoritmo
+```
+
+## E826 — dimensões demais
+
+**Mensagem:** `um vetor pode ter no máximo 3 dimensões`
+
+**Quando acontece:** a declaração tem quatro ou mais pares de limites.
+
+**Como corrigir:** use até três dimensões: `vetor[1..2, 1..3, 1..4]`.
+
+```
+algoritmo "exemplo"
+var
+  m : vetor[1..2, 1..2, 1..2, 1..2] de inteiro
+inicio
+fimalgoritmo
+```
+
+## E827 — falta a vírgula entre as dimensões
+
+**Mensagem:** `',' esperado entre as dimensões do vetor`
+
+**Quando acontece:** dois pares de limites foram escritos um depois do outro, sem vírgula.
+
+**Como corrigir:** separe as dimensões com vírgula: `vetor[1..3, 1..4]`.
+
+```
+algoritmo "exemplo"
+var
+  m : vetor[1..3 1..4] de inteiro
+inicio
 fimalgoritmo
 ```
 

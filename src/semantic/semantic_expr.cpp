@@ -48,8 +48,10 @@ TypeKind SemanticAnalyzer::check_expr(const ExprPtr& expr) {
                 if (!symbol->dims.empty()) {
                     diags_.error("E770", "o vetor '" + symbol->name + "' precisa de um índice",
                                  node.line, node.col,
-                                 "use " + node.name + "[i] para um elemento; o vetor inteiro não "
-                                 "pode ser usado de uma vez.");
+                                 "use " + node.name + "[" +
+                                     semantic_detail::sample_indices(symbol->dims.size()) +
+                                     "] para um elemento; o vetor inteiro não "
+                                     "pode ser usado de uma vez.");
                     return TypeKind::Invalid;
                 }
                 return symbol->type;

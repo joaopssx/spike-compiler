@@ -229,6 +229,23 @@ inicio
 - An index written with fixed values (`notas[6]`, `notas[TOTAL + 1]`) is checked while compiling (E774). Any other index is checked when the program runs: going outside the limits stops the program with runtime error R002, `índice 11 fora do vetor 'notas' (válido: 1 a 5)`.
 - `vetor` is a reserved word. `..` is its own symbol, so `1..10` reads as `1`, `..`, `10`; a real number still needs a digit after the point (`1.5`).
 
+### Matrices
+
+```
+var
+  m : vetor[1..3, 1..4] de inteiro
+  cubo : vetor[1..2, 1..2, 1..2] de real
+inicio
+  m[2, 3] <- 7
+  escreval(m[2, 3], " ", cubo[1, 2, 1])
+```
+
+- A vector can have 2 or 3 dimensions: one `inicio..fim` pair per dimension, separated by commas. More than 3 is error E826, and a missing comma between pairs is E827.
+- Each dimension follows the same rules as a one-dimensional vector. The limit of 10 million elements applies to the total (`linhas * colunas`), E775.
+- Every use needs one index per dimension, `m[i, j]`. A different number of indices is E773: `'m' tem 2 dimensões, mas recebeu 1 índice`.
+- Each index is checked against its own dimension. A fixed index outside it is E774 while compiling; any other stops the program with R002, `índice 5 fora da dimensão 2 de 'm' (válido: 1 a 4)`.
+- In the generated C a matrix is one flat array in row order (`spike_int v_m[12];`), and `m[i, j]` reads the element at `(i - 1) * 4 + (j - 1)`.
+
 ## Constants
 
 A `const` section, before `var`, gives a name to a value that never changes:
@@ -267,7 +284,6 @@ Each item below is **proposed**. The syntax is final only when the feature ships
 
 | Feature | Proposed syntax |
 | --- | --- |
-| Matrices | `m : vetor[1..3, 1..3] de real` |
 | Procedures | `procedimento nome(...)` ... `fimprocedimento` |
 | Functions | `funcao nome(...): tipo` ... `retorne x` ... `fimfuncao` |
 | By-reference parameters | `var` before a parameter |

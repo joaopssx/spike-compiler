@@ -38,10 +38,27 @@ std::string Generator::element(const IndexExpr& node) {
              node.col);
         return "";
     }
-    const ArrayBounds& dim = it->second[0];
-    const std::string offset = "spike_index(" + expr(node.indices[0]) + ", " +
-                               integer_literal(dim.low) + ", " + integer_literal(dim.high) + ", " +
-                               std::to_string(node.line) + ", " + string_literal(node.name) + ")";
+    const std::vector<ArrayBounds>& dims = it->second;
+    const std::string tail = std::to_string(node.line) + ", " + string_literal(node.name);
+    if (dims.size() == 1) {
+        return c_name(node.name) + "[spike_index(" + expr(node.indices[0]) + ", " +
+               integer_literal(dims[0].low) + ", " + integer_literal(dims[0].high) + ", " + tail +
+               ")]";
+    }
+    std::string offset;
+    for (std::size_t i = 0; i < dims.size(); ++i) {
+        const std::string position = "spike_index_dim(" + expr(node.indices[i]) + ", " +
+                                     integer_literal(dims[i].low) + ", " +
+                                     integer_literal(dims[i].high) + ", " + tail + ", " +
+                                     std::to_string(i + 1) + ")";
+        if (i == 0) {
+            offset = position;
+            continue;
+        }
+        if (i > 1) offset = "(" + offset + ")";
+        offset = "(" + offset + " * " + std::to_string(dims[i].high - dims[i].low + 1) + ") + " +
+                 position;
+    }
     return c_name(node.name) + "[" + offset + "]";
 }
 

@@ -77,6 +77,47 @@ void test_invalid_bounds_are_e775() {
                      .find("E771") == std::string::npos);
 }
 
+std::string matrix_errors(const std::string& body) {
+    return errors_of(body, "  m : vetor[1..3, 1..4] de inteiro\n  c : vetor[1..2, 0..1, 1..2] de real\n");
+}
+
+void test_matrix_use() {
+    SPIKE_EXPECT(matrix_errors("  m[2, 3] <- 7\n  escreval(m[i, i + 1])\n  c[1, 0, 2] <- m[3, 4]\n"
+                               "  leia(m[1, 1])\n")
+                     .empty());
+    auto typed = analyze_typed("algoritmo \"t\"\nvar\n  m : vetor[1..3, 1..4] de inteiro\ninicio\n"
+                               "  m[1, 1] <- 0\nfimalgoritmo\n");
+    const auto* symbol = typed->analyzer->symbols().lookup("m");
+    SPIKE_EXPECT(symbol && symbol->dims.size() == 2 && symbol->dims[1].high == 4);
+}
+
+void test_matrix_index_count_is_e773() {
+    const std::string out = matrix_errors("  escreval(m[1])\n");
+    SPIKE_EXPECT(single_error(out, "E773"));
+    SPIKE_EXPECT(out.find("'m' tem 2 dimensões, mas recebeu 1 índice") != std::string::npos);
+    SPIKE_EXPECT(out.find("m[i, j]") != std::string::npos);
+    SPIKE_EXPECT(single_error(matrix_errors("  c[1, 1] <- 2\n"), "E773"));
+    SPIKE_EXPECT(single_error(matrix_errors("  m[1, 1, 1] <- 2\n"), "E773"));
+    SPIKE_EXPECT(matrix_errors("  escreval(m)\n").find("m[i, j]") != std::string::npos);
+}
+
+void test_matrix_literal_index_per_dimension_is_e774() {
+    const std::string out = matrix_errors("  m[2, 5] <- 1\n");
+    SPIKE_EXPECT(single_error(out, "E774"));
+    SPIKE_EXPECT(out.find("índice 5 fora da dimensão 2 de 'm' (válido: 1 a 4)") != std::string::npos);
+    SPIKE_EXPECT(matrix_errors("  m[0, 5] <- 1\n").find("fora da dimensão 1") != std::string::npos);
+    SPIKE_EXPECT(single_error(matrix_errors("  escreval(c[1, 2, 1])\n"), "E774"));
+    SPIKE_EXPECT(matrix_errors("  m[4, 4] <- 1\n").find("fora da dimensão 1") != std::string::npos);
+}
+
+void test_matrix_size_limit_is_e775() {
+    SPIKE_EXPECT(single_error(errors_of("", "  a : vetor[1..5000, 1..5000] de inteiro\n"), "E775"));
+    SPIKE_EXPECT(errors_of("", "  a : vetor[1..1000, 1..10000] de inteiro\n").empty());
+    SPIKE_EXPECT(single_error(errors_of("", "  a : vetor[1..300, 1..300, 1..300] de real\n"),
+                              "E775"));
+    SPIKE_EXPECT(single_error(errors_of("", "  a : vetor[1..2, 3..1] de real\n"), "E775"));
+}
+
 void test_array_as_para_counter_is_e731() {
     const std::string out = errors_of("  para v de 1 ate 3 faca\n  fimpara\n");
     SPIKE_EXPECT(single_error(out, "E731"));
@@ -95,6 +136,10 @@ void run_semantic_array_tests() {
     test_wrong_index_count_is_e773();
     test_literal_index_out_of_range_is_e774();
     test_invalid_bounds_are_e775();
+    test_matrix_use();
+    test_matrix_index_count_is_e773();
+    test_matrix_literal_index_per_dimension_is_e774();
+    test_matrix_size_limit_is_e775();
     test_array_as_para_counter_is_e731();
 }
 

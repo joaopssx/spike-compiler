@@ -1,0 +1,4 @@
+linha 1: 36
+linha 2: 66
+total: 102
+13 21

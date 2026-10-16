@@ -193,6 +193,18 @@ static inline size_t spike_index(spike_int index, spike_int low, spike_int high,
     return (size_t)(index - low);
 }
 
+static inline size_t spike_index_dim(spike_int index, spike_int low, spike_int high, int line,
+                                     const char* name, int dimension) {
+    if (index < low || index > high) {
+        char message[200];
+        snprintf(message, sizeof message,
+                 "índice %lld fora da dimensão %d de '%s' (válido: %lld a %lld)", index,
+                 dimension, name, low, high);
+        spike_fail(SPIKE_R_INDEX, line, message);
+    }
+    return (size_t)(index - low);
+}
+
 static inline void spike_fill_str(spike_str* items, size_t count) {
     size_t i;
     for (i = 0; i < count; ++i) items[i] = "";

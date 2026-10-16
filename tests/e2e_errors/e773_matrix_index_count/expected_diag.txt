@@ -1,0 +1,4 @@
+erro[E773]: 'm' tem 2 dimensões, mas recebeu 1 índice
+   5 |   m[2] <- 7
+     |   ^
+     = dica: use um índice para cada dimensão: m[i, j].
