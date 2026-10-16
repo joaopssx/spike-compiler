@@ -13,6 +13,9 @@ BinaryOp binary_op_for(TokenType t) {
         case TokenType::MINUS:      return BinaryOp::Sub;
         case TokenType::STAR:       return BinaryOp::Mul;
         case TokenType::SLASH:      return BinaryOp::Div;
+        case TokenType::DIV:        return BinaryOp::IntDiv;
+        case TokenType::MOD:        return BinaryOp::Mod;
+        case TokenType::CARET:      return BinaryOp::Pow;
         case TokenType::EQUAL:      return BinaryOp::Eq;
         case TokenType::NOT_EQUAL:  return BinaryOp::Ne;
         case TokenType::LESS:       return BinaryOp::Lt;
@@ -95,7 +98,8 @@ ExprPtr Parser::parse_term() {
 
 ExprPtr Parser::parse_factor() {
     ExprPtr left = parse_unary();
-    while (check(TokenType::STAR) || check(TokenType::SLASH)) {
+    while (check(TokenType::STAR) || check(TokenType::SLASH) || check(TokenType::DIV) ||
+           check(TokenType::MOD)) {
         Token op = advance();
         ExprPtr right = parse_unary();
         left = make_expr(BinaryExpr{
@@ -112,7 +116,16 @@ ExprPtr Parser::parse_unary() {
         return make_expr(UnaryExpr{
             UnaryOp::Neg, std::move(operand), op.line, op.col});
     }
-    return parse_primary();
+    return parse_power();
+}
+
+ExprPtr Parser::parse_power() {
+    ExprPtr base = parse_primary();
+    if (!check(TokenType::CARET)) return base;
+    Token op = advance();
+    ExprPtr exponent = parse_unary();
+    return make_expr(BinaryExpr{
+        BinaryOp::Pow, std::move(base), std::move(exponent), op.line, op.col});
 }
 
 ExprPtr Parser::parse_primary() {

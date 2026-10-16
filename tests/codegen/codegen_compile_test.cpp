@@ -40,7 +40,7 @@ bool compile_c(const std::string& c_source, const std::string& base) {
     }
     const std::string compile = std::string("\"") + SPIKE_TEST_C_COMPILER +
                                 "\" -std=c99 -Wall -Wextra -pedantic -Werror \"" + base +
-                                ".c\" -o \"" + base + ".exe\"";
+                                ".c\" -o \"" + base + ".exe\" -lm";
     const int status = run_shell(compile);
     if (status != 0) std::cerr << "  compile command failed: " << compile << "\n";
     return status == 0;

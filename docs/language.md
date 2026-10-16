@@ -76,17 +76,18 @@ From the loosest binding to the tightest:
 | 4 | `=` `<>` `<` `>` `<=` `>=` | two numbers, or two texts, or two logicos (`=` `<>` only) | logico |
 | 5 | `+` `-` | numbers; `+` also joins two texts | see below |
 | 6 | `*` `/` `div` `mod` | numbers (`div`, `mod`: inteiro only) | see below |
-| 7 | `^` (proposed) | numbers | real |
-| 8 | `-` (unary) | number | same type |
+| 7 | `-` (unary) | number | same type |
+| 8 | `^` | numbers | real |
 | 9 | literals, names, `( )`, function calls | | |
 
 - Binary operators group left to right, except `^`, which groups right to left (`2 ^ 3 ^ 2` is `2 ^ 9`).
 - `+`, `-`, `*` on two `inteiro` give `inteiro`; if either side is `real`, the result is `real`.
-- `/` always gives `real`. `div` and `mod` take two `inteiro` and give `inteiro`; `mod` keeps the sign of the left side, as in C.
-- `^` always gives `real`, like `pot`.
+- `/` always gives `real`. `div` and `mod` take two `inteiro` and give `inteiro`; a `real` on either side is error E710. `div` cuts toward zero (`7 div 2` is `3`, `-7 div 2` is `-3`) and `mod` keeps the sign of the left side (`-7 mod 3` is `-1`, `7 mod -3` is `1`), as in C. A zero on the right of `div` or `mod` is runtime error R001.
+- `^` always gives `real`, like `pot`: `2 ^ 10` is `1024` (printed without `.0`) and `2 ^ -1` is `0.5`. A result that is not a number or is infinite, such as `0 ^ -1` or `(-8) ^ 0.5`, is runtime error R005.
 - `e` and `ou` stop early: `falso e x` does not evaluate `x`.
 - Texts compare alphabetically, byte by byte.
-- `-2 ^ 2` is `-(2 ^ 2)`, which is `-4`.
+- `-2 ^ 2` is `-(2 ^ 2)`, which is `-4`, and `2 * 3 ^ 2` is `18`. A minus right after `^` belongs to the exponent: `2 ^ -1`.
+- `div` and `mod` are reserved words, so they cannot be used as variable names. Longer words that start with them, like `dividir` or `modo`, are still fine.
 
 ## Conversions
 
@@ -184,7 +185,6 @@ Each item below is **proposed**. The syntax is final only when the feature ships
 
 | Feature | Proposed syntax |
 | --- | --- |
-| Extra operators | `a div b`, `a mod b`, `a ^ b` |
 | Constants | `const` section before `var`, lines `NOME = valor` |
 | Break | `interrompa` inside `enquanto`, `para`, `repita` |
 | Multiple choice | `escolha` / `caso` / `outrocaso` / `fimescolha` |
@@ -280,7 +280,7 @@ A compiled program stops at the first runtime error. It prints a message in Port
 | R002 | vector index outside the declared range |
 | R003 | `leia` got input that does not match the variable's type |
 | R004 | `paraInteiro` or `paraReal` got invalid text |
-| R005 | math function outside its domain (`raiz` of a negative, `log` of zero or less) |
+| R005 | math result that is not a number or is infinite: `^` (as in `0 ^ -1`), and later `raiz` of a negative or `log` of zero or less |
 | R006 | `para` with a step of 0 |
 | R007 | `leia` reached the end of the input |
 | R008 | the program ran out of memory |

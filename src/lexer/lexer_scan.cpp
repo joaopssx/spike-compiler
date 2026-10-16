@@ -131,6 +131,8 @@ TokenType Lexer::keyword_type(const std::string& word) const {
         {"e",             TokenType::E},
         {"ou",            TokenType::OU},
         {"nao",           TokenType::NAO},
+        {"div",           TokenType::DIV},
+        {"mod",           TokenType::MOD},
     };
     const auto it = kKeywords.find(word);
     if (it != kKeywords.end()) return it->second;

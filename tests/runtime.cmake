@@ -11,6 +11,9 @@ function(spike_add_runtime_program target source)
     add_executable(${target} ${source})
     target_include_directories(${target} PRIVATE "${CMAKE_SOURCE_DIR}/runtime")
     target_link_libraries(${target} PRIVATE spike_warnings)
+    if(UNIX)
+        target_link_libraries(${target} PRIVATE m)
+    endif()
     set_target_properties(${target} PROPERTIES
         C_STANDARD 99
         C_STANDARD_REQUIRED ON
@@ -55,3 +58,6 @@ spike_add_runtime_io_test(end_of_input int "" 101
 spike_add_runtime_io_test(div_by_zero div "" 101
     "-DEXPECT_STDERR=R001\\]: divis.+o por zero.*linha 7")
 spike_add_runtime_io_test(div_real_by_zero divreal "" 101 "-DEXPECT_STDERR=R001.*linha 9")
+spike_add_runtime_io_test(pow_infinite pow "" 101
+    "-DEXPECT_STDERR=R005\\]: resultado inv.+lido na pot.+ncia.*linha 11")
+spike_add_runtime_io_test(pow_not_a_number powneg "" 101 "-DEXPECT_STDERR=R005.*linha 12")

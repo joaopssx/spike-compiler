@@ -12,8 +12,13 @@ using semantic_detail::quoted;
 namespace {
 
 bool is_arithmetic(BinaryOp op) {
-    return op == BinaryOp::Add || op == BinaryOp::Sub ||
-           op == BinaryOp::Mul || op == BinaryOp::Div;
+    return op == BinaryOp::Add || op == BinaryOp::Sub || op == BinaryOp::Mul ||
+           op == BinaryOp::Div || op == BinaryOp::IntDiv || op == BinaryOp::Mod ||
+           op == BinaryOp::Pow;
+}
+
+bool is_integer_only(BinaryOp op) {
+    return op == BinaryOp::IntDiv || op == BinaryOp::Mod;
 }
 
 bool is_logical(BinaryOp op) {
@@ -33,7 +38,11 @@ TypeKind arithmetic_result(BinaryOp op, TypeKind left, TypeKind right) {
         return TypeKind::String;
     }
     if (!is_numeric(left) || !is_numeric(right)) return TypeKind::Invalid;
-    if (op == BinaryOp::Div) return TypeKind::Real;
+    if (is_integer_only(op)) {
+        const bool both_integer = left == TypeKind::Integer && right == TypeKind::Integer;
+        return both_integer ? TypeKind::Integer : TypeKind::Invalid;
+    }
+    if (op == BinaryOp::Div || op == BinaryOp::Pow) return TypeKind::Real;
     if (left == TypeKind::Integer && right == TypeKind::Integer) return TypeKind::Integer;
     return TypeKind::Real;
 }
@@ -47,6 +56,12 @@ bool comparable(BinaryOp op, TypeKind left, TypeKind right) {
 std::string arithmetic_hint(BinaryOp op, TypeKind left, TypeKind right) {
     const bool text_and_number = (left == TypeKind::String && is_numeric(right)) ||
                                  (is_numeric(left) && right == TypeKind::String);
+    if (is_integer_only(op)) {
+        if (is_numeric(left) && is_numeric(right)) {
+            return "para dividir números reais use '/'; para pegar a parte inteira use trunca().";
+        }
+        return "o operador " + op_text(op) + " só funciona com números inteiros.";
+    }
     if (text_and_number) {
         return "para juntar texto e número, converta o número com paraTexto().";
     }

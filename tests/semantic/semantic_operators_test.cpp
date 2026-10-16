@@ -62,6 +62,31 @@ void test_arithmetic_operator_table() {
     }
 }
 
+void test_integer_division_operators() {
+    for (const std::string op : {"div", "mod"}) {
+        expect_case({"i " + op + " j", TypeKind::Integer, ""});
+        expect_case({"7 " + op + " 2", TypeKind::Integer, ""});
+        expect_case({"i " + op + " r", TypeKind::Invalid, "E710"});
+        expect_case({"r " + op + " i", TypeKind::Invalid, "E710"});
+        expect_case({"t " + op + " i", TypeKind::Invalid, "E710"});
+        expect_case({"b " + op + " c", TypeKind::Invalid, "E710"});
+    }
+    const auto real = check_expression("r div 2");
+    SPIKE_EXPECT(real.diag_output.find("use '/'") != std::string::npos);
+    SPIKE_EXPECT(real.diag_output.find("trunca()") != std::string::npos);
+    const auto text = check_expression("t mod 2");
+    SPIKE_EXPECT(text.diag_output.find("só funciona com números inteiros") != std::string::npos);
+}
+
+void test_power_is_always_real() {
+    expect_case({"2 ^ 10", TypeKind::Real, ""});
+    expect_case({"i ^ j", TypeKind::Real, ""});
+    expect_case({"r ^ i", TypeKind::Real, ""});
+    expect_case({"-i ^ 2", TypeKind::Real, ""});
+    expect_case({"t ^ 2", TypeKind::Invalid, "E710"});
+    expect_case({"b ^ 2", TypeKind::Invalid, "E710"});
+}
+
 void test_division_is_always_real() {
     expect_case({"7 / 2", TypeKind::Real, ""});
     expect_case({"(i + j) / 1", TypeKind::Real, ""});
@@ -143,6 +168,8 @@ void run_semantic_operator_tests() {
     test_literal_types();
     test_arithmetic_operator_table();
     test_division_is_always_real();
+    test_integer_division_operators();
+    test_power_is_always_real();
     test_comparison_operator_table();
     test_logical_operator_table();
     test_unary_operator_table();

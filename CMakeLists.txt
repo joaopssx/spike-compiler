@@ -169,6 +169,7 @@ add_executable(spike_tests
     tests/lexer/lexer_strings_test.cpp
     tests/parser/expr_literals_test.cpp
     tests/parser/expr_operators_test.cpp
+    tests/parser/expr_power_test.cpp
     tests/parser/name_positions_test.cpp
     tests/parser/program_test.cpp
     tests/parser/stmt_basic_test.cpp

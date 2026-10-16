@@ -50,11 +50,14 @@ std::string token_type_to_string(TokenType t) {
         case TokenType::E:             return "E";
         case TokenType::OU:            return "OU";
         case TokenType::NAO:           return "NAO";
+        case TokenType::DIV:           return "DIV";
+        case TokenType::MOD:           return "MOD";
 
         // Operadores aritméticos
         case TokenType::PLUS:          return "PLUS";
         case TokenType::MINUS:         return "MINUS";
         case TokenType::STAR:          return "STAR";
+        case TokenType::CARET:         return "CARET";
         case TokenType::SLASH:         return "SLASH";
 
         // Operadores de comparação

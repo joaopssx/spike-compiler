@@ -42,6 +42,14 @@ void test_codegen_division_is_always_real() {
     expect_line("  r <- r / 0.5\n", "v_r = spike_div_real(v_r, 0.5, 8);");
 }
 
+void test_codegen_div_mod_power() {
+    expect_line("  a <- i div 2\n", "v_a = spike_div_int(v_i, 2LL, 8);");
+    expect_line("  a <- i mod (a + 1)\n", "v_a = spike_mod_int(v_i, spike_add_int(v_a, 1LL), 8);");
+    expect_line("  r <- 2 ^ 10\n", "v_r = spike_pow(((spike_real)2LL), ((spike_real)10LL), 8);");
+    expect_line("  r <- r ^ 0.5\n", "v_r = spike_pow(v_r, 0.5, 8);");
+    expect_line("  r <- -2 ^ 2\n", "v_r = (-spike_pow(((spike_real)2LL), ((spike_real)2LL), 8));");
+}
+
 void test_codegen_text() {
     expect_line("  t <- \"Olá, \\\"mundo\\\"\"\n", "v_t = \"Olá, \\\"mundo\\\"\";");
     expect_line("  t <- t + \" e \" + u\n",
@@ -73,6 +81,7 @@ void run_codegen_expr_tests() {
     test_codegen_integer_arithmetic();
     test_codegen_real_arithmetic_and_conversion();
     test_codegen_division_is_always_real();
+    test_codegen_div_mod_power();
     test_codegen_text();
     test_codegen_comparisons_and_logic();
 }

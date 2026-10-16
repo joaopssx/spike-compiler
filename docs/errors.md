@@ -516,9 +516,9 @@ fimalgoritmo
 
 **Mensagem:** `o operador '+' não funciona entre 'caractere' e 'inteiro'`
 
-**Quando acontece:** `+`, `-`, `*` ou `/` foi usado com um valor que não é número. A única exceção é `+` entre dois textos, que junta os dois.
+**Quando acontece:** `+`, `-`, `*`, `/` ou `^` foi usado com um valor que não é número (a única exceção é `+` entre dois textos, que junta os dois), ou `div` e `mod` foram usados com um valor que não é `inteiro`.
 
-**Como corrigir:** use números dos dois lados. Para montar uma mensagem com número, passe os valores separados para o `escreva` (`escreval("idade: ", idade)`) ou converta o número com `paraTexto()`.
+**Como corrigir:** use números dos dois lados; em `div` e `mod`, números inteiros. Para dividir reais, use `/`. Para montar uma mensagem com número, passe os valores separados para o `escreva` (`escreval("idade: ", idade)`) ou converta o número com `paraTexto()`.
 
 ```
 algoritmo "exemplo"
@@ -703,7 +703,7 @@ Estes erros acontecem quando o programa já compilou e está rodando. A mensagem
 
 **Mensagem:** `divisão por zero`
 
-**Quando acontece:** o divisor de `/` (e, quando existirem, de `div` e `mod`) vale zero no momento da conta.
+**Quando acontece:** o divisor de `/`, `div` ou `mod` vale zero no momento da conta.
 
 **Como corrigir:** confira o divisor antes de dividir: `se b <> 0 entao ... fimse`.
 
@@ -714,6 +714,14 @@ Estes erros acontecem quando o programa já compilou e está rodando. A mensagem
 **Quando acontece:** o `leia` recebeu um texto que não combina com o tipo da variável. Por exemplo, `abc` para uma variável `inteiro`, ou `3.5` para um `inteiro`.
 
 **Como corrigir:** digite um valor do tipo certo, um por linha. Para `real`, valem `3.5` e `3,5`.
+
+## R005 — resultado inválido numa conta
+
+**Mensagem:** `resultado inválido na potência`
+
+**Quando acontece:** uma potência não tem resultado que caiba num número real: `0 ^ -1` daria infinito, e `(-8) ^ 0.5` (raiz quadrada de negativo) não é um número real.
+
+**Como corrigir:** confira a base e o expoente antes da conta. Base zero não pode ter expoente negativo, e base negativa só aceita expoente inteiro.
 
 ## R006 — passo zero no para
 

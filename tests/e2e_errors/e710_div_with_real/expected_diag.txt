@@ -1,0 +1,4 @@
+erro[E710]: o operador 'div' não funciona entre 'real' e 'inteiro'
+   6 |   i <- x div 2
+     |          ^
+     = dica: para dividir números reais use '/'; para pegar a parte inteira use trunca().

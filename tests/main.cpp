@@ -37,6 +37,7 @@ const std::vector<Group> kGroups = {
     {"parser_stmt_basic", spike_tests::run_parser_stmt_basic_tests},
     {"parser_stmt_if", spike_tests::run_parser_stmt_if_tests},
     {"parser_stmt_loop", spike_tests::run_parser_stmt_loop_tests},
+    {"parser_expr_power", spike_tests::run_parser_expr_power_tests},
     {"parser_name_position", spike_tests::run_parser_name_position_tests},
     {"symbol_table", spike_tests::run_symbol_table_tests},
     {"semantic_name", spike_tests::run_semantic_name_tests},

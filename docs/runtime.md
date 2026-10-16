@@ -36,6 +36,7 @@ Texts are immutable. Literals are plain C strings. Texts built while the program
 | `spike_div_int(a, b, line)` | Integer division truncated toward zero; R001 if `b` is 0. `LLONG_MIN div -1` wraps instead of crashing. |
 | `spike_mod_int(a, b, line)` | Remainder with the sign of `a`, as in C; R001 if `b` is 0. |
 | `spike_div_real(a, b, line)` | Real division; R001 if `b` is 0. |
+| `spike_pow(base, exponent, line)` | `^`. Calls `pow` from `<math.h>` (the driver links with `-lm`); a NaN or infinite result is R005. |
 | `spike_check_step(step, line)` | R006 if the step of a `para` is 0. Generated only when the step is not a literal. |
 | `spike_for_advance(&counter, step)` | Adds the step to a `para` counter and returns 1, or returns 0 without changing it when the sum would overflow. The generated loop `break`s on 0, so a `para` near the `inteiro` limits never loops forever. |
 | `spike_write_int(v)` | Prints an integer. |
@@ -57,11 +58,12 @@ Every read function takes the `.por` line of the `leia` and the variable name as
 | --- | --- |
 | R001 | Division by zero in `/`, `div` or `mod`. |
 | R003 | `leia` got text that does not fit the variable's type. |
+| R005 | `^` produced a result that is not a number or is infinite. |
 | R006 | The step of a `para` is 0 when the loop starts. |
 | R007 | The input ended before `leia` could read a line. |
 | R008 | Out of memory. |
 
-R002, R004 and R005 are reserved by `language.md` for vectors, conversions and math functions, and arrive with those features. A program that stops on a runtime error always exits with code 101.
+R002 and R004 are reserved by `language.md` for vectors and conversions, and arrive with those features. A program that stops on a runtime error always exits with code 101.
 
 ## How it gets into the compiler
 

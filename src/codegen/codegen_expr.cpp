@@ -14,6 +14,9 @@ const char* c_operator(BinaryOp op) {
         case BinaryOp::Sub: return "-";
         case BinaryOp::Mul: return "*";
         case BinaryOp::Div: return "/";
+        case BinaryOp::IntDiv: return "/";
+        case BinaryOp::Mod: return "%";
+        case BinaryOp::Pow: return "^";
         case BinaryOp::Eq:  return "==";
         case BinaryOp::Ne:  return "!=";
         case BinaryOp::Lt:  return "<";
@@ -105,15 +108,18 @@ std::string Generator::binary(const BinaryExpr& node, TypeKind result) {
     const TypeKind right_type = type_of(*node.right);
     if (failed()) return "";
     const bool text = left_type == TypeKind::String && right_type == TypeKind::String;
-    const bool to_real = left_type != right_type || node.op == BinaryOp::Div;
+    const bool to_real =
+        left_type != right_type || node.op == BinaryOp::Div || node.op == BinaryOp::Pow;
     const TypeKind operand = to_real ? TypeKind::Real : left_type;
     const std::string a = expr_as(node.left, operand);
     const std::string b = expr_as(node.right, operand);
 
     if (node.op == BinaryOp::Add && text) return "spike_str_concat(" + a + ", " + b + ")";
-    if (node.op == BinaryOp::Div) {
-        return "spike_div_real(" + a + ", " + b + ", " + std::to_string(node.line) + ")";
-    }
+    const std::string line = std::to_string(node.line);
+    if (node.op == BinaryOp::Div) return "spike_div_real(" + a + ", " + b + ", " + line + ")";
+    if (node.op == BinaryOp::IntDiv) return "spike_div_int(" + a + ", " + b + ", " + line + ")";
+    if (node.op == BinaryOp::Mod) return "spike_mod_int(" + a + ", " + b + ", " + line + ")";
+    if (node.op == BinaryOp::Pow) return "spike_pow(" + a + ", " + b + ", " + line + ")";
     if (result == TypeKind::Integer) {
         if (const char* function = wrapping_int_function(node.op)) {
             return std::string(function) + "(" + a + ", " + b + ")";

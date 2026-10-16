@@ -13,6 +13,10 @@ int main(int argc, char** argv) {
         spike_write_str(spike_read_str(5, "x"));
     } else if (strcmp(mode, "div") == 0) {
         spike_write_int(spike_div_int(1, 0, 7));
+    } else if (strcmp(mode, "pow") == 0) {
+        spike_write_real(spike_pow(0.0, -1.0, 11));
+    } else if (strcmp(mode, "powneg") == 0) {
+        spike_write_real(spike_pow(-8.0, 0.5, 12));
     } else if (strcmp(mode, "divreal") == 0) {
         spike_write_real(spike_div_real(1.0, 0.0, 9));
     } else {

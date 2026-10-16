@@ -1,0 +1,2 @@
+erro de execução[R005]: resultado inválido na potência
+  --> linha 7

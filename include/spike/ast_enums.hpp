@@ -3,7 +3,7 @@
 
 namespace spike {
 
-enum class BinaryOp { Add, Sub, Mul, Div, Eq, Ne, Lt, Gt, Le, Ge, And, Or };
+enum class BinaryOp { Add, Sub, Mul, Div, IntDiv, Mod, Pow, Eq, Ne, Lt, Gt, Le, Ge, And, Or };
 
 enum class UnaryOp { Neg, Not };
 

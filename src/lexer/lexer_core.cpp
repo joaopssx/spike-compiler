@@ -125,6 +125,7 @@ bool Lexer::scan_one_token(Token& out) {
         case '-': advance(); out = make_token(TokenType::MINUS,  "-"); return true;
         case '*': advance(); out = make_token(TokenType::STAR,   "*"); return true;
         case '/': advance(); out = make_token(TokenType::SLASH,  "/"); return true;
+        case '^': advance(); out = make_token(TokenType::CARET,  "^"); return true;
         case '(': advance(); out = make_token(TokenType::LPAREN, "("); return true;
         case ')': advance(); out = make_token(TokenType::RPAREN, ")"); return true;
         case ',': advance(); out = make_token(TokenType::COMMA,  ","); return true;
