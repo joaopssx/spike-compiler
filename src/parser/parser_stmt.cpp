@@ -79,7 +79,7 @@ StmtPtr Parser::parse_assign() {
     ExprPtr value = parse_expr();
 
     AssignStmt s;
-    s.var_name = name_tok.lexeme;
+    s.target = make_expr(VarExpr{name_tok.lexeme, name_tok.line, name_tok.col});
     s.value = std::move(value);
     s.line = name_tok.line;
     s.col = name_tok.col;
@@ -136,8 +136,7 @@ StmtPtr Parser::parse_leia() {
         return nullptr;
     }
 
-    std::vector<std::string> names;
-    std::vector<SourcePos> positions;
+    std::vector<ExprPtr> targets;
     if (!check(TokenType::RPAREN)) {
         while (true) {
             if (!check(TokenType::IDENTIFIER)) {
@@ -150,8 +149,7 @@ StmtPtr Parser::parse_leia() {
                 break;
             }
             const Token& name_tok = advance();
-            names.push_back(name_tok.lexeme);
-            positions.push_back(SourcePos{name_tok.line, name_tok.col});
+            targets.push_back(make_expr(VarExpr{name_tok.lexeme, name_tok.line, name_tok.col}));
             if (!match(TokenType::COMMA)) break;
         }
     }
@@ -164,8 +162,7 @@ StmtPtr Parser::parse_leia() {
     }
 
     LeiaStmt s;
-    s.var_names = std::move(names);
-    s.var_positions = std::move(positions);
+    s.targets = std::move(targets);
     s.line = op_tok.line;
     s.col = op_tok.col;
     return make_stmt(std::move(s));

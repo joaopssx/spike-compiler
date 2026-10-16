@@ -27,11 +27,10 @@ void SemanticAnalyzer::check_stmt(const Stmt& stmt) {
             } else if constexpr (std::is_same_v<Node, EscrevaStmt>) {
                 for (const ExprPtr& arg : node.args) check_expr(arg);
             } else if constexpr (std::is_same_v<Node, LeiaStmt>) {
-                for (std::size_t i = 0; i < node.var_names.size(); ++i) {
-                    const bool has_pos = i < node.var_positions.size();
-                    const int line = has_pos ? node.var_positions[i].line : node.line;
-                    const int col = has_pos ? node.var_positions[i].col : node.col;
-                    mark_assigned(node.var_names[i], line, col);
+                for (const ExprPtr& target : node.targets) {
+                    if (const VarExpr* var = target_variable(target)) {
+                        mark_assigned(var->name, var->line, var->col);
+                    }
                 }
             } else if constexpr (std::is_same_v<Node, SeStmt>) {
                 check_condition(node.condition, "se");

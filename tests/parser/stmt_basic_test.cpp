@@ -23,7 +23,7 @@ void test_stmt_assignment_arrow() {
     SPIKE_EXPECT(r.program.body.size() == 1);
     SPIKE_EXPECT(std::holds_alternative<spike::AssignStmt>(r.program.body[0]->node));
     const auto& a = std::get<spike::AssignStmt>(r.program.body[0]->node);
-    SPIKE_EXPECT(a.var_name == "x");
+    SPIKE_EXPECT(spike::target_variable(a.target)->name == "x");
     SPIKE_EXPECT(std::holds_alternative<spike::NumberExpr>(a.value->node));
     SPIKE_EXPECT(std::get<spike::NumberExpr>(a.value->node).value == 5.0);
 }
@@ -37,7 +37,7 @@ void test_stmt_assignment_pascal_style() {
     SPIKE_EXPECT(r.had_error == false);
     SPIKE_EXPECT(r.program.body.size() == 1);
     const auto& a = std::get<spike::AssignStmt>(r.program.body[0]->node);
-    SPIKE_EXPECT(a.var_name == "x");
+    SPIKE_EXPECT(spike::target_variable(a.target)->name == "x");
     SPIKE_EXPECT(std::get<spike::NumberExpr>(a.value->node).value == 7.0);
 }
 
@@ -94,9 +94,9 @@ void test_stmt_leia_two_names() {
     SPIKE_EXPECT(r.program.body.size() == 1);
     SPIKE_EXPECT(std::holds_alternative<spike::LeiaStmt>(r.program.body[0]->node));
     const auto& l = std::get<spike::LeiaStmt>(r.program.body[0]->node);
-    SPIKE_EXPECT(l.var_names.size() == 2);
-    SPIKE_EXPECT(l.var_names[0] == "x");
-    SPIKE_EXPECT(l.var_names[1] == "y");
+    SPIKE_EXPECT(l.targets.size() == 2);
+    SPIKE_EXPECT(spike::target_variable(l.targets[0])->name == "x");
+    SPIKE_EXPECT(spike::target_variable(l.targets[1])->name == "y");
 }
 
 void test_stmt_multiple_statements_in_body() {

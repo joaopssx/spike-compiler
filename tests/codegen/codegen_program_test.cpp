@@ -70,7 +70,8 @@ void test_codegen_invalid_type_is_internal_error() {
     spike::Program program;
     program.globals.push_back(spike::VarDecl{"x", spike::TypeKind::Integer, nullptr, 2, 3});
     program.body.push_back(spike::make_stmt(
-        spike::AssignStmt{"x", spike::make_expr(spike::NumberExpr{1.0, true, 4, 8}), 4, 3}));
+        spike::AssignStmt{spike::make_expr(spike::VarExpr{"x", 4, 3}),
+                          spike::make_expr(spike::NumberExpr{1.0, true, 4, 8}), 4, 3}));
 
     const std::unordered_map<const spike::Expr*, spike::TypeKind> no_types;
     const spike::ConstantMap no_constants;

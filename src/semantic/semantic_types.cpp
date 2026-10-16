@@ -128,7 +128,10 @@ TypeKind SemanticAnalyzer::check_unary(const UnaryExpr& node, TypeKind operand) 
 
 void SemanticAnalyzer::check_assign(const AssignStmt& stmt) {
     const TypeKind value = check_expr(stmt.value);
-    Symbol* target = mark_assigned(stmt.var_name, stmt.line, stmt.col);
+    const VarExpr* var = target_variable(stmt.target);
+    if (!var) return;
+    const std::string& name = var->name;
+    Symbol* target = mark_assigned(name, var->line, var->col);
     if (!target) return;
 
     const TypeKind declared = target->type;
@@ -141,13 +144,13 @@ void SemanticAnalyzer::check_assign(const AssignStmt& stmt) {
 
     const SourcePos pos = expr_start(*stmt.value);
     if (declared == TypeKind::Integer && value == TypeKind::Real) {
-        diags_.error("E721", "'" + stmt.var_name + "' é inteiro e o valor é real",
+        diags_.error("E721", "'" + name + "' é inteiro e o valor é real",
                      pos.line, pos.col,
                      "use trunca() ou arredonda() para transformar o valor em inteiro.");
         return;
     }
     diags_.error("E720",
-                 "não é possível guardar " + quoted(value) + " em '" + stmt.var_name +
+                 "não é possível guardar " + quoted(value) + " em '" + name +
                      "', que é " + quoted(declared),
                  pos.line, pos.col, "o valor precisa ser do mesmo tipo da variável.");
 }

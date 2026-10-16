@@ -48,7 +48,7 @@ void test_ast_program_assembles() {
     // x <- 42
     auto val = spike::make_expr(spike::NumberExpr{42.0, true, 4, 9});
     prog.body.push_back(spike::make_stmt(
-        spike::AssignStmt{"x", std::move(val), 4, 4}));
+        spike::AssignStmt{spike::make_expr(spike::VarExpr{"x", 4, 4}), std::move(val), 4, 4}));
 
     // se x > 0 entao escreval("positivo") fimse
     auto cond = spike::make_expr(spike::BinaryExpr{

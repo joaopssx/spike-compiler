@@ -73,10 +73,14 @@ struct Expr {
     > node;
 };
 
+inline const VarExpr* target_variable(const ExprPtr& target) {
+    return target ? std::get_if<VarExpr>(&target->node) : nullptr;
+}
+
 // --- STATEMENTS ------------------------------------------------------------
 
 struct AssignStmt {
-    std::string var_name;
+    ExprPtr target;
     ExprPtr value;
     int line = 0, col = 0;
 };
@@ -88,9 +92,8 @@ struct EscrevaStmt {
 };
 
 struct LeiaStmt {
-    std::vector<std::string> var_names;
+    std::vector<ExprPtr> targets;
     int line = 0, col = 0;
-    std::vector<SourcePos> var_positions;
 };
 
 struct SeStmt {

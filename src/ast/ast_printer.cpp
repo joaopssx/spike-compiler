@@ -107,7 +107,8 @@ public:
     }
 
     void visit_stmt(const AssignStmt& node, int depth) {
-        line(depth, "Assign " + node.var_name + position(node.line, node.col));
+        const VarExpr* var = target_variable(node.target);
+        line(depth, "Assign " + (var ? var->name : std::string("?")) + position(node.line, node.col));
         expr(node.value, depth + 1);
     }
 
@@ -118,7 +119,10 @@ public:
 
     void visit_stmt(const LeiaStmt& node, int depth) {
         std::string names;
-        for (const std::string& name : node.var_names) names += (names.empty() ? "" : ", ") + name;
+        for (const ExprPtr& target : node.targets) {
+            const VarExpr* var = target_variable(target);
+            names += (names.empty() ? "" : ", ") + (var ? var->name : std::string("?"));
+        }
         line(depth, "Leia " + names + position(node.line, node.col));
     }
 

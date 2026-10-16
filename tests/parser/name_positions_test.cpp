@@ -13,10 +13,11 @@ using spike_tests::parse_source;
 void test_leia_records_each_name_position() {
     auto r = parse_source("algoritmo \"t\"\ninicio\n  leia(a,  bb)\nfimalgoritmo\n");
     const auto& leia = std::get<spike::LeiaStmt>(r.program.body[0]->node);
-    SPIKE_EXPECT(leia.var_positions.size() == 2);
-    SPIKE_EXPECT(leia.var_positions[0].line == 3);
-    SPIKE_EXPECT(leia.var_positions[0].col == 8);
-    SPIKE_EXPECT(leia.var_positions[1].col == 12);
+    SPIKE_EXPECT(leia.targets.size() == 2);
+    if (leia.targets.size() != 2) return;
+    SPIKE_EXPECT(spike::target_variable(leia.targets[0])->line == 3);
+    SPIKE_EXPECT(spike::target_variable(leia.targets[0])->col == 8);
+    SPIKE_EXPECT(spike::target_variable(leia.targets[1])->col == 12);
 }
 
 void test_para_records_variable_position() {

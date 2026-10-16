@@ -118,21 +118,27 @@ void Generator::emit_stmt(const Stmt& stmt) {
 }
 
 void Generator::emit_assign(const AssignStmt& stmt) {
-    const auto it = var_types_.find(symbol_key(stmt.var_name));
+    const VarExpr* var = target_variable(stmt.target);
+    if (!var) {
+        fail("E900", "erro interno do gerador: atribuição sem alvo", stmt.line, stmt.col);
+        return;
+    }
+    const auto it = var_types_.find(symbol_key(var->name));
     if (it == var_types_.end()) {
-        fail("E900", "erro interno do gerador: variável '" + stmt.var_name + "' não declarada",
+        fail("E900", "erro interno do gerador: variável '" + var->name + "' não declarada",
              stmt.line, stmt.col);
         return;
     }
     const std::string value = expr_as(stmt.value, it->second);
     if (failed()) return;
-    out_.line(c_name(stmt.var_name) + " = " + value + ";");
+    out_.line(c_name(var->name) + " = " + value + ";");
 }
 
 void Generator::emit_leia(const LeiaStmt& stmt) {
-    for (std::size_t i = 0; i < stmt.var_names.size(); ++i) {
-        const std::string& name = stmt.var_names[i];
-        const int line = i < stmt.var_positions.size() ? stmt.var_positions[i].line : stmt.line;
+    for (const ExprPtr& target : stmt.targets) {
+        const VarExpr* var = target_variable(target);
+        const std::string name = var ? var->name : std::string();
+        const int line = var ? var->line : stmt.line;
         const auto it = var_types_.find(symbol_key(name));
         const char* reader = it == var_types_.end() ? nullptr : read_function(it->second);
         if (!reader) {
