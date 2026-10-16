@@ -176,6 +176,8 @@ add_executable(spike_tests
     tests/parser/const_section_test.cpp
     tests/semantic/semantic_const_test.cpp
     tests/codegen/codegen_const_test.cpp
+    tests/semantic/semantic_break_test.cpp
+    tests/codegen/codegen_break_test.cpp
     tests/parser/name_positions_test.cpp
     tests/parser/program_test.cpp
     tests/parser/stmt_basic_test.cpp

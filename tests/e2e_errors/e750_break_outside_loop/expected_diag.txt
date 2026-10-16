@@ -1,0 +1,4 @@
+erro[E750]: 'interrompa' só pode ser usado dentro de um laço
+   6 |     interrompa
+     |     ^
+     = dica: use 'interrompa' dentro de enquanto, repita ou para.

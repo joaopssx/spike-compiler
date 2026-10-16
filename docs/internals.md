@@ -36,6 +36,11 @@ If the program cannot be found or started, `launched` is false and `launch_error
 - `compile_c` runs `[compiler, -O2 or -O0, -std=c99, -o, output, c_file, -lm]` with both output streams captured. It never adds `-Werror`: warnings in generated code are Spike's problem, not the student's.
 - Errors come back as data (`DriverError{code, message, hint, details}`); the CLI prints them. E902: no compiler. E903: the compiler rejected the generated C, which is always a Spike bug; `details` holds the first 20 lines of compiler output. E904: a file could not be written.
 
+## Code generation notes
+
+- `interrompa` becomes a plain C `break;`. It always leaves the innermost C loop, which is the innermost Portugol loop: a `para` is wrapped in a `{ }` block for its temporaries, but the block is not a loop, so `break` still leaves the `while` inside it.
+- Because of that, `escolha` must never be generated as a C `switch`. A `break` inside a `switch` leaves the `switch`, so an `interrompa` written inside an `escolha` that sits in a loop would stop the `escolha` instead of the loop. `escolha` has to become an `if` / `else if` chain.
+
 ## Temporary files
 
 `TempDir` (`include/spike/temp_dir.hpp`) creates a uniquely named folder under the system temp directory (`spike-<pid>-<random>`) and deletes it with everything inside when it goes out of scope, even on an error path. The generated `.c` lives there; with `--c` it is copied next to the executable before the folder is removed.

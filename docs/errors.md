@@ -798,6 +798,25 @@ inicio
 fimalgoritmo
 ```
 
+## E750 — interrompa fora de um laço
+
+**Mensagem:** `'interrompa' só pode ser usado dentro de um laço`
+
+**Quando acontece:** o `interrompa` aparece fora de qualquer `enquanto`, `repita` ou `para`. Um `se` sozinho não conta como laço.
+
+**Como corrigir:** coloque o `interrompa` dentro do laço que você quer encerrar, ou apague-o.
+
+```
+algoritmo "exemplo"
+var
+  x : inteiro
+inicio
+  se x = 0 entao
+    interrompa
+  fimse
+fimalgoritmo
+```
+
 ## E800 — falta o nome da constante
 
 **Mensagem:** `nome da constante esperado` (ou `nome da constante esperado depois de 'const'`, quando a seção está vazia)

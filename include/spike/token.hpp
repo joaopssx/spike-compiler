@@ -18,7 +18,7 @@ namespace spike
         FIM_ALGORITMO,
         INICIO,
         VAR,
-    CONST_KEYWORD,
+        CONST_KEYWORD,
 
         // Keywords - tipos de dados
         INTEIRO,
@@ -40,6 +40,7 @@ namespace spike
         PASSO,
         FIM_PARA,
         REPITA,
+        INTERROMPA,
         ATE_QUE, // usado no repita...ate
 
         // Keywords - I/O

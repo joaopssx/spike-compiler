@@ -173,6 +173,19 @@ ate condição
 
 The body runs at least once. The loop stops when the condition becomes `verdadeiro`.
 
+### interrompa
+
+```
+enquanto verdadeiro faca
+  leia(n)
+  se n = 0 entao
+    interrompa
+  fimse
+fimenquanto
+```
+
+`interrompa` leaves the innermost `enquanto`, `repita` or `para` right away; the program continues after its `fimenquanto`, `ate` or `fimpara`. In nested loops only the inner one stops. Inside a `se` it still refers to the loop around it. Outside any loop it is error E750. After `interrompa` in a `para`, the counter keeps the value it had.
+
 ## Constants
 
 A `const` section, before `var`, gives a name to a value that never changes:
@@ -211,7 +224,6 @@ Each item below is **proposed**. The syntax is final only when the feature ships
 
 | Feature | Proposed syntax |
 | --- | --- |
-| Break | `interrompa` inside `enquanto`, `para`, `repita` |
 | Multiple choice | `escolha` / `caso` / `outrocaso` / `fimescolha` |
 | Vectors | `v : vetor[1..10] de inteiro` |
 | Matrices | `m : vetor[1..3, 1..3] de real` |

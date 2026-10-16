@@ -116,6 +116,10 @@ struct ParaStmt {
     SourcePos   var_pos;
 };
 
+struct BreakStmt {
+    int line = 0, col = 0;
+};
+
 struct RepitaStmt {
     StmtList body;
     ExprPtr  condition;  // a condicao do "ate"
@@ -131,7 +135,8 @@ struct Stmt {
         SeStmt,
         EnquantoStmt,
         ParaStmt,
-        RepitaStmt
+        RepitaStmt,
+        BreakStmt
     > node;
 };
 

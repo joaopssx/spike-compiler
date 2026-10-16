@@ -1,0 +1,4 @@
+primeiro múltiplo de 7 maior que 50: 56
+1 2 3 | i = 4
+11 21 22 31 32 33 
+n = 60

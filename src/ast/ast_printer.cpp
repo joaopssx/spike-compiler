@@ -143,6 +143,10 @@ public:
         labeled_block("faca", node.body, depth + 1);
     }
 
+    void visit_stmt(const BreakStmt& node, int depth) {
+        line(depth, "Interrompa" + position(node.line, node.col));
+    }
+
     void visit_stmt(const RepitaStmt& node, int depth) {
         line(depth, "Repita" + position(node.line, node.col));
         labeled_block("corpo", node.body, depth + 1);

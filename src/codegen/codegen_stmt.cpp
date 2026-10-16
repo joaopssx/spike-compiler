@@ -25,6 +25,8 @@ const char* command_name(const Stmt& stmt) {
                 return "para";
             } else if constexpr (std::is_same_v<Node, RepitaStmt>) {
                 return "repita";
+            } else if constexpr (std::is_same_v<Node, BreakStmt>) {
+                return "interrompa";
             } else {
                 return "atribuição";
             }
@@ -89,6 +91,10 @@ void Generator::emit_stmt(const Stmt& stmt) {
     }
     if (const auto* enquanto = std::get_if<EnquantoStmt>(&stmt.node)) {
         emit_enquanto(*enquanto);
+        return;
+    }
+    if (std::holds_alternative<BreakStmt>(stmt.node)) {
+        out_.line("break;");
         return;
     }
     if (const auto* repita = std::get_if<RepitaStmt>(&stmt.node)) {

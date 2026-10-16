@@ -26,6 +26,8 @@ void run_parser_expr_power_tests();
 void run_parser_const_tests();
 void run_semantic_const_tests();
 void run_codegen_const_tests();
+void run_semantic_break_tests();
+void run_codegen_break_tests();
 void run_parser_name_position_tests();
 void run_symbol_table_tests();
 void run_semantic_name_tests();

@@ -78,7 +78,7 @@ void SemanticAnalyzer::check_para(const ParaStmt& stmt) {
     }
 
     active_loop_vars_.push_back(symbol_key(stmt.var_name));
-    check_block(stmt.body);
+    check_loop_body(stmt.body);
     active_loop_vars_.pop_back();
 }
 

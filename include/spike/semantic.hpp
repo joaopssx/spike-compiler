@@ -41,6 +41,7 @@ private:
     std::unordered_map<const Expr*, TypeKind> expr_types_;
     std::set<std::pair<std::string, int>> reported_undeclared_;
     std::vector<std::string> active_loop_vars_;
+    int loop_depth_ = 0;
     std::vector<LoopVarWrite> loop_var_writes_;
     ConstantMap constants_;
 
@@ -53,6 +54,7 @@ private:
     Symbol* mark_assigned(const std::string& name, int line, int col);
 
     void check_block(const StmtList& stmts);
+    void check_loop_body(const StmtList& stmts);
     void check_stmt(const Stmt& stmt);
     void check_assign(const AssignStmt& stmt);
     void check_condition(const ExprPtr& condition, const char* command);

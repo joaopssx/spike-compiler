@@ -41,6 +41,8 @@ const std::vector<Group> kGroups = {
     {"parser_const", spike_tests::run_parser_const_tests},
     {"semantic_const", spike_tests::run_semantic_const_tests},
     {"codegen_const", spike_tests::run_codegen_const_tests},
+    {"semantic_break", spike_tests::run_semantic_break_tests},
+    {"codegen_break", spike_tests::run_codegen_break_tests},
     {"parser_name_position", spike_tests::run_parser_name_position_tests},
     {"symbol_table", spike_tests::run_symbol_table_tests},
     {"semantic_name", spike_tests::run_semantic_name_tests},

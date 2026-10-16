@@ -124,6 +124,7 @@ TokenType Lexer::keyword_type(const std::string& word) const {
         {"passo",         TokenType::PASSO},
         {"fimpara",       TokenType::FIM_PARA},
         {"repita",        TokenType::REPITA},
+        {"interrompa",    TokenType::INTERROMPA},
         {"escreva",       TokenType::ESCREVA},
         {"escreval",      TokenType::ESCREVAL},
         {"leia",          TokenType::LEIA},
