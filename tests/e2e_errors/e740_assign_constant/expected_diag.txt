@@ -1,0 +1,4 @@
+erro[E740]: não é possível alterar a constante 'PI'
+   7 |   PI <- 3
+     |   ^
+     = dica: se o valor precisa mudar, declare 'PI' na seção var.

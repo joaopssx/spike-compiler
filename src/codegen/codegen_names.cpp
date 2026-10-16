@@ -1,5 +1,6 @@
 #include "codegen/codegen_internal.hpp"
 
+#include <climits>
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
@@ -41,6 +42,23 @@ std::string int_literal(double value) {
     char buffer[32];
     std::snprintf(buffer, sizeof buffer, "%lldLL", static_cast<long long>(value));
     return buffer;
+}
+
+std::string integer_literal(long long value) {
+    if (value == LLONG_MIN) return "(-9223372036854775807LL - 1)";
+    return std::to_string(value) + "LL";
+}
+
+std::string constant_literal(const ConstValue& value) {
+    switch (value.type) {
+        case TypeKind::Integer: return integer_literal(value.integer);
+        case TypeKind::Real:    return real_literal(value.real);
+        case TypeKind::String:  return string_literal(value.text);
+        case TypeKind::Bool:    return value.logical ? "1" : "0";
+        case TypeKind::None:
+        case TypeKind::Invalid: return "";
+    }
+    return "";
 }
 
 std::string real_literal(double value) {

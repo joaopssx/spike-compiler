@@ -17,13 +17,15 @@ struct Symbol {
     int col = 0;
     bool used = false;
     bool assigned = false;
+    bool is_const = false;
 };
 
 std::string symbol_key(const std::string& name);
 
 class SymbolTable {
 public:
-    bool declare(const std::string& name, TypeKind type, int line, int col);
+    bool declare(const std::string& name, TypeKind type, int line, int col,
+                 bool is_const = false);
 
     Symbol* lookup(const std::string& name);
     const Symbol* lookup(const std::string& name) const;

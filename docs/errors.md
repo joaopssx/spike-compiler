@@ -747,6 +747,105 @@ Estes erros acontecem quando o programa já compilou e está rodando. A mensagem
 
 **Como corrigir:** confira se o laço termina.
 
+## E740 — alterar uma constante
+
+**Mensagem:** `não é possível alterar a constante 'PI'`
+
+**Quando acontece:** o programa tenta mudar o valor de uma constante: com `<-`, com `leia`, ou usando a constante como variável de um `para`.
+
+**Como corrigir:** se o valor precisa mudar, declare o nome na seção `var` em vez de `const`.
+
+```
+algoritmo "exemplo"
+const
+  PI = 3.14
+inicio
+  PI <- 3
+fimalgoritmo
+```
+
+## E741 — valor de constante que não é fixo
+
+**Mensagem:** `o valor de uma constante precisa ser fixo (literais e outras constantes)`
+
+**Quando acontece:** o valor de uma constante usa uma variável, ou uma constante declarada mais abaixo. O valor de uma constante é calculado antes de o programa rodar, então só pode depender de coisas que já são conhecidas.
+
+**Como corrigir:** use só números, textos, `verdadeiro`/`falso` e constantes declaradas nas linhas de cima. Se o valor depende de uma variável, use uma variável em vez de uma constante.
+
+```
+algoritmo "exemplo"
+const
+  N = x + 1
+var
+  x : inteiro
+inicio
+fimalgoritmo
+```
+
+## E742 — constante que não pode ser calculada
+
+**Mensagem:** `não foi possível calcular a constante 'N': divisão por zero` (ou `resultado inválido na potência`)
+
+**Quando acontece:** o valor da constante tem uma conta impossível, como dividir por zero.
+
+**Como corrigir:** corrija a conta. Como o Spike calcula o valor antes de o programa rodar, o erro aparece já na compilação.
+
+```
+algoritmo "exemplo"
+const
+  N = 10 div 0
+inicio
+fimalgoritmo
+```
+
+## E800 — falta o nome da constante
+
+**Mensagem:** `nome da constante esperado` (ou `nome da constante esperado depois de 'const'`, quando a seção está vazia)
+
+**Quando acontece:** uma linha da seção `const` não começa com um nome, ou a palavra `const` aparece sem nenhuma constante depois.
+
+**Como corrigir:** escreva uma constante por linha, no formato `NOME = valor`. Se não precisa de constantes, apague a linha `const`.
+
+```
+algoritmo "exemplo"
+const
+  = 3
+inicio
+fimalgoritmo
+```
+
+## E801 — falta o '=' na constante
+
+**Mensagem:** `'=' esperado depois do nome da constante 'PI'`
+
+**Quando acontece:** depois do nome da constante não veio `=`. Constantes usam `=`, não `<-` nem `:`.
+
+**Como corrigir:** escreva `PI = 3.14`.
+
+```
+algoritmo "exemplo"
+const
+  PI 3.14
+inicio
+fimalgoritmo
+```
+
+## E802 — falta o valor da constante
+
+**Mensagem:** `valor esperado para a constante 'PI'`
+
+**Quando acontece:** a linha termina logo depois do `=`.
+
+**Como corrigir:** coloque o valor na mesma linha: `PI = 3.14`.
+
+```
+algoritmo "exemplo"
+const
+  PI =
+inicio
+fimalgoritmo
+```
+
 ---
 
 # Erros do gerador e do compilador C

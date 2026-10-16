@@ -144,10 +144,17 @@ struct VarDecl {
     int line = 0, col = 0;
 };
 
+struct ConstDecl {
+    std::string name;
+    ExprPtr     value;
+    int line = 0, col = 0;
+};
+
 // --- RAIZ DA AST -----------------------------------------------------------
 
 struct Program {
     std::string           name;     // nome do algoritmo
+    std::vector<ConstDecl> consts;
     std::vector<VarDecl>  globals;  // variaveis declaradas em var
     StmtList              body;     // instrucoes em inicio...fimalgoritmo
     int line = 1;

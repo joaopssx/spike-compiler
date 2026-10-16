@@ -73,7 +73,8 @@ void test_codegen_invalid_type_is_internal_error() {
         spike::AssignStmt{"x", spike::make_expr(spike::NumberExpr{1.0, true, 4, 8}), 4, 3}));
 
     const std::unordered_map<const spike::Expr*, spike::TypeKind> no_types;
-    const auto missing = spike::generate_c(program, no_types);
+    const spike::ConstantMap no_constants;
+    const auto missing = spike::generate_c(program, no_types, no_constants);
     SPIKE_EXPECT(!missing.ok);
     SPIKE_EXPECT(missing.error_code == "E900");
     SPIKE_EXPECT(missing.c_source.empty());
@@ -82,7 +83,7 @@ void test_codegen_invalid_type_is_internal_error() {
     const auto& value = std::get<spike::AssignStmt>(program.body[0]->node).value;
     const std::unordered_map<const spike::Expr*, spike::TypeKind> invalid = {
         {value.get(), spike::TypeKind::Invalid}};
-    SPIKE_EXPECT(spike::generate_c(program, invalid).error_code == "E900");
+    SPIKE_EXPECT(spike::generate_c(program, invalid, no_constants).error_code == "E900");
 }
 
 void test_codegen_supports_every_command() {

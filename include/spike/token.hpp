@@ -18,6 +18,7 @@ namespace spike
         FIM_ALGORITMO,
         INICIO,
         VAR,
+    CONST_KEYWORD,
 
         // Keywords - tipos de dados
         INTEIRO,

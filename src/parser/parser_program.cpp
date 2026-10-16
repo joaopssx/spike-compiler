@@ -34,6 +34,8 @@ constexpr const char* kHintE103 =
     "todo 'algoritmo' precisa fechar com 'fimalgoritmo'.";
 constexpr const char* kHintE104 =
     "tipos válidos: inteiro, real, caractere, logico.";
+constexpr const char* kHintConst =
+    "formato: NOME = valor, uma constante por linha.";
 constexpr const char* kHintE105 =
     "formato: nome1, nome2 : tipo.";
 
@@ -64,6 +66,11 @@ Program Parser::parse_program() {
         // Continua mesmo sem nome - nao vale a pena abortar.
     }
 
+    if (check(TokenType::CONST_KEYWORD)) {
+        advance();
+        prog.consts = parse_const_section();
+    }
+
     // var (opcional)
     if (check(TokenType::VAR)) {
         advance();
@@ -90,6 +97,53 @@ Program Parser::parse_program() {
     advance();
 
     return prog;
+}
+
+void Parser::skip_line(int line) {
+    while (!is_at_end() && peek().line == line && !check(TokenType::VAR) &&
+           !check(TokenType::INICIO)) {
+        advance();
+    }
+}
+
+std::vector<ConstDecl> Parser::parse_const_section() {
+    std::vector<ConstDecl> result;
+    const Token& keyword = previous();
+    if (check(TokenType::VAR) || check(TokenType::INICIO) || is_at_end()) {
+        diags_.error("E800", "nome da constante esperado depois de 'const'", keyword.line,
+                     keyword.col, kHintConst);
+        return result;
+    }
+    while (!is_at_end() && !check(TokenType::VAR) && !check(TokenType::INICIO)) {
+        if (!check(TokenType::IDENTIFIER)) {
+            const Token& t = peek();
+            diags_.error("E800", "nome da constante esperado", t.line, t.col, kHintConst);
+            skip_line(t.line);
+            continue;
+        }
+        const Token name = advance();
+        if (!match(TokenType::EQUAL)) {
+            const Token& t = peek();
+            diags_.error("E801", "'=' esperado depois do nome da constante '" + name.lexeme + "'",
+                         t.line, t.col, kHintConst);
+            skip_line(name.line);
+            continue;
+        }
+        const Token equal = previous();
+        if (is_at_end() || check(TokenType::VAR) || check(TokenType::INICIO) ||
+            peek().line != equal.line) {
+            diags_.error("E802", "valor esperado para a constante '" + name.lexeme + "'",
+                         equal.line, equal.col + 1, kHintConst);
+            continue;
+        }
+        ConstDecl decl;
+        decl.name = name.lexeme;
+        decl.value = parse_expr();
+        decl.line = name.line;
+        decl.col = name.col;
+        result.push_back(std::move(decl));
+    }
+    return result;
 }
 
 std::vector<VarDecl> Parser::parse_var_section() {

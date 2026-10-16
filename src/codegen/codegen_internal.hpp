@@ -27,6 +27,8 @@ private:
 
 std::string c_name(const std::string& name);
 std::string int_literal(double value);
+std::string integer_literal(long long value);
+std::string constant_literal(const ConstValue& value);
 std::string real_literal(double value);
 std::string string_literal(const std::string& value);
 std::string comment_safe(const std::string& text);
@@ -35,12 +37,14 @@ const char* default_value(TypeKind type);
 
 class Generator {
 public:
-    Generator(const Program& program, const TypeMap& types, std::string source_name);
+    Generator(const Program& program, const TypeMap& types, const ConstantMap& constants,
+              std::string source_name);
     CodegenResult run();
 
 private:
     const Program& program_;
     const TypeMap& types_;
+    const ConstantMap& constants_;
     std::string source_name_;
     std::unordered_map<std::string, TypeKind> var_types_;
     CWriter out_;
@@ -51,6 +55,7 @@ private:
     void fail(const char* code, const std::string& message, int line, int col);
 
     void emit_header();
+    void emit_constants();
     void emit_globals();
     void emit_main();
     void emit_block(const StmtList& stmts);

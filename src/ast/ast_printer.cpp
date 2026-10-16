@@ -173,6 +173,10 @@ std::size_t count_in(const Stmt& stmt) {
 std::string print_ast(const Program& program) {
     Printer printer;
     printer.line(0, "Program " + quoted_text(program.name) + position(program.line, 1));
+    for (const ConstDecl& decl : program.consts) {
+        printer.line(1, "Const " + decl.name + position(decl.line, decl.col));
+        printer.expr(decl.value, 2);
+    }
     for (const VarDecl& decl : program.globals) {
         printer.line(1, "Var " + decl.name + " : " + type_name(decl.type) +
                             position(decl.line, decl.col));

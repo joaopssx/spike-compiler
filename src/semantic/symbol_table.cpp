@@ -13,11 +13,12 @@ std::string symbol_key(const std::string& name) {
     return key;
 }
 
-bool SymbolTable::declare(const std::string& name, TypeKind type, int line, int col) {
+bool SymbolTable::declare(const std::string& name, TypeKind type, int line, int col,
+                          bool is_const) {
     const std::string key = symbol_key(name);
     if (index_.count(key) != 0) return false;
     index_.emplace(key, symbols_.size());
-    symbols_.push_back(Symbol{name, type, line, col, false, false});
+    symbols_.push_back(Symbol{name, type, line, col, false, false, is_const});
     return true;
 }
 

@@ -8,10 +8,11 @@ All notable changes to Spike are recorded here. The format follows [Keep a Chang
 
 - `div` (integer division, `7 div 2` is `3`), `mod` (remainder, `7 mod 2` is `1`) and `^` (power, `2 ^ 10` is `1024`). `^` binds tighter than the unary minus and groups to the right, so `-2 ^ 2` is `-4` and `2 ^ 3 ^ 2` is `512`.
 - Runtime error R005 when a power has no real result, such as `0 ^ -1`.
+- Constants: a `const` section before `var`, with lines like `PI = 3.14159`. Spike computes their values while compiling, and changing a constant is an error (E740).
 
 ### Changed
 
-- `div` and `mod` are now reserved words. A program that used either as a variable name has to rename it.
+- `div`, `mod` and `const` are now reserved words. A program that used any of them as a variable name has to rename it.
 
 ## [0.2.0] - 2026-10-15
 

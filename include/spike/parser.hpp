@@ -47,6 +47,8 @@ namespace spike
         // Parsing de alto nivel
         Program parse_program();
         std::vector<VarDecl> parse_var_section();
+    std::vector<ConstDecl> parse_const_section();
+    void skip_line(int line);
 
         // Parsing de statements
         StmtList parse_stmt_list(TokenType stop_at);

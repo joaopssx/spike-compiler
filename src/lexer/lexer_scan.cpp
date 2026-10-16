@@ -105,6 +105,7 @@ TokenType Lexer::keyword_type(const std::string& word) const {
         {"fimalgoritmo",  TokenType::FIM_ALGORITMO},
         {"inicio",        TokenType::INICIO},
         {"var",           TokenType::VAR},
+        {"const",         TokenType::CONST_KEYWORD},
         {"inteiro",       TokenType::INTEIRO},
         {"real",          TokenType::REAL},
         {"caractere",     TokenType::CARACTERE},

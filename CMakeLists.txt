@@ -53,6 +53,8 @@ set(SPIKE_SEMANTIC_SOURCES
     src/semantic/semantic_stmt.cpp
     src/semantic/semantic_types.cpp
     src/semantic/semantic_control.cpp
+    src/semantic/semantic_const.cpp
+    src/semantic/const_eval.cpp
     src/semantic/semantic_internal.hpp
 )
 set(SPIKE_PROCESS_SOURCES
@@ -106,6 +108,7 @@ set(SPIKE_PUBLIC_HEADERS
     include/spike/cli.hpp
     include/spike/codegen.hpp
     include/spike/compile_pipeline.hpp
+    include/spike/const_value.hpp
     include/spike/colors.hpp
     include/spike/console.hpp
     include/spike/diagnostics.hpp
@@ -170,6 +173,9 @@ add_executable(spike_tests
     tests/parser/expr_literals_test.cpp
     tests/parser/expr_operators_test.cpp
     tests/parser/expr_power_test.cpp
+    tests/parser/const_section_test.cpp
+    tests/semantic/semantic_const_test.cpp
+    tests/codegen/codegen_const_test.cpp
     tests/parser/name_positions_test.cpp
     tests/parser/program_test.cpp
     tests/parser/stmt_basic_test.cpp

@@ -13,6 +13,7 @@ std::string token_type_to_string(TokenType t) {
         case TokenType::ALGORITMO:     return "ALGORITMO";
         case TokenType::FIM_ALGORITMO: return "FIM_ALGORITMO";
         case TokenType::INICIO:        return "INICIO";
+        case TokenType::CONST_KEYWORD: return "CONST";
         case TokenType::VAR:           return "VAR";
 
         // Keywords - tipos de dados

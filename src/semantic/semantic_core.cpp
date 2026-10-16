@@ -9,6 +9,7 @@ SemanticAnalyzer::SemanticAnalyzer(const Program& program, const std::string& fi
     : program_(program), diags_(filename, source) {}
 
 void SemanticAnalyzer::analyze() {
+    declare_consts();
     declare_globals();
     check_block(program_.body);
 }
@@ -33,11 +34,17 @@ const std::vector<LoopVarWrite>& SemanticAnalyzer::loop_var_writes() const {
     return loop_var_writes_;
 }
 
+const ConstantMap& SemanticAnalyzer::constants() const {
+    return constants_;
+}
+
 void SemanticAnalyzer::declare_globals() {
     for (const VarDecl& decl : program_.globals) {
         if (symbols_.declare(decl.name, decl.type, decl.line, decl.col)) continue;
         const Symbol* first = symbols_.lookup(decl.name);
-        diags_.error("E701", "variável '" + decl.name + "' já foi declarada",
+        diags_.error("E701",
+                     first->is_const ? "'" + decl.name + "' já foi declarada como constante"
+                                     : "variável '" + decl.name + "' já foi declarada",
                      decl.line, decl.col,
                      "a primeira declaração de '" + first->name + "' está na linha " +
                          std::to_string(first->line) + ". Apague uma das duas.");
@@ -57,6 +64,11 @@ Symbol* SemanticAnalyzer::resolve(const std::string& name, int line, int col) {
 Symbol* SemanticAnalyzer::mark_assigned(const std::string& name, int line, int col) {
     Symbol* symbol = resolve(name, line, col);
     if (!symbol) return nullptr;
+    if (symbol->is_const) {
+        diags_.error("E740", "não é possível alterar a constante '" + symbol->name + "'", line, col,
+                     "se o valor precisa mudar, declare '" + symbol->name + "' na seção var.");
+        return nullptr;
+    }
     symbol->assigned = true;
     const std::string key = symbol_key(name);
     for (const std::string& loop_var : active_loop_vars_) {

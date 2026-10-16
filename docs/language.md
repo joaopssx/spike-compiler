@@ -25,7 +25,7 @@ fimalgoritmo
 ```
 
 - The program name is a string in double quotes.
-- The `var` section is optional. A program with no variables goes straight from `algoritmo` to `inicio`.
+- The `const` and `var` sections are optional; when both are present, `const` comes first. A program with neither goes straight from `algoritmo` to `inicio`.
 - The body can be empty.
 - Nothing may follow `fimalgoritmo` except comments and blank lines.
 
@@ -173,6 +173,32 @@ ate condição
 
 The body runs at least once. The loop stops when the condition becomes `verdadeiro`.
 
+## Constants
+
+A `const` section, before `var`, gives a name to a value that never changes:
+
+```
+algoritmo "circulo"
+const
+  PI = 3.14159
+  LIMITE = 10
+  TITULO = "Área"
+  AREA_MAXIMA = PI * LIMITE ^ 2
+var
+  r : real
+inicio
+  ...
+fimalgoritmo
+```
+
+- One constant per line: `NOME = valor`. The section ends at `var` or `inicio`, and both `const` and `var` are optional.
+- The type comes from the value: `inteiro`, `real`, `caractere` or `logico`.
+- The value is made of literals, operators and constants declared on earlier lines. Using a variable, or a constant declared further down, is error E741.
+- Spike computes the value while compiling, so the generated C reads `const spike_real v_pi = 3.14159;`. A value that cannot be computed, such as `1 div 0`, is error E742 instead of a runtime error.
+- Constants and variables share names: the same name in both is error E701.
+- Assigning to a constant, reading it with `leia` or using it as the counter of a `para` is error E740.
+- `const` is a reserved word. Words that start with it, like `constante`, are still valid names.
+
 ## Scope
 
 - Today every variable is global: it is declared in `var` and can be used anywhere in the body.
@@ -185,7 +211,6 @@ Each item below is **proposed**. The syntax is final only when the feature ships
 
 | Feature | Proposed syntax |
 | --- | --- |
-| Constants | `const` section before `var`, lines `NOME = valor` |
 | Break | `interrompa` inside `enquanto`, `para`, `repita` |
 | Multiple choice | `escolha` / `caso` / `outrocaso` / `fimescolha` |
 | Vectors | `v : vetor[1..10] de inteiro` |

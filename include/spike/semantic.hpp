@@ -2,6 +2,7 @@
 #define SPIKE_SEMANTIC_HPP
 
 #include "spike/ast.hpp"
+#include "spike/const_value.hpp"
 #include "spike/diagnostics.hpp"
 #include "spike/symbol_table.hpp"
 
@@ -31,6 +32,7 @@ public:
     const SymbolTable& symbols() const;
     const std::unordered_map<const Expr*, TypeKind>& expr_types() const;
     const std::vector<LoopVarWrite>& loop_var_writes() const;
+    const ConstantMap& constants() const;
 
 private:
     const Program& program_;
@@ -40,7 +42,12 @@ private:
     std::set<std::pair<std::string, int>> reported_undeclared_;
     std::vector<std::string> active_loop_vars_;
     std::vector<LoopVarWrite> loop_var_writes_;
+    ConstantMap constants_;
 
+    void declare_consts();
+    void declare_const(const ConstDecl& decl);
+    const VarExpr* first_non_constant(const ExprPtr& expr) const;
+    bool declared_anywhere(const std::string& name) const;
     void declare_globals();
     Symbol* resolve(const std::string& name, int line, int col);
     Symbol* mark_assigned(const std::string& name, int line, int col);

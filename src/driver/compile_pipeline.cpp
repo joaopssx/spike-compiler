@@ -87,7 +87,8 @@ int build(const CliArgs& args, const std::string& output, Reporter& reporter) {
     const Stopwatch codegen_time;
     const std::string source_name = fs::u8path(args.input_file).filename().u8string();
     const CodegenResult generated =
-        generate_c(analysis.program, analysis.semantic->expr_types(), source_name);
+        generate_c(analysis.program, analysis.semantic->expr_types(),
+                   analysis.semantic->constants(), source_name);
     reporter.add_phase("geração de C", codegen_time.ms());
     if (!generated.ok) return report_codegen_error(analysis, generated);
     reporter.step(5, "gerando C: " + count_text(line_count(generated.c_source), "linha", "linhas"));
