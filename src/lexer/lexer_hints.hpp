@@ -3,7 +3,7 @@
 
 namespace spike::lexer_hints {
 
-// Códigos e dicas — mantidos perto um do outro pra ser fácil de auditar.
+// Codigos e dicas - mantidos perto um do outro pra ser facil de auditar.
 inline constexpr const char* kE001Hint =
     "Portugol não usa este caractere. Verifique se não é um erro de digitação.";
 inline constexpr const char* kE002Hint =

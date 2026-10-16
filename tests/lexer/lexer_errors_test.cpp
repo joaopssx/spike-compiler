@@ -21,7 +21,7 @@ void test_lexer_unknown_char_is_error() {
 }
 
 // Helper para checar que um erro do lexer foi roteado via Diagnostics com o
-// código esperado.
+// codigo esperado.
 bool lexer_diag_contains_code(const spike::Lexer& lex, const std::string& code) {
     std::ostringstream sink;
     auto* old = std::cerr.rdbuf(sink.rdbuf());
@@ -30,7 +30,7 @@ bool lexer_diag_contains_code(const spike::Lexer& lex, const std::string& code) 
     return sink.str().find(code) != std::string::npos;
 }
 
-// ---- lexer ↔ diagnostics integration --------------------------------------
+// ---- lexer <-> diagnostics integration --------------------------------------
 
 void test_lexer_diag_codes_are_wired() {
     {

@@ -7,14 +7,14 @@
 
 namespace spike {
 
-// ─── Statements (atribuição, escreva/escreval, leia) ───────────────────────
+// --- Statements (atribuicao, escreva/escreval, leia) -----------------------
 
 StmtList Parser::parse_stmt_list(TokenType stop_at) {
     StmtList list;
     while (!is_at_end() && !check(stop_at)) {
         StmtPtr s = parse_stmt();
         if (s) list.push_back(std::move(s));
-        // Se parse_stmt() retornou nullptr, ele já consumiu o token problemático.
+        // Se parse_stmt() retornou nullptr, ele ja consumiu o token problematico.
     }
     return list;
 }
@@ -34,7 +34,7 @@ StmtList Parser::parse_stmt_list(std::initializer_list<TokenType> stop_tokens) {
 }
 
 StmtPtr Parser::parse_stmt() {
-    // Atribuição: IDENTIFIER seguido de <- ou :=.
+    // Atribuicao: IDENTIFIER seguido de <- ou :=.
     if (check(TokenType::IDENTIFIER) &&
         (peek_next().type == TokenType::ARROW ||
          peek_next().type == TokenType::ASSIGN)) {
@@ -48,7 +48,7 @@ StmtPtr Parser::parse_stmt() {
     if (match(TokenType::PARA))      return parse_para();
     if (match(TokenType::REPITA))    return parse_repita();
 
-    // Não reconheceu — emite e consome 1 token pra garantir progresso.
+    // Nao reconheceu - emite e consome 1 token pra garantir progresso.
     const Token& t = peek();
     diags_.error("E300",
                  std::string("instrução não reconhecida: '") + t.lexeme + "'",
@@ -59,8 +59,8 @@ StmtPtr Parser::parse_stmt() {
 }
 
 StmtPtr Parser::parse_assign() {
-    // Pré-condição (verificada pelo dispatcher): peek é IDENTIFIER, peek_next
-    // é ARROW ou ASSIGN. Mesmo assim, validamos pra não depender disso.
+    // Pre-condicao (verificada pelo dispatcher): peek e IDENTIFIER, peek_next
+    // e ARROW ou ASSIGN. Mesmo assim, validamos pra nao depender disso.
     const Token name_tok = advance();  // IDENTIFIER
 
     if (!(match(TokenType::ARROW) || match(TokenType::ASSIGN))) {
@@ -82,7 +82,7 @@ StmtPtr Parser::parse_assign() {
 }
 
 StmtPtr Parser::parse_escreva(bool newline) {
-    // ESCREVA/ESCREVAL já consumido pelo dispatcher (match no parse_stmt).
+    // ESCREVA/ESCREVAL ja consumido pelo dispatcher (match no parse_stmt).
     const Token op_tok = previous();
     const char* op_name = newline ? "escreval" : "escreva";
 
@@ -96,7 +96,7 @@ StmtPtr Parser::parse_escreva(bool newline) {
     }
 
     std::vector<ExprPtr> args;
-    // `escreva()` sem args é permitido (ex: escreval() pra linha em branco).
+    // `escreva()` sem args e permitido (ex: escreval() pra linha em branco).
     if (!check(TokenType::RPAREN)) {
         do {
             args.push_back(parse_expr());
@@ -120,7 +120,7 @@ StmtPtr Parser::parse_escreva(bool newline) {
 }
 
 StmtPtr Parser::parse_leia() {
-    // LEIA já consumido pelo dispatcher.
+    // LEIA ja consumido pelo dispatcher.
     const Token op_tok = previous();
 
     if (!match(TokenType::LPAREN)) {

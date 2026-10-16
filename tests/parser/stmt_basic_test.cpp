@@ -72,7 +72,7 @@ void test_stmt_escreval_sets_newline() {
 }
 
 void test_stmt_escreva_empty_args() {
-    // escreval() é útil pra imprimir linha em branco — não deve dar erro.
+    // escreval() e util pra imprimir linha em branco - nao deve dar erro.
     auto r = parse_source(
         "algoritmo \"t\"\n"
         "inicio\n"
@@ -119,7 +119,7 @@ void test_stmt_E300_unknown_statement() {
     auto r = parse_source(
         "algoritmo \"t\"\n"
         "inicio\n"
-        "   42\n"           // 42 sozinho não é statement válido
+        "   42\n"           // 42 sozinho nao e statement valido
         "fimalgoritmo\n");
     SPIKE_EXPECT(r.had_error == true);
     SPIKE_EXPECT(r.diag_output.find("E300") != std::string::npos);

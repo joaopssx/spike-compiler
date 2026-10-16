@@ -26,7 +26,7 @@ bool eq(const char* a, const char* b) {
     return std::strcmp(a, b) == 0;
 }
 
-// Parseia flags genéricas (de COMPILE) a partir de `start` em argv.
+// Parseia flags genericas (de COMPILE) a partir de `start` em argv.
 // Retorna true em sucesso, false (com parse_error preenchido) em erro.
 bool parse_compile_flags(int argc, char* argv[], int start, CliArgs& out) {
     for (int i = start; i < argc; ++i) {

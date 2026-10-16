@@ -24,7 +24,7 @@ struct LexOutcome {
     std::vector<spike::Token> tokens;
 };
 
-// Lê o arquivo e roda o lexer. Em caso de falha de leitura imprime o erro e
+// Le o arquivo e roda o lexer. Em caso de falha de leitura imprime o erro e
 // retorna nullptr; caller deve interpretar como exit code 1.
 std::unique_ptr<LexOutcome> read_and_lex(const std::string& path) {
     spike::ReadResult read = spike::read_file(path);
@@ -43,7 +43,7 @@ std::unique_ptr<LexOutcome> read_and_lex(const std::string& path) {
     return out;
 }
 
-// Conta linhas "humanas": "" → 0, "abc" → 1, "abc\n" → 1, "abc\ndef" → 2.
+// Conta linhas "humanas": "" -> 0, "abc" -> 1, "abc\n" -> 1, "abc\ndef" -> 2.
 std::size_t count_lines(const std::string& s) {
     if (s.empty()) return 0;
     std::size_t newlines = static_cast<std::size_t>(
@@ -51,7 +51,7 @@ std::size_t count_lines(const std::string& s) {
     return newlines + (s.back() == '\n' ? 0 : 1);
 }
 
-// Direita-padded com espaços até `width`. Não trunca strings mais longas.
+// Direita-padded com espacos ate `width`. Nao trunca strings mais longas.
 std::string pad_right(const std::string& s, std::size_t width) {
     if (s.size() >= width) return s;
     return s + std::string(width - s.size(), ' ');
@@ -62,7 +62,7 @@ int run_tokens(const spike::CliArgs& args) {
     if (!lo) return 1;
 
     if (lo->lexer->had_error()) {
-        // Diagnostics primeiro pra o erro ficar visível mesmo se o terminal
+        // Diagnostics primeiro pra o erro ficar visivel mesmo se o terminal
         // for pequeno e o token dump rolar pra fora da tela.
         lo->lexer->diagnostics().print_all();
         return 1;
@@ -70,8 +70,8 @@ int run_tokens(const spike::CliArgs& args) {
 
     constexpr std::size_t kTypeWidth = 14;
 
-    // Largura da coluna [L:C] = maior posição encontrada, pra TIPO e lexeme
-    // ficarem em colunas alinhadas mesmo com linhas/colunas de muitos dígitos.
+    // Largura da coluna [L:C] = maior posicao encontrada, pra TIPO e lexeme
+    // ficarem em colunas alinhadas mesmo com linhas/colunas de muitos digitos.
     std::size_t pos_width = 0;
     for (const spike::Token& t : lo->tokens) {
         if (t.type == spike::TokenType::END_OF_FILE) continue;
@@ -107,7 +107,7 @@ int run_tokens(const spike::CliArgs& args) {
             << (lines == 1 ? " linha" : " linhas");
     std::cout << spike::gray(summary.str()) << std::endl;
 
-    // Smoke test do parser — só pra confirmar que ele aceita/rejeita.
+    // Smoke test do parser - so pra confirmar que ele aceita/rejeita.
     spike::Parser parser(lo->tokens, args.input_file, lo->source);
     parser.parse();
     if (parser.had_error()) {
@@ -151,7 +151,7 @@ int main(int argc, char** argv) {
             return run_stub(label);
         }
         case spike::Command::UNKNOWN:
-            // já tratado pelo bloco parse_error acima; mantido por completude.
+            // ja tratado pelo bloco parse_error acima; mantido por completude.
             spike::print_help();
             return 2;
     }

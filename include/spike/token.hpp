@@ -10,22 +10,22 @@ namespace spike
     {
         // Literais
         NUMBER,     // 42, 3.14
-        STRING,     // "olá mundo"
+        STRING,     // "ola mundo"
         IDENTIFIER, // x, nome, contador
 
-        // Keywords — estrutura do programa
+        // Keywords - estrutura do programa
         ALGORITMO,
         FIM_ALGORITMO,
         INICIO,
         VAR,
 
-        // Keywords — tipos de dados
+        // Keywords - tipos de dados
         INTEIRO,
         REAL,
         CARACTERE,
         LOGICO,
 
-        // Keywords — controle de fluxo
+        // Keywords - controle de fluxo
         SE,
         ENTAO,
         SENAO,
@@ -41,30 +41,30 @@ namespace spike
         REPITA,
         ATE_QUE, // usado no repita...ate
 
-        // Keywords — I/O
+        // Keywords - I/O
         ESCREVA,
         ESCREVAL,
         LEIA,
 
-        // Keywords — valores lógicos
+        // Keywords - valores logicos
         VERDADEIRO,
         FALSO,
 
-        // Keywords — operadores lógicos como palavras
+        // Keywords - operadores logicos como palavras
         E,
         OU,
         NAO,
         DIV,
         MOD,
 
-        // Operadores aritméticos
+        // Operadores aritmeticos
         PLUS,  // +
         MINUS, // -
         STAR,  // *
         SLASH, // /
         CARET,
 
-        // Operadores de comparação
+        // Operadores de comparacao
         EQUAL,      // =
         NOT_EQUAL,  // <>
         LESS,       // <
@@ -72,11 +72,11 @@ namespace spike
         LESS_EQ,    // <=
         GREATER_EQ, // >=
 
-        // Atribuição
+        // Atribuicao
         ARROW,  // <-
         ASSIGN, // := (alternativa)
 
-        // Pontuação
+        // Pontuacao
         LPAREN, // (
         RPAREN, // )
         COMMA,  // ,
@@ -85,7 +85,7 @@ namespace spike
 
         // Especiais
         END_OF_FILE,
-        UNKNOWN, // token não reconhecido
+        UNKNOWN, // token nao reconhecido
     };
 
     struct Token

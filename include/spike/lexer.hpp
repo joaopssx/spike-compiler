@@ -11,8 +11,8 @@ namespace spike {
 
 class Lexer {
 public:
-    // O `source` é também passado pro Diagnostics, então as mensagens podem
-    // mostrar a linha do código onde o erro aconteceu.
+    // O `source` e tambem passado pro Diagnostics, entao as mensagens podem
+    // mostrar a linha do codigo onde o erro aconteceu.
     Lexer(const std::string& source, const std::string& filename);
 
     std::vector<Token> tokenize();
@@ -32,26 +32,26 @@ private:
 
     bool scan_one_token(Token& out);
 
-    // Navegação
+    // Navegacao
     char peek() const;
     char peek_next() const;
     char advance();
     bool is_at_end() const;
     bool match(char expected);
 
-    // Classificação de caracteres
+    // Classificacao de caracteres
     bool is_digit(char c) const;
     bool is_alpha(char c) const;
     bool is_alphanumeric(char c) const;
 
-    // Criação de tokens
+    // Criacao de tokens
     Token make_token(TokenType type, const std::string& lexeme) const;
 
-    // Reporta erro na posição inicial do token corrente.
+    // Reporta erro na posicao inicial do token corrente.
     void add_error(const std::string& code, const std::string& message,
                    const std::string& hint);
 
-    // Scanners específicos
+    // Scanners especificos
     Token scan_identifier_or_keyword();
     Token scan_number();
     Token scan_string();

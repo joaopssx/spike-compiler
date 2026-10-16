@@ -36,12 +36,12 @@ void test_diag_warning_only_does_not_set_has_errors() {
 }
 
 void test_diag_handles_out_of_range_line() {
-    // Linha 99 não existe — não deve crashar, source_line vira string vazia.
+    // Linha 99 nao existe - nao deve crashar, source_line vira string vazia.
     spike::Diagnostics d("foo.por", "uma linha so\n");
     d.error("E999", "linha inexistente", 99, 1);
     SPIKE_EXPECT(d.error_count() == 1);
-    // Smoke test: print_all não deve crashar nem com linha fora do range.
-    // (Não verificamos saída — só que executa.)
+    // Smoke test: print_all nao deve crashar nem com linha fora do range.
+    // (Nao verificamos saida - so que executa.)
     std::ostringstream sink;
     auto* old = std::cerr.rdbuf(sink.rdbuf());
     d.print_all();

@@ -36,7 +36,7 @@ void test_expr_unary_not() {
 }
 
 void test_expr_paren_changes_precedence() {
-    // (3 + 4) * 2 → raiz é o '*', filho esquerdo é o '+'.
+    // (3 + 4) * 2 -> raiz e o '*', filho esquerdo e o '+'.
     auto r = parse_expression("(3 + 4) * 2");
     SPIKE_EXPECT(r.had_error == false);
     SPIKE_EXPECT(std::holds_alternative<spike::BinaryExpr>(r.expr->node));
@@ -49,7 +49,7 @@ void test_expr_paren_changes_precedence() {
 }
 
 void test_expr_precedence_without_parens() {
-    // 1 + 2 * 3 → 1 + (2 * 3); raiz é '+'.
+    // 1 + 2 * 3 -> 1 + (2 * 3); raiz e '+'.
     auto r = parse_expression("1 + 2 * 3");
     SPIKE_EXPECT(r.had_error == false);
     const auto& add = std::get<spike::BinaryExpr>(r.expr->node);
@@ -61,7 +61,7 @@ void test_expr_precedence_without_parens() {
 }
 
 void test_expr_comparison_lower_than_arithmetic() {
-    // a + 1 < b * 2 → comparação na raiz.
+    // a + 1 < b * 2 -> comparacao na raiz.
     auto r = parse_expression("a + 1 < b * 2");
     SPIKE_EXPECT(r.had_error == false);
     const auto& cmp = std::get<spike::BinaryExpr>(r.expr->node);
@@ -69,7 +69,7 @@ void test_expr_comparison_lower_than_arithmetic() {
 }
 
 void test_expr_and_lower_than_comparison() {
-    // a > 1 e b < 2 → 'e' na raiz, comparações nos filhos.
+    // a > 1 e b < 2 -> 'e' na raiz, comparacoes nos filhos.
     auto r = parse_expression("a > 1 e b < 2");
     SPIKE_EXPECT(r.had_error == false);
     const auto& and_node = std::get<spike::BinaryExpr>(r.expr->node);

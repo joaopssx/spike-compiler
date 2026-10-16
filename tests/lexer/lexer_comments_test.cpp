@@ -26,7 +26,7 @@ void test_lexer_block_comment_multiline() {
     auto toks = tokens_of("{ linha 1\nlinha 2\nlinha 3 }\nx");
     SPIKE_EXPECT(toks.size() == 1);
     SPIKE_EXPECT(toks[0].type == spike::TokenType::IDENTIFIER);
-    SPIKE_EXPECT(toks[0].line == 4); // o '{' começou na 1, fechou na 3
+    SPIKE_EXPECT(toks[0].line == 4); // o '{' comecou na 1, fechou na 3
 }
 
 void test_lexer_block_comment_unclosed_is_error() {

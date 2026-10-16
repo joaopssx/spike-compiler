@@ -9,19 +9,19 @@ std::string token_type_to_string(TokenType t) {
         case TokenType::STRING:        return "STRING";
         case TokenType::IDENTIFIER:    return "IDENTIFIER";
 
-        // Keywords — estrutura do programa
+        // Keywords - estrutura do programa
         case TokenType::ALGORITMO:     return "ALGORITMO";
         case TokenType::FIM_ALGORITMO: return "FIM_ALGORITMO";
         case TokenType::INICIO:        return "INICIO";
         case TokenType::VAR:           return "VAR";
 
-        // Keywords — tipos de dados
+        // Keywords - tipos de dados
         case TokenType::INTEIRO:       return "INTEIRO";
         case TokenType::REAL:          return "REAL";
         case TokenType::CARACTERE:     return "CARACTERE";
         case TokenType::LOGICO:        return "LOGICO";
 
-        // Keywords — controle de fluxo
+        // Keywords - controle de fluxo
         case TokenType::SE:            return "SE";
         case TokenType::ENTAO:         return "ENTAO";
         case TokenType::SENAO:         return "SENAO";
@@ -37,30 +37,30 @@ std::string token_type_to_string(TokenType t) {
         case TokenType::REPITA:        return "REPITA";
         case TokenType::ATE_QUE:       return "ATE_QUE";
 
-        // Keywords — I/O
+        // Keywords - I/O
         case TokenType::ESCREVA:       return "ESCREVA";
         case TokenType::ESCREVAL:      return "ESCREVAL";
         case TokenType::LEIA:          return "LEIA";
 
-        // Keywords — valores lógicos
+        // Keywords - valores logicos
         case TokenType::VERDADEIRO:    return "VERDADEIRO";
         case TokenType::FALSO:         return "FALSO";
 
-        // Keywords — operadores lógicos como palavras
+        // Keywords - operadores logicos como palavras
         case TokenType::E:             return "E";
         case TokenType::OU:            return "OU";
         case TokenType::NAO:           return "NAO";
         case TokenType::DIV:           return "DIV";
         case TokenType::MOD:           return "MOD";
 
-        // Operadores aritméticos
+        // Operadores aritmeticos
         case TokenType::PLUS:          return "PLUS";
         case TokenType::MINUS:         return "MINUS";
         case TokenType::STAR:          return "STAR";
         case TokenType::CARET:         return "CARET";
         case TokenType::SLASH:         return "SLASH";
 
-        // Operadores de comparação
+        // Operadores de comparacao
         case TokenType::EQUAL:         return "EQUAL";
         case TokenType::NOT_EQUAL:     return "NOT_EQUAL";
         case TokenType::LESS:          return "LESS";
@@ -68,11 +68,11 @@ std::string token_type_to_string(TokenType t) {
         case TokenType::LESS_EQ:       return "LESS_EQ";
         case TokenType::GREATER_EQ:    return "GREATER_EQ";
 
-        // Atribuição
+        // Atribuicao
         case TokenType::ARROW:         return "ARROW";
         case TokenType::ASSIGN:        return "ASSIGN";
 
-        // Pontuação
+        // Pontuacao
         case TokenType::LPAREN:        return "LPAREN";
         case TokenType::RPAREN:        return "RPAREN";
         case TokenType::COMMA:         return "COMMA";

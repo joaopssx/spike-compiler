@@ -12,8 +12,8 @@ namespace spike {
 
 namespace {
 
-// Divide o conteúdo em linhas usando '\n'. Não inclui '\n' no resultado.
-// Faz strip de '\r' final (CRLF) pra mensagens não mostrarem caracteres de
+// Divide o conteudo em linhas usando '\n'. Nao inclui '\n' no resultado.
+// Faz strip de '\r' final (CRLF) pra mensagens nao mostrarem caracteres de
 // controle bizarros no console.
 std::vector<std::string> split_lines(const std::string& src) {
     std::vector<std::string> out;
@@ -33,7 +33,7 @@ std::vector<std::string> split_lines(const std::string& src) {
     return out;
 }
 
-// Largura fixa para o número de linha (à direita). 4 caracteres como o spec pede.
+// Largura fixa para o numero de linha (a direita). 4 caracteres como o spec pede.
 constexpr int kLineNoWidth = 4;
 
 std::string pad_line_number(int n) {
@@ -109,7 +109,7 @@ std::string Diagnostics::get_line(int line_number) const {
 }
 
 std::string Diagnostics::make_caret(int col) const {
-    // col é 1-indexed. Caret na coluna 1 → 0 espaços + '^'.
+    // col e 1-indexed. Caret na coluna 1 -> 0 espacos + '^'.
     const int spaces = (col > 0) ? (col - 1) : 0;
     return std::string(static_cast<std::size_t>(spaces), ' ') + "^";
 }
@@ -147,7 +147,7 @@ void Diagnostics::print_one(const Diagnostic& d) const {
     std::cerr << gray(pad_line_number(d.line)) << " " << bar << " "
               << d.source_line << "\n";
 
-    // Linha do caret — sem número de linha
+    // Linha do caret - sem numero de linha
     const std::string caret = make_caret(d.col);
     const std::string caret_colored = is_error ? red(caret) : yellow(caret);
     std::cerr << blank_gutter << " " << caret_colored << "\n";

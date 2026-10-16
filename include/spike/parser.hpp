@@ -20,7 +20,7 @@ namespace spike
 
         Program parse();
 
-        // Entrada pública pra parsear uma única expressão. Usada pelos testes e
+        // Entrada publica pra parsear uma unica expressao. Usada pelos testes e
         // pelos parsers de statement.
         ExprPtr parse_expr();
 
@@ -32,7 +32,7 @@ namespace spike
         int current_;
         Diagnostics diags_;
 
-        // Navegação
+        // Navegacao
         Token &peek();
         Token &peek_next();
         Token &previous();
@@ -44,7 +44,7 @@ namespace spike
         Token expect(TokenType t, const std::string &error_msg,
                      const std::string &hint = "");
 
-        // Parsing de alto nível
+        // Parsing de alto nivel
         Program parse_program();
         std::vector<VarDecl> parse_var_section();
 
@@ -60,7 +60,7 @@ namespace spike
         StmtPtr parse_para();
         StmtPtr parse_repita();
 
-        // Precedência crescente — cada nível chama o nível abaixo.
+        // Precedencia crescente - cada nivel chama o nivel abaixo.
         ExprPtr parse_or();
         ExprPtr parse_and();
         ExprPtr parse_not();

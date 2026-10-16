@@ -11,7 +11,7 @@ struct Diagnostic {
 
     Level level;
     std::string code;     // ex: "E002"
-    std::string message;  // ex: "string não fechada"
+    std::string message;  // ex: "string nao fechada"
     std::string filename;
     int line = 0;
     int col = 0;

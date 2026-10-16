@@ -13,7 +13,7 @@
 namespace spike_tests {
 
 // Helper: lex + parse `src` e retorna o Program junto com o parser pra
-// inspecionar diagnósticos.
+// inspecionar diagnosticos.
 struct ParseResult {
     spike::Program program;
     bool had_error;
@@ -35,7 +35,7 @@ inline ParseResult parse_source(const std::string& src) {
     return r;
 }
 
-// Helper: lex `src` e parseia uma única expressão.
+// Helper: lex `src` e parseia uma unica expressao.
 struct ExprResult {
     spike::ExprPtr expr;
     bool had_error;

@@ -15,9 +15,9 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang
 endif()
 
 # ---- Core library ------------------------------------------------------------
-# Headers são auto-descobertos pelo dependency scanner do CMake, então
-# tecnicamente não precisariam estar listados aqui. Mantemos `ast.hpp` (e os
-# outros headers públicos) listados pra aparecer na lista de fontes do IDE e
+# Headers sao auto-descobertos pelo dependency scanner do CMake, entao
+# tecnicamente nao precisariam estar listados aqui. Mantemos `ast.hpp` (e os
+# outros headers publicos) listados pra aparecer na lista de fontes do IDE e
 # pra qualquer ferramenta que itere sobre as sources do target encontrar.
 set(SPIKE_AST_SOURCES
     src/ast/ast_enums.cpp

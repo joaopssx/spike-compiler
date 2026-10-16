@@ -11,9 +11,9 @@
 #    define WIN32_LEAN_AND_MEAN
 #  endif
 #  include <windows.h>
-   // wingdi.h e cia. despejam macros com nomes triviais que quebram código
+   // wingdi.h e cia. despejam macros com nomes triviais que quebram codigo
    // C++ normal (ex: ERROR vira #define ERROR 0, conflitando com qualquer
-   // enum value chamado ERROR). Como colors.hpp é um header interno e fica
+   // enum value chamado ERROR). Como colors.hpp e um header interno e fica
    // no topo de tudo, limpamos aqui mesmo.
 #  ifdef ERROR
 #    undef ERROR
@@ -31,9 +31,9 @@
 
 namespace spike {
 
-// Ativa o suporte a sequências ANSI no console do Windows (VT100 mode).
-// Em outros sistemas é no-op. Header-only → marcado inline pra evitar
-// múltiplas definições quando incluído em mais de uma TU.
+// Ativa o suporte a sequencias ANSI no console do Windows (VT100 mode).
+// Em outros sistemas e no-op. Header-only -> marcado inline pra evitar
+// multiplas definicoes quando incluido em mais de uma TU.
 inline void init_colors() {
 #ifdef _WIN32
     HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -54,7 +54,7 @@ namespace Color {
     constexpr const char* YELLOW  = "\033[33m";
     constexpr const char* CYAN    = "\033[36m";
     constexpr const char* WHITE   = "\033[37m";
-    // Caramelo — cor principal do Spike, igual ao pelo do cachorro.
+    // Caramelo - cor principal do Spike, igual ao pelo do cachorro.
     constexpr const char* CARAMEL = "\033[38;5;130m";
     constexpr const char* GRAY    = "\033[38;5;240m";
 } // namespace Color

@@ -26,7 +26,7 @@ const Diagnostics& Parser::diagnostics() const {
     return diags_;
 }
 
-// ─── Navegação ──────────────────────────────────────────────────────────────
+// --- Navegacao --------------------------------------------------------------
 
 Token& Parser::peek() {
     return tokens_[static_cast<std::size_t>(current_)];
@@ -34,7 +34,7 @@ Token& Parser::peek() {
 
 Token& Parser::peek_next() {
     if (current_ + 1 >= static_cast<int>(tokens_.size())) {
-        // EOF token está sempre no fim; clamp.
+        // EOF token esta sempre no fim; clamp.
         return tokens_.back();
     }
     return tokens_[static_cast<std::size_t>(current_ + 1)];
@@ -78,7 +78,7 @@ Token Parser::expect(TokenType t, const std::string& error_msg,
                      const std::string& hint) {
     if (check(t)) return advance();
     Token& cur = peek();
-    // Fallback genérico — call sites com códigos catalogados usam
+    // Fallback generico - call sites com codigos catalogados usam
     // diags_.error() diretamente.
     diags_.error("Exxx", error_msg, cur.line, cur.col, hint);
     return cur;

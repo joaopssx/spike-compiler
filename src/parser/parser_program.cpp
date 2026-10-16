@@ -23,7 +23,7 @@ bool is_type_keyword(TokenType t) {
            t == TokenType::CARACTERE || t == TokenType::LOGICO;
 }
 
-// Hints — co-localizadas pra ficar fácil refinar a tradução.
+// Hints - co-localizadas pra ficar facil refinar a traducao.
 constexpr const char* kHintE100 =
     "todo programa Portugol começa com 'algoritmo \"nome\"'.";
 constexpr const char* kHintE101 =
@@ -39,7 +39,7 @@ constexpr const char* kHintE105 =
 
 } // namespace
 
-// ─── Parsing de alto nível ──────────────────────────────────────────────────
+// --- Parsing de alto nivel --------------------------------------------------
 
 Program Parser::parse_program() {
     Program prog;
@@ -61,7 +61,7 @@ Program Parser::parse_program() {
         const Token& t = peek();
         diags_.error("E101", "nome do algoritmo esperado após 'algoritmo'",
                      t.line, t.col, kHintE101);
-        // Continua mesmo sem nome — não vale a pena abortar.
+        // Continua mesmo sem nome - nao vale a pena abortar.
     }
 
     // var (opcional)
@@ -78,7 +78,7 @@ Program Parser::parse_program() {
     }
     advance();
 
-    // corpo: comandos até fimalgoritmo.
+    // corpo: comandos ate fimalgoritmo.
     prog.body = parse_stmt_list(TokenType::FIM_ALGORITMO);
 
     // fimalgoritmo
@@ -96,12 +96,12 @@ std::vector<VarDecl> Parser::parse_var_section() {
     std::vector<VarDecl> result;
 
     while (!is_at_end() && !check(TokenType::INICIO)) {
-        // Cada iteração parseia uma linha: NOME (, NOME)* : TIPO
+        // Cada iteracao parseia uma linha: NOME (, NOME)* : TIPO
         if (!check(TokenType::IDENTIFIER)) {
             const Token& t = peek();
             diags_.error("E105", "':' esperado na declaração de variável",
                          t.line, t.col, kHintE105);
-            // Sync: consome até trocar de linha ou achar INICIO.
+            // Sync: consome ate trocar de linha ou achar INICIO.
             const int err_line = t.line;
             while (!is_at_end() && peek().line == err_line &&
                    !check(TokenType::INICIO)) {
@@ -127,7 +127,7 @@ std::vector<VarDecl> Parser::parse_var_section() {
             const Token& t = peek();
             diags_.error("E105", "':' esperado na declaração de variável",
                          t.line, t.col, kHintE105);
-            // Sync pra próxima linha.
+            // Sync pra proxima linha.
             const int err_line = t.line;
             while (!is_at_end() && peek().line == err_line &&
                    !check(TokenType::INICIO)) {
@@ -145,7 +145,7 @@ std::vector<VarDecl> Parser::parse_var_section() {
             diags_.error("E104",
                          std::string("tipo inválido '") + bad.lexeme + "'",
                          bad.line, bad.col, kHintE104);
-            // Avança 1 pra evitar loop infinito; type fica Invalid.
+            // Avanca 1 pra evitar loop infinito; type fica Invalid.
             if (!is_at_end()) advance();
         }
 

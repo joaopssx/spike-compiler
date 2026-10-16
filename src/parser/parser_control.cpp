@@ -133,7 +133,7 @@ StmtPtr Parser::parse_repita() {
     const Token rep_tok = previous();  // REPITA consumido pelo dispatcher
 
     // Em Portugol o lexer mapeia "ate" pro token ATE (mesmo do `para`).
-    // ATE_QUE existe no enum mas não é emitido pelo lexer atual; mantemos
+    // ATE_QUE existe no enum mas nao e emitido pelo lexer atual; mantemos
     // os dois como stop pra ficar pronto se algum dia o tokenizador
     // diferenciar "ate que" como token composto.
     StmtList body = parse_stmt_list({TokenType::ATE, TokenType::ATE_QUE});
@@ -144,7 +144,7 @@ StmtPtr Parser::parse_repita() {
                      t.line, t.col,
                      "sintaxe: repita ... ate <condicao>. "
                      "O corpo executa pelo menos uma vez e para quando a condição for verdadeira.");
-        // Continua mesmo assim — parse_expr abaixo cria stub se necessário.
+        // Continua mesmo assim - parse_expr abaixo cria stub se necessario.
     }
 
     ExprPtr cond = parse_expr();

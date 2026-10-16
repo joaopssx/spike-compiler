@@ -11,7 +11,7 @@ namespace {
 // ---- cli -------------------------------------------------------------------
 
 // Helper para chamar parse_args com um vetor de strings (em vez de argv).
-// const_cast é seguro aqui porque parse_args só lê argv.
+// const_cast e seguro aqui porque parse_args so le argv.
 spike::CliArgs parse(const std::vector<std::string>& argv_in) {
     std::vector<char*> argv;
     argv.reserve(argv_in.size());

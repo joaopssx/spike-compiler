@@ -64,7 +64,7 @@ void test_stmt_para_with_step() {
     SPIKE_EXPECT(std::get<spike::NumberExpr>(p.from->node).value == 10.0);
     SPIKE_EXPECT(std::get<spike::NumberExpr>(p.to->node).value == 1.0);
     SPIKE_EXPECT(p.step != nullptr);
-    // step é UnaryExpr("-", NumberExpr(1))
+    // step e UnaryExpr("-", NumberExpr(1))
     SPIKE_EXPECT(std::holds_alternative<spike::UnaryExpr>(p.step->node));
     const auto& neg = std::get<spike::UnaryExpr>(p.step->node);
     SPIKE_EXPECT(neg.op == spike::UnaryOp::Neg);
@@ -164,7 +164,7 @@ void test_stmt_repita_basic() {
 }
 
 void test_stmt_repita_empty_body() {
-    // Body vazio é sintaticamente válido (semanticamente esquisito).
+    // Body vazio e sintaticamente valido (semanticamente esquisito).
     auto r = parse_source(
         "algoritmo \"t\"\n"
         "inicio\n"

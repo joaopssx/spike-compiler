@@ -99,13 +99,13 @@ bool Lexer::scan_one_token(Token& out) {
     if (is_digit(c))  { out = scan_number();                 return true; }
     if (c == '"')     { out = scan_string();                 return true; }
 
-    // Comentário de linha
+    // Comentario de linha
     if (c == '/' && peek_next() == '/') {
         while (!is_at_end() && peek() != '\n') advance();
         return false;
     }
 
-    // Comentário de bloco
+    // Comentario de bloco
     if (c == '{') {
         advance();
         while (!is_at_end() && peek() != '}') {

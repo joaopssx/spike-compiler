@@ -10,8 +10,8 @@
 
 namespace spike {
 
-// Forward declarations — Expr e Stmt são "structs envelope" que carregam
-// um std::variant. A indireção via unique_ptr permite recursão (BinaryExpr
+// Forward declarations - Expr e Stmt sao "structs envelope" que carregam
+// um std::variant. A indirecao via unique_ptr permite recursao (BinaryExpr
 // guarda ExprPtr left/right etc.) sem virtuais.
 struct Expr;
 struct Stmt;
@@ -25,16 +25,16 @@ using ExprPtr  = std::unique_ptr<Expr>;
 using StmtPtr  = std::unique_ptr<Stmt>;
 using StmtList = std::vector<StmtPtr>;
 
-// ─── EXPRESSÕES ────────────────────────────────────────────────────────────
+// --- EXPRESSOES ------------------------------------------------------------
 
 struct NumberExpr {
     double value = 0.0;
-    bool   is_integer = true;  // true se não tem ponto decimal
+    bool   is_integer = true;  // true se nao tem ponto decimal
     int line = 0, col = 0;
 };
 
 struct StringExpr {
-    std::string value;  // conteúdo sem aspas, com escapes processados
+    std::string value;  // conteudo sem aspas, com escapes processados
     int line = 0, col = 0;
 };
 
@@ -61,7 +61,7 @@ struct UnaryExpr {
     int line = 0, col = 0;
 };
 
-// Envelope: um Expr é uma das possibilidades acima.
+// Envelope: um Expr e uma das possibilidades acima.
 struct Expr {
     std::variant<
         NumberExpr,
@@ -73,7 +73,7 @@ struct Expr {
     > node;
 };
 
-// ─── STATEMENTS ────────────────────────────────────────────────────────────
+// --- STATEMENTS ------------------------------------------------------------
 
 struct AssignStmt {
     std::string var_name;
@@ -96,7 +96,7 @@ struct LeiaStmt {
 struct SeStmt {
     ExprPtr    condition;
     StmtList   then_branch;
-    StmtList   else_branch;  // vazio se não tem senao
+    StmtList   else_branch;  // vazio se nao tem senao
     int line = 0, col = 0;
 };
 
@@ -110,7 +110,7 @@ struct ParaStmt {
     std::string var_name;
     ExprPtr     from;
     ExprPtr     to;
-    ExprPtr     step;   // nullptr = passo 1 implícito
+    ExprPtr     step;   // nullptr = passo 1 implicito
     StmtList    body;
     int line = 0, col = 0;
     SourcePos   var_pos;
@@ -118,11 +118,11 @@ struct ParaStmt {
 
 struct RepitaStmt {
     StmtList body;
-    ExprPtr  condition;  // a condição do "ate"
+    ExprPtr  condition;  // a condicao do "ate"
     int line = 0, col = 0;
 };
 
-// Envelope: um Stmt é uma das possibilidades acima.
+// Envelope: um Stmt e uma das possibilidades acima.
 struct Stmt {
     std::variant<
         AssignStmt,
@@ -135,27 +135,27 @@ struct Stmt {
     > node;
 };
 
-// ─── DECLARAÇÕES ───────────────────────────────────────────────────────────
+// --- DECLARACOES -----------------------------------------------------------
 
 struct VarDecl {
     std::string name;
     TypeKind    type = TypeKind::None;
-    ExprPtr     initializer;  // nullptr se não tem valor inicial
+    ExprPtr     initializer;  // nullptr se nao tem valor inicial
     int line = 0, col = 0;
 };
 
-// ─── RAIZ DA AST ───────────────────────────────────────────────────────────
+// --- RAIZ DA AST -----------------------------------------------------------
 
 struct Program {
     std::string           name;     // nome do algoritmo
-    std::vector<VarDecl>  globals;  // variáveis declaradas em var
-    StmtList              body;     // instruções em inicio...fimalgoritmo
+    std::vector<VarDecl>  globals;  // variaveis declaradas em var
+    StmtList              body;     // instrucoes em inicio...fimalgoritmo
     int line = 1;
 };
 
-// ─── HELPERS DE CONSTRUÇÃO ────────────────────────────────────────────────
-// Conveniências curtas pro parser e pra testes — evita std::make_unique<Expr>(
-// Expr{...}) verbose nas calls. Não são parte do "spec da AST", só açúcar.
+// --- HELPERS DE CONSTRUCAO ------------------------------------------------
+// Conveniencias curtas pro parser e pra testes - evita std::make_unique<Expr>(
+// Expr{...}) verbose nas calls. Nao sao parte do "spec da AST", so acucar.
 
 template <typename T>
 inline ExprPtr make_expr(T&& alt) {

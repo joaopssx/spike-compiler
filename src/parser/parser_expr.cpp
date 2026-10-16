@@ -30,7 +30,7 @@ BinaryOp binary_op_for(TokenType t) {
 
 } // namespace
 
-// ─── Expressões ─────────────────────────────────────────────────────────────
+// --- Expressoes -------------------------------------------------------------
 
 ExprPtr Parser::parse_expr() {
     return parse_or();
@@ -129,12 +129,12 @@ ExprPtr Parser::parse_power() {
 }
 
 ExprPtr Parser::parse_primary() {
-    Token tok = peek();  // cópia — vamos avançar abaixo
+    Token tok = peek();  // copia - vamos avancar abaixo
 
     if (check(TokenType::NUMBER)) {
         advance();
         const bool has_dot = tok.lexeme.find('.') != std::string::npos;
-        // O lexer já validou: stod é seguro.
+        // O lexer ja validou: stod e seguro.
         const double value = std::stod(tok.lexeme);
         return make_expr(NumberExpr{value, !has_dot, tok.line, tok.col});
     }

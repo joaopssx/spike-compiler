@@ -27,7 +27,7 @@ void test_ast_leaf_exprs_carry_position() {
 }
 
 void test_ast_binary_expr_is_recursive() {
-    // Constroi a árvore para "x + 1"
+    // Constroi a arvore para "x + 1"
     auto left  = spike::make_expr(spike::VarExpr{"x", 1, 1});
     auto right = spike::make_expr(spike::NumberExpr{1.0, true, 1, 5});
     auto sum   = spike::make_expr(

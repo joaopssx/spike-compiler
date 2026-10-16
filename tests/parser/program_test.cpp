@@ -116,7 +116,7 @@ void test_parser_E105_missing_colon() {
 }
 
 void test_parser_recovers_to_next_line_after_var_error() {
-    // Linha ruim, depois uma linha boa — a boa deve ser parseada.
+    // Linha ruim, depois uma linha boa - a boa deve ser parseada.
     auto r = parse_source(
         "algoritmo \"t\"\n"
         "var\n"
