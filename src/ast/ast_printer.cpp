@@ -104,6 +104,11 @@ public:
             value->node);
     }
 
+    void var(const VarDecl& decl, int depth) {
+        line(depth, "Var " + decl.name + " : " + array_text(decl) + type_name(decl.type) +
+                        position(decl.line, decl.col));
+    }
+
     void labeled_block(const char* label, const StmtList& stmts, int depth) {
         line(depth, label);
         block(stmts, depth + 1);
@@ -188,6 +193,11 @@ public:
         line(depth, "Interrompa" + position(node.line, node.col));
     }
 
+    void visit_stmt(const CallStmt& node, int depth) {
+        line(depth, "Call " + node.name + position(node.line, node.col));
+        for (const ExprPtr& arg : node.args) expr(arg, depth + 1);
+    }
+
     void visit_stmt(const RepitaStmt& node, int depth) {
         line(depth, "Repita" + position(node.line, node.col));
         labeled_block("corpo", node.body, depth + 1);
@@ -228,9 +238,15 @@ std::string print_ast(const Program& program) {
         printer.line(1, "Const " + decl.name + position(decl.line, decl.col));
         printer.expr(decl.value, 2);
     }
-    for (const VarDecl& decl : program.globals) {
-        printer.line(1, "Var " + decl.name + " : " + array_text(decl) + type_name(decl.type) +
-                            position(decl.line, decl.col));
+    for (const VarDecl& decl : program.globals) printer.var(decl, 1);
+    for (const ProcedureDecl& proc : program.procedures) {
+        printer.line(1, "Procedure " + proc.name + position(proc.line, proc.col));
+        for (const Param& param : proc.params) {
+            printer.line(2, "Param " + param.name + " : " + type_name(param.type) +
+                                position(param.line, param.col));
+        }
+        for (const VarDecl& decl : proc.locals) printer.var(decl, 2);
+        printer.block(proc.body, 2);
     }
     printer.block(program.body, 1);
     return printer.out;
@@ -241,6 +257,12 @@ std::size_t count_statements(const StmtList& stmts) {
     for (const StmtPtr& stmt : stmts) {
         if (stmt) total += count_in(*stmt);
     }
+    return total;
+}
+
+std::size_t count_statements(const Program& program) {
+    std::size_t total = count_statements(program.body);
+    for (const ProcedureDecl& proc : program.procedures) total += count_statements(proc.body);
     return total;
 }
 

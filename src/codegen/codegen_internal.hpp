@@ -27,6 +27,7 @@ private:
 };
 
 std::string c_name(const std::string& name);
+std::string procedure_name(const std::string& name);
 std::string int_literal(double value);
 std::string integer_literal(long long value);
 std::string constant_literal(const ConstValue& value);
@@ -49,6 +50,7 @@ private:
     std::string source_name_;
     std::unordered_map<std::string, TypeKind> var_types_;
     std::unordered_map<std::string, std::vector<ArrayBounds>> var_dims_;
+    std::unordered_map<std::string, const ProcedureDecl*> procedures_;
     CWriter out_;
     CodegenResult result_;
     int loop_count_ = 0;
@@ -60,6 +62,12 @@ private:
     void emit_constants();
     void emit_globals();
     void emit_main();
+    void emit_prototypes();
+    void emit_procedures();
+    void emit_procedure(const ProcedureDecl& proc);
+    void emit_local(const VarDecl& decl);
+    void emit_call(const CallStmt& call);
+    std::string signature(const ProcedureDecl& proc) const;
     void emit_block(const StmtList& stmts);
     void emit_stmt(const Stmt& stmt);
     void emit_assign(const AssignStmt& stmt);
@@ -80,6 +88,7 @@ private:
     std::string expr(const ExprPtr& expr);
     long long bound_value(const ArrayBound& bound) const;
     void collect_array_dims();
+    std::vector<ArrayBounds> dims_of(const VarDecl& decl) const;
     long long element_count(const std::string& name) const;
     std::string element(const IndexExpr& node);
     std::string lvalue(const ExprPtr& target, std::string& name);

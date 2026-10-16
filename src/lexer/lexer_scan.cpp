@@ -130,6 +130,8 @@ TokenType Lexer::keyword_type(const std::string& word) const {
         {"outrocaso",     TokenType::OUTROCASO},
         {"fimescolha",    TokenType::FIM_ESCOLHA},
         {"vetor",         TokenType::VETOR},
+        {"procedimento",  TokenType::PROCEDIMENTO},
+        {"fimprocedimento", TokenType::FIM_PROCEDIMENTO},
         {"escreva",       TokenType::ESCREVA},
         {"escreval",      TokenType::ESCREVAL},
         {"leia",          TokenType::LEIA},

@@ -40,6 +40,10 @@ StmtPtr Parser::parse_stmt() {
          peek_next().type == TokenType::LBRACKET)) {
         return parse_assign();
     }
+    if (check(TokenType::IDENTIFIER) && peek_next().type == TokenType::LPAREN) {
+        return parse_call();
+    }
+    if (match(TokenType::PROCEDIMENTO)) return reject_late_procedure();
     if (match(TokenType::ESCREVA))   return parse_escreva(false);
     if (match(TokenType::ESCREVAL))  return parse_escreva(true);
     if (match(TokenType::LEIA))      return parse_leia();

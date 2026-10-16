@@ -46,6 +46,8 @@ namespace spike
         OUTROCASO,
         FIM_ESCOLHA,
         VETOR,
+        PROCEDIMENTO,
+        FIM_PROCEDIMENTO,
         ATE_QUE, // usado no repita...ate
 
         // Keywords - I/O

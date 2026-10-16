@@ -1,0 +1,2 @@
+soma: 21, média: 7
+soma: 24, média: 6

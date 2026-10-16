@@ -89,9 +89,39 @@ void test_hello_example_runs() {
     SPIKE_EXPECT(output == "Olá, mundo!\n");
 }
 
+void test_procedures_compile_without_warnings() {
+    const auto gen = generate_from_source(
+        "algoritmo \"procs\"\n"
+        "var\n  total, i : inteiro\n"
+        "procedimento soma(x: real, vezes: inteiro)\n"
+        "var\n  i : inteiro\n  parcial : real\n  marcas : vetor[1..2] de caractere\n"
+        "inicio\n"
+        "  para i de 1 ate vezes faca\n    parcial <- parcial + x\n  fimpara\n"
+        "  marcas[1] <- \"=\"\n"
+        "  total <- total + vezes\n  escreval(marcas[1], parcial)\n"
+        "fimprocedimento\n"
+        "procedimento conta(n: inteiro)\n"
+        "inicio\n  se n > 0 entao\n    escreva(n, \" \")\n    conta(n - 1)\n  fimse\n"
+        "fimprocedimento\n"
+        "inicio\n  i <- 7\n  soma(1.5, 2)\n  soma(i, 1)\n  conta(3)\n  escreval(total, i)\n"
+        "fimalgoritmo\n",
+        "procs.por");
+    SPIKE_EXPECT(gen.result.ok);
+    if (!gen.result.ok) return;
+
+    const std::string base = std::string(SPIKE_BINARY_DIR) + "/codegen_procedures_test";
+    const bool compiled = compile_c(gen.result.c_source, base);
+    SPIKE_EXPECT(compiled);
+    if (!compiled) return;
+    SPIKE_EXPECT(run_to_file(base) == 0);
+    SPIKE_EXPECT(read_all(base + ".out") == "=3\n=7\n3 2 1 37\n");
+}
+
 #else
 
 void test_generated_c_compiles_without_warnings() {}
+
+void test_procedures_compile_without_warnings() {}
 
 void test_hello_example_runs() {}
 
@@ -104,6 +134,7 @@ namespace spike_tests {
 void run_codegen_compile_tests() {
     test_generated_c_compiles_without_warnings();
     test_hello_example_runs();
+    test_procedures_compile_without_warnings();
 }
 
 } // namespace spike_tests

@@ -45,7 +45,7 @@ int analyze_file(const std::string& path, Analysis& analysis, Reporter& reporter
     Parser parser(std::move(tokens), path, analysis.source);
     analysis.program = parser.parse();
     reporter.add_phase("sintático", parse_time.ms());
-    reporter.step(3, "análise sintática: " + count_text(count_statements(analysis.program.body),
+    reporter.step(3, "análise sintática: " + count_text(count_statements(analysis.program),
                                                         "comando", "comandos"));
     if (parser.had_error()) {
         parser.diagnostics().print_all();

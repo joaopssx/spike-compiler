@@ -1,4 +1,4 @@
 algoritmo "teste"
 inicio
-  imprima("oi")
+  imprima "oi"
 fimalgoritmo

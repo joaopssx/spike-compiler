@@ -45,12 +45,17 @@ Generator::Generator(const Program& program, const TypeMap& types, const Constan
         var_types_.emplace(symbol_key(decl.name), decl.type);
     }
     collect_array_dims();
+    for (const ProcedureDecl& proc : program_.procedures) {
+        procedures_.emplace(symbol_key(proc.name), &proc);
+    }
 }
 
 CodegenResult Generator::run() {
     emit_header();
     emit_constants();
     emit_globals();
+    emit_prototypes();
+    emit_procedures();
     emit_main();
     if (failed()) {
         result_.c_source.clear();

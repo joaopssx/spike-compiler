@@ -27,6 +27,13 @@ struct LoopVarWrite {
     int col = 0;
 };
 
+struct ProcedureSignature {
+    std::string name;
+    std::vector<Param> params;
+    int line = 0;
+    int col = 0;
+};
+
 class SemanticAnalyzer {
 public:
     SemanticAnalyzer(const Program& program, const std::string& filename,
@@ -51,16 +58,21 @@ private:
     int loop_depth_ = 0;
     std::vector<LoopVarWrite> loop_var_writes_;
     ConstantMap constants_;
+    std::unordered_map<std::string, ProcedureSignature> procedures_;
 
     void declare_consts();
     void declare_const(const ConstDecl& decl);
     std::optional<NameRef> first_non_constant(const ExprPtr& expr) const;
-    bool resolve_dims(const VarDecl& decl, std::vector<ArrayBounds>& dims);
+    bool resolve_dims(const VarDecl& decl, std::vector<ArrayBounds>& dims, bool local);
     long long bound_value(const ArrayBound& bound, bool& ok);
     TypeKind check_index(const IndexExpr& node, bool reading = true);
     Symbol* check_target(const ExprPtr& target);
     bool declared_anywhere(const std::string& name) const;
     void declare_globals();
+    void declare_variable(const VarDecl& decl, bool local);
+    void declare_procedures();
+    void check_procedure(const ProcedureDecl& proc);
+    void check_call(const CallStmt& call);
     Symbol* resolve(const std::string& name, int line, int col);
     Symbol* mark_assigned(const std::string& name, int line, int col);
 

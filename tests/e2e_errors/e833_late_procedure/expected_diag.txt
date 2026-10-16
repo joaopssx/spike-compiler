@@ -1,0 +1,3 @@
+erro[E833]: procedimento declarado depois do 'inicio' do programa
+   4 | procedimento p()
+     | ^

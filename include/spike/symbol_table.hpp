@@ -4,6 +4,7 @@
 #include "spike/ast_enums.hpp"
 
 #include <cstddef>
+#include <deque>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -35,14 +36,20 @@ public:
 
     Symbol* lookup(const std::string& name);
     const Symbol* lookup(const std::string& name) const;
+    const Symbol* lookup_global(const std::string& name) const;
+
+    void push_scope();
+    void pop_scope();
+    std::size_t depth() const;
 
     std::size_t size() const;
-    std::vector<Symbol>::const_iterator begin() const;
-    std::vector<Symbol>::const_iterator end() const;
+    std::deque<Symbol>::const_iterator begin() const;
+    std::deque<Symbol>::const_iterator end() const;
 
 private:
-    std::vector<Symbol> symbols_;
-    std::unordered_map<std::string, std::size_t> index_;
+    using Scope = std::unordered_map<std::string, std::size_t>;
+    std::deque<Symbol> symbols_;
+    std::vector<Scope> scopes_ = std::vector<Scope>(1);
 };
 
 } // namespace spike

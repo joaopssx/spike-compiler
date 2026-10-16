@@ -200,12 +200,12 @@ fimalgoritmo
 
 **Quando acontece:** uma linha do corpo não começa com um comando que o Spike conhece.
 
-**Como corrigir:** use um comando válido: atribuição (`<-`), `escreva`, `escreval`, `leia`, `se`, `enquanto`, `para` ou `repita`.
+**Como corrigir:** use um comando válido: atribuição (`<-`), `escreva`, `escreval`, `leia`, `se`, `enquanto`, `para`, `repita` ou a chamada de um procedimento, `nome(...)`. Um nome seguido de `(` é sempre lido como chamada; se o procedimento não existir, o erro é o E780.
 
 ```
 algoritmo "exemplo"
 inicio
-  imprima("oi")
+  imprima "oi"
 fimalgoritmo
 ```
 
@@ -1037,15 +1037,106 @@ fimalgoritmo
 
 **Mensagem:** `o vetor 'w' termina antes de começar (de 3 a 1)`
 
-**Quando acontece:** o fim do vetor é menor que o início, o vetor teria mais de 10 milhões de elementos (numa matriz, contando todas as dimensões juntas), ou um limite usa algo que não é uma constante inteira (a mensagem diz qual dos três).
+**Quando acontece:** o fim do vetor é menor que o início, o vetor teria mais de 10 milhões de elementos (numa matriz, contando todas as dimensões juntas; dentro de um procedimento, o limite é 10 mil, e a mensagem diz `o vetor local 'v' é grande demais`), ou um limite usa algo que não é uma constante inteira (a mensagem diz qual dos três).
 
-**Como corrigir:** escreva o menor limite primeiro, use um vetor menor, ou use números inteiros e constantes inteiras nos limites.
+**Como corrigir:** escreva o menor limite primeiro, use um vetor menor (ou declare o vetor grande no `var` do programa, fora do procedimento), ou use números inteiros e constantes inteiras nos limites.
 
 ```
 algoritmo "exemplo"
 var
   w : vetor[3..1] de inteiro
 inicio
+fimalgoritmo
+```
+
+## E780 — procedimento não definido
+
+**Mensagem:** `procedimento 'saudar' não foi definido`
+
+**Quando acontece:** a linha chama `nome(...)`, mas não existe procedimento com esse nome. Também acontece quando o nome é de uma variável: só procedimentos são chamados com `( )`.
+
+**Como corrigir:** confira o nome (letra trocada é o mais comum) ou declare o procedimento antes do `inicio` do programa.
+
+```
+algoritmo "exemplo"
+inicio
+  saudar("Ana")
+fimalgoritmo
+```
+
+## E781 — quantidade errada de argumentos
+
+**Mensagem:** `'saudar' espera 2 argumentos, recebeu 1`
+
+**Quando acontece:** a chamada passa mais ou menos valores do que o procedimento tem de parâmetros.
+
+**Como corrigir:** passe um valor para cada parâmetro, na mesma ordem da declaração. A dica mostra a linha onde o procedimento foi declarado.
+
+```
+algoritmo "exemplo"
+procedimento saudar(nome: caractere, vezes: inteiro)
+inicio
+fimprocedimento
+inicio
+  saudar("Ana")
+fimalgoritmo
+```
+
+## E782 — argumento de tipo errado
+
+**Mensagem:** `o argumento 1 de 'saudar' precisa ser 'caractere', mas é 'inteiro'`
+
+**Quando acontece:** o valor passado não combina com o tipo do parâmetro. Um `inteiro` pode ir para um parâmetro `real`; o contrário não.
+
+**Como corrigir:** passe um valor do tipo do parâmetro. Para mandar um real para um parâmetro inteiro, use `trunca()` ou `arredonda()`.
+
+```
+algoritmo "exemplo"
+procedimento saudar(nome: caractere, vezes: inteiro)
+inicio
+fimprocedimento
+inicio
+  saudar(3, 2)
+fimalgoritmo
+```
+
+## E783 — procedimento declarado duas vezes
+
+**Mensagem:** `procedimento 'p' já foi declarado` (ou `'total' já foi declarada como variável`, quando o nome já é de uma variável ou constante global)
+
+**Quando acontece:** dois procedimentos têm o mesmo nome (maiúsculas não contam), ou o procedimento tem o nome de uma variável ou constante do programa.
+
+**Como corrigir:** apague uma das declarações ou dê outro nome ao procedimento.
+
+```
+algoritmo "exemplo"
+procedimento p()
+inicio
+fimprocedimento
+procedimento p()
+inicio
+fimprocedimento
+inicio
+fimalgoritmo
+```
+
+## E784 — procedimento usado como valor
+
+**Mensagem:** `'mostrar' é um procedimento, não uma variável`
+
+**Quando acontece:** o nome de um procedimento aparece numa conta, depois de `<-`, à esquerda de `<-` ou dentro de `leia`. Um procedimento não guarda nem devolve valor.
+
+**Como corrigir:** para chamar o procedimento, escreva `mostrar()` sozinho na linha. Se precisava de um valor, use uma variável.
+
+```
+algoritmo "exemplo"
+var
+  x : inteiro
+procedimento mostrar()
+inicio
+fimprocedimento
+inicio
+  x <- mostrar
 fimalgoritmo
 ```
 
@@ -1317,6 +1408,94 @@ algoritmo "exemplo"
 var
   m : vetor[1..3 1..4] de inteiro
 inicio
+fimalgoritmo
+```
+
+## E830 — falta o nome do procedimento
+
+**Mensagem:** `nome do procedimento esperado depois de 'procedimento'`
+
+**Quando acontece:** a palavra `procedimento` não é seguida de um nome.
+
+**Como corrigir:** escreva o nome logo depois: `procedimento saudar(nome: caractere)`.
+
+```
+algoritmo "exemplo"
+procedimento (a: inteiro)
+inicio
+fimprocedimento
+inicio
+fimalgoritmo
+```
+
+## E831 — parâmetros mal formados
+
+**Mensagem:** `'(' esperado depois do nome do procedimento 'p'` (ou `':' esperado depois do parâmetro 'a'`, `tipo do parâmetro 'a' esperado`, `')' esperado no fim dos parâmetros de 'p'`, `nome do parâmetro esperado`, `um parâmetro ainda não pode ser um vetor`)
+
+**Quando acontece:** o cabeçalho do procedimento não segue o formato `procedimento nome(a: tipo, b: tipo)`. A mensagem diz o que faltou.
+
+**Como corrigir:** abra e feche os parênteses (mesmo sem parâmetros: `procedimento linha()`), escreva `nome: tipo` para cada parâmetro e separe-os com vírgula. Um vetor não pode ser parâmetro por enquanto: declare-o no `var` do programa, que o procedimento enxerga.
+
+```
+algoritmo "exemplo"
+procedimento p(a: )
+inicio
+fimprocedimento
+inicio
+fimalgoritmo
+```
+
+## E832 — falta o 'fimprocedimento'
+
+**Mensagem:** `'fimprocedimento' esperado para fechar 'p'`
+
+**Quando acontece:** o corpo do procedimento chegou ao `inicio` do programa, a outro `procedimento` ou ao fim do arquivo sem `fimprocedimento`.
+
+**Como corrigir:** feche cada procedimento com `fimprocedimento` antes do próximo procedimento ou do `inicio` do programa.
+
+```
+algoritmo "exemplo"
+procedimento p()
+inicio
+  escreval(1)
+inicio
+  p()
+fimalgoritmo
+```
+
+## E833 — procedimento depois do 'inicio'
+
+**Mensagem:** `procedimento declarado depois do 'inicio' do programa`
+
+**Quando acontece:** um procedimento foi escrito dentro do corpo do programa.
+
+**Como corrigir:** mova o procedimento para antes do `inicio` do programa, logo depois da seção `var`.
+
+```
+algoritmo "exemplo"
+inicio
+  escreval(1)
+procedimento p()
+inicio
+fimprocedimento
+fimalgoritmo
+```
+
+## E834 — falta o ')' na chamada
+
+**Mensagem:** `')' esperado no fim da chamada de 'p'`
+
+**Quando acontece:** a chamada de um procedimento abriu `(` e não fechou.
+
+**Como corrigir:** feche a chamada: `p(1, 2)`.
+
+```
+algoritmo "exemplo"
+procedimento p(a: inteiro)
+inicio
+fimprocedimento
+inicio
+  p(1
 fimalgoritmo
 ```
 

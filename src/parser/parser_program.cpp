@@ -1,4 +1,5 @@
 #include "spike/parser.hpp"
+#include "parser/parser_internal.hpp"
 
 #include <string>
 #include <utility>
@@ -6,22 +7,10 @@
 
 namespace spike {
 
+using parser_detail::is_type_keyword;
+using parser_detail::type_kind_for;
+
 namespace {
-
-TypeKind type_kind_for(TokenType t) {
-    switch (t) {
-        case TokenType::INTEIRO:   return TypeKind::Integer;
-        case TokenType::REAL:      return TypeKind::Real;
-        case TokenType::CARACTERE: return TypeKind::String;
-        case TokenType::LOGICO:    return TypeKind::Bool;
-        default:                   return TypeKind::Invalid;
-    }
-}
-
-bool is_type_keyword(TokenType t) {
-    return t == TokenType::INTEIRO  || t == TokenType::REAL ||
-           t == TokenType::CARACTERE || t == TokenType::LOGICO;
-}
 
 // Hints - co-localizadas pra ficar facil refinar a traducao.
 constexpr const char* kHintE100 =
@@ -76,6 +65,8 @@ Program Parser::parse_program() {
         advance();
         prog.globals = parse_var_section();
     }
+
+    while (match(TokenType::PROCEDIMENTO)) prog.procedures.push_back(parse_procedure());
 
     // inicio
     if (!check(TokenType::INICIO)) {
@@ -149,7 +140,7 @@ std::vector<ConstDecl> Parser::parse_const_section() {
 std::vector<VarDecl> Parser::parse_var_section() {
     std::vector<VarDecl> result;
 
-    while (!is_at_end() && !check(TokenType::INICIO)) {
+    while (!is_at_end() && !check(TokenType::INICIO) && !check(TokenType::PROCEDIMENTO)) {
         // Cada iteracao parseia uma linha: NOME (, NOME)* : TIPO
         if (!check(TokenType::IDENTIFIER)) {
             const Token& t = peek();

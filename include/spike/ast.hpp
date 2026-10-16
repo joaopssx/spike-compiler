@@ -150,6 +150,12 @@ struct BreakStmt {
     int line = 0, col = 0;
 };
 
+struct CallStmt {
+    std::string name;
+    std::vector<ExprPtr> args;
+    int line = 0, col = 0;
+};
+
 struct RepitaStmt {
     StmtList body;
     ExprPtr  condition;  // a condicao do "ate"
@@ -167,7 +173,8 @@ struct Stmt {
         ParaStmt,
         RepitaStmt,
         BreakStmt,
-        EscolhaStmt
+        EscolhaStmt,
+        CallStmt
     > node;
 };
 
@@ -199,12 +206,27 @@ struct ConstDecl {
     int line = 0, col = 0;
 };
 
+struct Param {
+    std::string name;
+    TypeKind    type = TypeKind::None;
+    int line = 0, col = 0;
+};
+
+struct ProcedureDecl {
+    std::string          name;
+    std::vector<Param>   params;
+    std::vector<VarDecl> locals;
+    StmtList             body;
+    int line = 0, col = 0;
+};
+
 // --- RAIZ DA AST -----------------------------------------------------------
 
 struct Program {
     std::string           name;     // nome do algoritmo
     std::vector<ConstDecl> consts;
     std::vector<VarDecl>  globals;  // variaveis declaradas em var
+    std::vector<ProcedureDecl> procedures;
     StmtList              body;     // instrucoes em inicio...fimalgoritmo
     int line = 1;
 };

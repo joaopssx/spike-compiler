@@ -11,6 +11,7 @@ namespace spike {
 std::string print_ast(const Program& program);
 
 std::size_t count_statements(const StmtList& stmts);
+std::size_t count_statements(const Program& program);
 
 } // namespace spike
 

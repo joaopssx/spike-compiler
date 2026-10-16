@@ -19,6 +19,7 @@ Sections marked **proposed** describe syntax that does not exist yet. They are w
 algoritmo "nome do programa"
 var
   declarations
+procedures
 inicio
   commands
 fimalgoritmo
@@ -26,6 +27,7 @@ fimalgoritmo
 
 - The program name is a string in double quotes.
 - The `const` and `var` sections are optional; when both are present, `const` comes first. A program with neither goes straight from `algoritmo` to `inicio`.
+- Procedures, if any, come after `var` and before the main `inicio`.
 - The body can be empty.
 - Nothing may follow `fimalgoritmo` except comments and blank lines.
 
@@ -272,11 +274,46 @@ fimalgoritmo
 - Assigning to a constant, reading it with `leia` or using it as the counter of a `para` is error E740.
 - `const` is a reserved word. Words that start with it, like `constante`, are still valid names.
 
+## Procedures
+
+```
+algoritmo "demo"
+var
+  total : inteiro
+procedimento saudar(nome: caractere, vezes: inteiro)
+var
+  i : inteiro
+inicio
+  para i de 1 ate vezes faca
+    escreval("Oi, ", nome)
+  fimpara
+  total <- total + vezes
+fimprocedimento
+inicio
+  saudar("Ana", 2)
+fimalgoritmo
+```
+
+- A procedure is a named block of commands. It does not return a value. Procedures are declared after the program's `var` section and before the main `inicio`; one declared after it is error E833.
+- The header is `procedimento nome(parâmetros)`. Parameters are `nome: tipo`, separated by commas; names of the same type can share a group: `(a, b: inteiro, c: real)`. A procedure without parameters still has the parentheses: `procedimento linha()`. A malformed header is E830 (no name) or E831.
+- Parameters are passed by value: the procedure gets a copy, and changing it does not change the caller's variable. A parameter can be `inteiro`, `real`, `caractere` or `logico`; vectors cannot be passed yet (E831).
+- A procedure may have its own `var` section, between the header and its `inicio`. It closes with `fimprocedimento` (E832).
+- A call is a command of its own: `saudar("Ana", 2)`, or `linha()` without arguments. Any name followed by `(` at the start of a command is read as a call; calling a name that is not a procedure is E780.
+- The call needs one argument per parameter (E781), each of the parameter's type (E782). An `inteiro` argument is accepted for a `real` parameter.
+- A procedure can call any other procedure, including one declared further down, and itself (recursion).
+- Two procedures with the same name, or a procedure with the name of a global variable or constant, is E783. Using a procedure name as a value or a variable (`x <- saudar`) is E784.
+- `interrompa` inside a procedure only leaves a loop that is also inside that procedure.
+- `procedimento` and `fimprocedimento` are reserved words.
+- In the generated C, a procedure becomes `static void p_saudar(spike_str v_nome, spike_int v_vezes)`. All prototypes come first, so the order of the definitions does not matter.
+
 ## Scope
 
-- Today every variable is global: it is declared in `var` and can be used anywhere in the body.
+- Variables declared in the program's `var` section are global: the main body and every procedure can use them.
+- Parameters and the variables in a procedure's `var` section are local: they exist only inside that procedure, and every call starts them again with the default value of their type. Using a local name outside its procedure is E700.
+- A local name may repeat a global one (variable or constant). Inside the procedure, the name refers to the local; outside, to the global. A future warning will point these out.
+- Two names in the same scope are E701: two globals, two parameters, two locals, or a parameter and a local.
+- A local vector holds at most 10 thousand elements (E775), since it lives on the stack while the procedure runs. Larger vectors belong in the program's `var` section.
 - Using a name that was not declared is an error.
-- When subprograms arrive (v0.3), they get their own `var` section. A local name hides a global with the same name inside that subprogram.
 
 ## Language roadmap (proposed)
 
@@ -284,7 +321,6 @@ Each item below is **proposed**. The syntax is final only when the feature ships
 
 | Feature | Proposed syntax |
 | --- | --- |
-| Procedures | `procedimento nome(...)` ... `fimprocedimento` |
 | Functions | `funcao nome(...): tipo` ... `retorne x` ... `fimfuncao` |
 | By-reference parameters | `var` before a parameter |
 | Initial value | `x : inteiro <- 5` in the `var` section |
@@ -331,8 +367,7 @@ inicio
 fimalgoritmo
 ```
 
-- Parameters follow VisuAlg: names of the same type share a group (`a, b: inteiro`) and groups are separated by `;` (`a: inteiro; var b: real`). `var` before a group makes those parameters by reference.
-- Subprograms are declared between the `var` section and the main `inicio`.
+- Parameters work as in procedures: names of the same type share a group (`a, b: inteiro`) and groups are separated by commas. `var` before a group makes those parameters by reference.
 
 ## Built-in functions (proposed)
 

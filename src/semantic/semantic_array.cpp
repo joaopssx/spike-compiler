@@ -13,6 +13,7 @@ using semantic_detail::sample_indices;
 namespace {
 
 constexpr long long kMaxArrayElements = 10000000;
+constexpr long long kMaxLocalArrayElements = 10000;
 
 std::string count_text(std::size_t count, const char* singular, const char* plural) {
     return std::to_string(count) + " " + (count == 1 ? singular : plural);
@@ -48,7 +49,9 @@ long long SemanticAnalyzer::bound_value(const ArrayBound& bound, bool& ok) {
     return bound.negative ? -it->second.integer : it->second.integer;
 }
 
-bool SemanticAnalyzer::resolve_dims(const VarDecl& decl, std::vector<ArrayBounds>& dims) {
+bool SemanticAnalyzer::resolve_dims(const VarDecl& decl, std::vector<ArrayBounds>& dims,
+                                    bool local) {
+    const long long limit = local ? kMaxLocalArrayElements : kMaxArrayElements;
     long long total = 1;
     for (const ArrayDim& dim : decl.dims) {
         bool ok = true;
@@ -63,11 +66,15 @@ bool SemanticAnalyzer::resolve_dims(const VarDecl& decl, std::vector<ArrayBounds
             return false;
         }
         const long long size = high - low + 1;
-        if (size > kMaxArrayElements || total > kMaxArrayElements / size) {
+        if (size > limit || total > limit / size) {
             diags_.error("E775",
-                         "o vetor '" + decl.name + "' é grande demais (o limite é " +
-                             std::to_string(kMaxArrayElements) + " elementos)",
-                         dim.low.line, dim.low.col, "use um vetor menor.");
+                         std::string(local ? "o vetor local '" : "o vetor '") + decl.name +
+                             "' é grande demais (o limite é " + std::to_string(limit) +
+                             " elementos)",
+                         dim.low.line, dim.low.col,
+                         local ? "declare vetores grandes no var do programa, fora do "
+                                 "procedimento."
+                               : "use um vetor menor.");
             return false;
         }
         total *= size;

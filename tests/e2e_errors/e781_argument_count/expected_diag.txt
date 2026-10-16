@@ -1,0 +1,4 @@
+erro[E781]: 'saudar' espera 2 argumentos, recebeu 1
+   6 |   saudar("Ana")
+     |   ^
+     = dica: a declaração de 'saudar' está na linha 2.

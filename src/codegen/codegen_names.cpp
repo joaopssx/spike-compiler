@@ -22,6 +22,10 @@ std::string octal_escape(unsigned char c) {
 
 } // namespace
 
+std::string procedure_name(const std::string& name) {
+    return "p_" + c_name(name).substr(2);
+}
+
 std::string c_name(const std::string& name) {
     std::string out = "v_";
     for (unsigned char c : name) {

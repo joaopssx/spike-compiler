@@ -12,14 +12,17 @@ long long Generator::bound_value(const ArrayBound& bound) const {
     return bound.negative ? -it->second.integer : it->second.integer;
 }
 
+std::vector<ArrayBounds> Generator::dims_of(const VarDecl& decl) const {
+    std::vector<ArrayBounds> dims;
+    for (const ArrayDim& dim : decl.dims) {
+        dims.push_back(ArrayBounds{bound_value(dim.low), bound_value(dim.high)});
+    }
+    return dims;
+}
+
 void Generator::collect_array_dims() {
     for (const VarDecl& decl : program_.globals) {
-        if (decl.dims.empty()) continue;
-        std::vector<ArrayBounds> dims;
-        for (const ArrayDim& dim : decl.dims) {
-            dims.push_back(ArrayBounds{bound_value(dim.low), bound_value(dim.high)});
-        }
-        var_dims_.emplace(symbol_key(decl.name), std::move(dims));
+        if (!decl.dims.empty()) var_dims_.emplace(symbol_key(decl.name), dims_of(decl));
     }
 }
 

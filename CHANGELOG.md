@@ -13,10 +13,12 @@ All notable changes to Spike are recorded here. The format follows [Keep a Chang
 - `escolha` / `caso` / `outrocaso` / `fimescolha`, with lists (`caso 2, 3`) and ranges (`caso 4 ate 6`). Only the matching case runs, and the value can be an `inteiro` or a `caractere`.
 - Vectors: `notas : vetor[1..5] de real`, used as `notas[i]` in expressions, assignments and `leia`. Limits can be negative or constants. An index outside the limits stops the program with runtime error R002, or is reported while compiling when the index is a fixed value (E774).
 - Matrices: vectors with 2 or 3 dimensions, `m : vetor[1..3, 1..4] de inteiro`, used as `m[i, j]`. Each index is checked against its own dimension, and the runtime error says which one failed.
+- Procedures: `procedimento nome(a: inteiro, b: real)` ... `fimprocedimento`, declared before the main `inicio` and called as a command, `nome(1, 2.5)`. Parameters are passed by value. A procedure can have its own `var` section, whose variables start fresh on every call and may reuse the name of a global. Procedures can call each other in any order and call themselves.
 
 ### Changed
 
-- `div`, `mod`, `const`, `interrompa`, `escolha`, `caso`, `outrocaso`, `fimescolha` and `vetor` are now reserved words. A program that used any of them as a variable name has to rename it.
+- `div`, `mod`, `const`, `interrompa`, `escolha`, `caso`, `outrocaso`, `fimescolha`, `vetor`, `procedimento` and `fimprocedimento` are now reserved words. A program that used any of them as a variable name has to rename it.
+- A command that starts with a name followed by `(`, like `imprima("oi")`, is now read as a procedure call. When no such procedure exists the error is E780 instead of E300.
 
 ## [0.2.0] - 2026-10-15
 
