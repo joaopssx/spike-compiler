@@ -41,6 +41,10 @@ namespace spike
         FIM_PARA,
         REPITA,
         INTERROMPA,
+        ESCOLHA,
+        CASO,
+        OUTROCASO,
+        FIM_ESCOLHA,
         ATE_QUE, // usado no repita...ate
 
         // Keywords - I/O

@@ -116,6 +116,26 @@ struct ParaStmt {
     SourcePos   var_pos;
 };
 
+struct CaseLabel {
+    ExprPtr value;
+    ExprPtr range_end;
+    int line = 0, col = 0;
+};
+
+struct CaseClause {
+    std::vector<CaseLabel> labels;
+    StmtList body;
+    int line = 0, col = 0;
+};
+
+struct EscolhaStmt {
+    ExprPtr selector;
+    std::vector<CaseClause> cases;
+    bool has_default = false;
+    StmtList default_body;
+    int line = 0, col = 0;
+};
+
 struct BreakStmt {
     int line = 0, col = 0;
 };
@@ -136,7 +156,8 @@ struct Stmt {
         EnquantoStmt,
         ParaStmt,
         RepitaStmt,
-        BreakStmt
+        BreakStmt,
+        EscolhaStmt
     > node;
 };
 

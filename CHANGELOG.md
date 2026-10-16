@@ -10,10 +10,11 @@ All notable changes to Spike are recorded here. The format follows [Keep a Chang
 - Runtime error R005 when a power has no real result, such as `0 ^ -1`.
 - Constants: a `const` section before `var`, with lines like `PI = 3.14159`. Spike computes their values while compiling, and changing a constant is an error (E740).
 - `interrompa`, which leaves the innermost `enquanto`, `repita` or `para` right away. Using it outside a loop is an error (E750).
+- `escolha` / `caso` / `outrocaso` / `fimescolha`, with lists (`caso 2, 3`) and ranges (`caso 4 ate 6`). Only the matching case runs, and the value can be an `inteiro` or a `caractere`.
 
 ### Changed
 
-- `div`, `mod`, `const` and `interrompa` are now reserved words. A program that used any of them as a variable name has to rename it.
+- `div`, `mod`, `const`, `interrompa`, `escolha`, `caso`, `outrocaso` and `fimescolha` are now reserved words. A program that used any of them as a variable name has to rename it.
 
 ## [0.2.0] - 2026-10-15
 

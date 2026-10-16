@@ -1,0 +1,3 @@
+erro[E762]: o valor 2 aparece em dois casos
+   7 |     caso 2
+     |          ^

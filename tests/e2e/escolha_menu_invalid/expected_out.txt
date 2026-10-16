@@ -1,0 +1,5 @@
+1 - somar
+2 - subtrair
+3 - multiplicar
+4 - dividir
+Opção: Opção inválida.

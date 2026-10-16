@@ -143,6 +143,25 @@ public:
         labeled_block("faca", node.body, depth + 1);
     }
 
+    void visit_stmt(const EscolhaStmt& node, int depth) {
+        line(depth, "Escolha" + position(node.line, node.col));
+        expr(node.selector, depth + 1);
+        for (const CaseClause& clause : node.cases) {
+            line(depth + 1, "caso" + position(clause.line, clause.col));
+            for (const CaseLabel& label : clause.labels) {
+                if (label.range_end) {
+                    line(depth + 2, "intervalo");
+                    expr(label.value, depth + 3);
+                    expr(label.range_end, depth + 3);
+                } else {
+                    expr(label.value, depth + 2);
+                }
+            }
+            labeled_block("corpo", clause.body, depth + 2);
+        }
+        if (node.has_default) labeled_block("outrocaso", node.default_body, depth + 1);
+    }
+
     void visit_stmt(const BreakStmt& node, int depth) {
         line(depth, "Interrompa" + position(node.line, node.col));
     }
@@ -161,6 +180,12 @@ std::size_t count_in(const Stmt& stmt) {
                        if constexpr (std::is_same_v<Node, SeStmt>) {
                            return count_statements(node.then_branch) +
                                   count_statements(node.else_branch);
+                       } else if constexpr (std::is_same_v<Node, EscolhaStmt>) {
+                           std::size_t total = count_statements(node.default_body);
+                           for (const CaseClause& clause : node.cases) {
+                               total += count_statements(clause.body);
+                           }
+                           return total;
                        } else if constexpr (std::is_same_v<Node, EnquantoStmt> ||
                                             std::is_same_v<Node, ParaStmt> ||
                                             std::is_same_v<Node, RepitaStmt>) {

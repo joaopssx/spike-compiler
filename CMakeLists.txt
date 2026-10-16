@@ -44,6 +44,7 @@ set(SPIKE_PARSER_SOURCES
     src/parser/parser_program.cpp
     src/parser/parser_stmt.cpp
     src/parser/parser_control.cpp
+    src/parser/parser_escolha.cpp
     src/parser/parser_expr.cpp
 )
 set(SPIKE_SEMANTIC_SOURCES
@@ -54,6 +55,7 @@ set(SPIKE_SEMANTIC_SOURCES
     src/semantic/semantic_types.cpp
     src/semantic/semantic_control.cpp
     src/semantic/semantic_const.cpp
+    src/semantic/semantic_escolha.cpp
     src/semantic/const_eval.cpp
     src/semantic/semantic_internal.hpp
 )
@@ -77,6 +79,7 @@ set(SPIKE_CODEGEN_SOURCES
     src/codegen/codegen_expr.cpp
     src/codegen/codegen_stmt.cpp
     src/codegen/codegen_control.cpp
+    src/codegen/codegen_escolha.cpp
     src/codegen/codegen_names.cpp
     src/codegen/codegen_internal.hpp
 )
@@ -178,6 +181,9 @@ add_executable(spike_tests
     tests/codegen/codegen_const_test.cpp
     tests/semantic/semantic_break_test.cpp
     tests/codegen/codegen_break_test.cpp
+    tests/parser/escolha_parse_test.cpp
+    tests/semantic/semantic_escolha_test.cpp
+    tests/codegen/codegen_escolha_test.cpp
     tests/parser/name_positions_test.cpp
     tests/parser/program_test.cpp
     tests/parser/stmt_basic_test.cpp

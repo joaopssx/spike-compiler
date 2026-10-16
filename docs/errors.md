@@ -817,6 +817,121 @@ inicio
 fimalgoritmo
 ```
 
+## E760 — valor do escolha com tipo errado
+
+**Mensagem:** `'escolha' aceita inteiro ou caractere, mas o valor é 'real'`
+
+**Quando acontece:** o valor depois de `escolha` é `real` ou `logico`. O `escolha` compara valores exatos, e isso só faz sentido com inteiros e textos.
+
+**Como corrigir:** para um `real`, use `se` com comparações, ou converta com `trunca()`; para um `logico`, use `se ... senao`.
+
+```
+algoritmo "exemplo"
+var
+  r : real
+inicio
+  escolha r
+    caso 1
+  fimescolha
+fimalgoritmo
+```
+
+## E761 — caso com tipo diferente do escolha
+
+**Mensagem:** `o caso tem tipo 'caractere', mas o 'escolha' é de 'inteiro'`
+
+**Quando acontece:** um valor de `caso` não tem o mesmo tipo do valor escolhido.
+
+**Como corrigir:** use valores do mesmo tipo: números para um `escolha` de inteiro, textos para um de caractere.
+
+```
+algoritmo "exemplo"
+var
+  x : inteiro
+inicio
+  escolha x
+    caso "um"
+  fimescolha
+fimalgoritmo
+```
+
+## E762 — valor repetido em dois casos
+
+**Mensagem:** `o valor 2 aparece em dois casos`
+
+**Quando acontece:** o mesmo valor aparece em mais de um `caso`, inclusive quando duas faixas se sobrepõem (a mensagem mostra a parte repetida: `os valores de 4 a 5 aparecem em dois casos`).
+
+**Como corrigir:** deixe cada valor em um único `caso`.
+
+```
+algoritmo "exemplo"
+var
+  x : inteiro
+inicio
+  escolha x
+    caso 1, 2
+    caso 2
+  fimescolha
+fimalgoritmo
+```
+
+## E763 — caso com valor que não é fixo
+
+**Mensagem:** `o valor de um caso precisa ser fixo (literal ou constante)`
+
+**Quando acontece:** um `caso` usa uma variável. Os valores dos casos precisam ser conhecidos antes de o programa rodar.
+
+**Como corrigir:** use um número, um texto ou uma constante. Para comparar com uma variável, use `se`.
+
+```
+algoritmo "exemplo"
+var
+  x : inteiro
+inicio
+  escolha x
+    caso x
+  fimescolha
+fimalgoritmo
+```
+
+## E764 — faixa de trás para frente
+
+**Mensagem:** `o intervalo começa em 9 e termina em 1`
+
+**Quando acontece:** numa faixa `caso a ate b`, o primeiro número é maior que o segundo, então nenhum valor cabe nela.
+
+**Como corrigir:** escreva o menor valor primeiro: `caso 1 ate 9`.
+
+```
+algoritmo "exemplo"
+var
+  x : inteiro
+inicio
+  escolha x
+    caso 9 ate 1
+  fimescolha
+fimalgoritmo
+```
+
+## E765 — faixa com texto
+
+**Mensagem:** `intervalo com 'ate' só funciona com inteiros`
+
+**Quando acontece:** um `caso` de um `escolha` de texto usa `ate`.
+
+**Como corrigir:** liste cada texto separado por vírgula: `caso "a", "b"`.
+
+```
+algoritmo "exemplo"
+var
+  t : caractere
+inicio
+  escolha t
+    caso "a" ate "c"
+  fimescolha
+fimalgoritmo
+```
+
 ## E800 — falta o nome da constante
 
 **Mensagem:** `nome da constante esperado` (ou `nome da constante esperado depois de 'const'`, quando a seção está vazia)
@@ -862,6 +977,100 @@ algoritmo "exemplo"
 const
   PI =
 inicio
+fimalgoritmo
+```
+
+## E810 — falta o caso depois do escolha
+
+**Mensagem:** `'caso' esperado depois de 'escolha'`
+
+**Quando acontece:** depois da linha do `escolha` veio um comando, e não um `caso`, `outrocaso` ou `fimescolha`.
+
+**Como corrigir:** comece cada bloco com `caso valor`.
+
+```
+algoritmo "exemplo"
+var
+  x : inteiro
+inicio
+  escolha x
+    x <- 1
+  fimescolha
+fimalgoritmo
+```
+
+## E811 — falta o fimescolha
+
+**Mensagem:** `'fimescolha' não encontrado`
+
+**Quando acontece:** o `escolha` não foi fechado.
+
+**Como corrigir:** termine o bloco com `fimescolha`.
+
+```
+algoritmo "exemplo"
+var
+  x : inteiro
+inicio
+  escolha x
+    caso 1
+fimalgoritmo
+```
+
+## E812 — outrocaso fora do lugar
+
+**Mensagem:** `'outrocaso' repetido`
+
+**Quando acontece:** há dois `outrocaso` no mesmo `escolha`, ou um `caso` depois do `outrocaso` (a mensagem é então `'caso' depois de 'outrocaso'`).
+
+**Como corrigir:** use no máximo um `outrocaso`, sempre como o último bloco.
+
+```
+algoritmo "exemplo"
+var
+  x : inteiro
+inicio
+  escolha x
+    outrocaso
+    caso 1
+  fimescolha
+fimalgoritmo
+```
+
+## E813 — caso sem valor
+
+**Mensagem:** `valor esperado depois de 'caso'`
+
+**Quando acontece:** a palavra `caso` está sozinha na linha.
+
+**Como corrigir:** escreva um valor (`caso 1`), uma lista (`caso 2, 3`) ou uma faixa (`caso 4 ate 6`) na mesma linha.
+
+```
+algoritmo "exemplo"
+var
+  x : inteiro
+inicio
+  escolha x
+    caso
+  fimescolha
+fimalgoritmo
+```
+
+## E814 — escolha sem casos
+
+**Mensagem:** `'escolha' sem nenhum caso`
+
+**Quando acontece:** o `escolha` não tem nenhum `caso` nem `outrocaso`.
+
+**Como corrigir:** acrescente pelo menos um `caso`, ou apague o `escolha`.
+
+```
+algoritmo "exemplo"
+var
+  x : inteiro
+inicio
+  escolha x
+  fimescolha
 fimalgoritmo
 ```
 

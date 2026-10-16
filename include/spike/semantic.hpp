@@ -59,6 +59,8 @@ private:
     void check_assign(const AssignStmt& stmt);
     void check_condition(const ExprPtr& condition, const char* command);
     void check_para(const ParaStmt& stmt);
+    void check_escolha(const EscolhaStmt& stmt);
+    TypeKind check_case_value(const ExprPtr& value, TypeKind selector);
     void check_para_bound(const ExprPtr& bound, const char* part);
     TypeKind check_expr(const ExprPtr& expr);
     TypeKind check_binary(const BinaryExpr& node, TypeKind left, TypeKind right);

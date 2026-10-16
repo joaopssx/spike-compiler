@@ -67,6 +67,9 @@ private:
     void emit_enquanto(const EnquantoStmt& stmt);
     void emit_repita(const RepitaStmt& stmt);
     void emit_para(const ParaStmt& stmt);
+    void emit_escolha(const EscolhaStmt& stmt);
+    std::string case_condition(const CaseClause& clause, const std::string& selector,
+                               TypeKind type);
     void emit_body(const StmtList& stmts);
     std::string condition(const ExprPtr& value);
     int next_loop_id();

@@ -173,6 +173,28 @@ ate condição
 
 The body runs at least once. The loop stops when the condition becomes `verdadeiro`.
 
+### escolha
+
+```
+escolha opcao
+  caso 1
+    escreval("um")
+  caso 2, 3
+    escreval("dois ou três")
+  caso 4 ate 6
+    escreval("de quatro a seis")
+  outrocaso
+    escreval("outro")
+fimescolha
+```
+
+- The value after `escolha` is computed once and must be `inteiro` or `caractere` (E760).
+- Each `caso` lists values separated by commas. For `inteiro`, a value can also be a range `inicio ate fim`, with the smaller number first (E764). Ranges do not work with texts (E765).
+- Case values are literals or constants of the same type as the chosen value (E761, E763). A value that appears in two cases is an error (E762), including overlapping ranges.
+- Only the first matching case runs; there is no falling through to the next one, unlike C's `switch`. If nothing matches, `outrocaso` runs; without `outrocaso`, nothing happens.
+- `outrocaso` is optional and must be the last block (E812). A `caso` may have an empty body.
+- `escolha` is not a loop: an `interrompa` inside it leaves the loop around the `escolha`.
+
 ### interrompa
 
 ```
@@ -224,7 +246,6 @@ Each item below is **proposed**. The syntax is final only when the feature ships
 
 | Feature | Proposed syntax |
 | --- | --- |
-| Multiple choice | `escolha` / `caso` / `outrocaso` / `fimescolha` |
 | Vectors | `v : vetor[1..10] de inteiro` |
 | Matrices | `m : vetor[1..3, 1..3] de real` |
 | Procedures | `procedimento nome(...)` ... `fimprocedimento` |
@@ -277,7 +298,6 @@ fimalgoritmo
 - Parameters follow VisuAlg: names of the same type share a group (`a, b: inteiro`) and groups are separated by `;` (`a: inteiro; var b: real`). `var` before a group makes those parameters by reference.
 - Subprograms are declared between the `var` section and the main `inicio`.
 - Vector indexes start at the lower bound written in the declaration. Indexing is checked at run time (R002).
-- `caso` accepts a list of values of the same type as the `escolha` expression; `inteiro` and `caractere` are allowed.
 
 ## Built-in functions (proposed)
 

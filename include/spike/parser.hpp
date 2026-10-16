@@ -61,6 +61,8 @@ namespace spike
         StmtPtr parse_enquanto();
         StmtPtr parse_para();
         StmtPtr parse_repita();
+        StmtPtr parse_escolha();
+        bool parse_case_labels(CaseClause& clause);
 
         // Precedencia crescente - cada nivel chama o nivel abaixo.
         ExprPtr parse_or();

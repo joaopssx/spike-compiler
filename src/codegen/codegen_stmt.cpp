@@ -27,6 +27,8 @@ const char* command_name(const Stmt& stmt) {
                 return "repita";
             } else if constexpr (std::is_same_v<Node, BreakStmt>) {
                 return "interrompa";
+            } else if constexpr (std::is_same_v<Node, EscolhaStmt>) {
+                return "escolha";
             } else {
                 return "atribuição";
             }
@@ -91,6 +93,10 @@ void Generator::emit_stmt(const Stmt& stmt) {
     }
     if (const auto* enquanto = std::get_if<EnquantoStmt>(&stmt.node)) {
         emit_enquanto(*enquanto);
+        return;
+    }
+    if (const auto* escolha = std::get_if<EscolhaStmt>(&stmt.node)) {
+        emit_escolha(*escolha);
         return;
     }
     if (std::holds_alternative<BreakStmt>(stmt.node)) {

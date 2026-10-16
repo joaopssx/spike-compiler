@@ -47,6 +47,7 @@ StmtPtr Parser::parse_stmt() {
     if (match(TokenType::ENQUANTO))  return parse_enquanto();
     if (match(TokenType::PARA))      return parse_para();
     if (match(TokenType::REPITA))    return parse_repita();
+    if (match(TokenType::ESCOLHA))   return parse_escolha();
     if (match(TokenType::INTERROMPA)) {
         const Token& keyword = previous();
         return make_stmt(BreakStmt{keyword.line, keyword.col});

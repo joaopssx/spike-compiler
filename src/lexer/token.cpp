@@ -36,6 +36,10 @@ std::string token_type_to_string(TokenType t) {
         case TokenType::PASSO:         return "PASSO";
         case TokenType::FIM_PARA:      return "FIM_PARA";
         case TokenType::INTERROMPA:    return "INTERROMPA";
+        case TokenType::ESCOLHA:       return "ESCOLHA";
+        case TokenType::CASO:          return "CASO";
+        case TokenType::OUTROCASO:     return "OUTROCASO";
+        case TokenType::FIM_ESCOLHA:   return "FIM_ESCOLHA";
         case TokenType::REPITA:        return "REPITA";
         case TokenType::ATE_QUE:       return "ATE_QUE";
 
