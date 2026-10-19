@@ -32,6 +32,7 @@ struct ProcedureSignature {
     std::vector<Param> params;
     int line = 0;
     int col = 0;
+    TypeKind return_type = TypeKind::None;
 };
 
 class SemanticAnalyzer {
@@ -47,6 +48,7 @@ public:
     const std::unordered_map<const Expr*, TypeKind>& expr_types() const;
     const std::vector<LoopVarWrite>& loop_var_writes() const;
     const ConstantMap& constants() const;
+    const std::vector<NameRef>& functions_without_return() const;
 
 private:
     const Program& program_;
@@ -59,6 +61,8 @@ private:
     std::vector<LoopVarWrite> loop_var_writes_;
     ConstantMap constants_;
     std::unordered_map<std::string, ProcedureSignature> procedures_;
+    const ProcedureDecl* current_subprogram_ = nullptr;
+    std::vector<NameRef> functions_without_return_;
 
     void declare_consts();
     void declare_const(const ConstDecl& decl);
@@ -73,6 +77,10 @@ private:
     void declare_procedures();
     void check_procedure(const ProcedureDecl& proc);
     void check_call(const CallStmt& call);
+    TypeKind check_call_expr(const CallExpr& call);
+    void check_arguments(const ProcedureSignature& signature, const std::vector<ExprPtr>& args,
+                         const std::vector<TypeKind>& types, int line, int col);
+    void check_return(const ReturnStmt& stmt);
     Symbol* resolve(const std::string& name, int line, int col);
     Symbol* mark_assigned(const std::string& name, int line, int col);
 

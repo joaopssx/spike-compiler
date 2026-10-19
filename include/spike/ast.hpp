@@ -61,6 +61,12 @@ struct IndexExpr {
     int line = 0, col = 0;
 };
 
+struct CallExpr {
+    std::string name;
+    std::vector<ExprPtr> args;
+    int line = 0, col = 0;
+};
+
 struct UnaryExpr {
     UnaryOp op = UnaryOp::Neg;
     ExprPtr operand;
@@ -76,7 +82,8 @@ struct Expr {
         VarExpr,
         BinaryExpr,
         UnaryExpr,
-        IndexExpr
+        IndexExpr,
+        CallExpr
     > node;
 };
 
@@ -156,6 +163,11 @@ struct CallStmt {
     int line = 0, col = 0;
 };
 
+struct ReturnStmt {
+    ExprPtr value;
+    int line = 0, col = 0;
+};
+
 struct RepitaStmt {
     StmtList body;
     ExprPtr  condition;  // a condicao do "ate"
@@ -174,7 +186,8 @@ struct Stmt {
         RepitaStmt,
         BreakStmt,
         EscolhaStmt,
-        CallStmt
+        CallStmt,
+        ReturnStmt
     > node;
 };
 
@@ -218,7 +231,13 @@ struct ProcedureDecl {
     std::vector<VarDecl> locals;
     StmtList             body;
     int line = 0, col = 0;
+    TypeKind             return_type = TypeKind::None;
+    int                  end_line = 0;
+
+    bool is_function() const { return return_type != TypeKind::None; }
 };
+
+using FunctionDecl = ProcedureDecl;
 
 // --- RAIZ DA AST -----------------------------------------------------------
 

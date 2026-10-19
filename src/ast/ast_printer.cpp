@@ -90,6 +90,9 @@ public:
                 } else if constexpr (std::is_same_v<Node, IndexExpr>) {
                     line(depth, "Index " + node.name + position(node.line, node.col));
                     for (const ExprPtr& index : node.indices) expr(index, depth + 1);
+                } else if constexpr (std::is_same_v<Node, CallExpr>) {
+                    line(depth, "Call " + node.name + position(node.line, node.col));
+                    for (const ExprPtr& arg : node.args) expr(arg, depth + 1);
                 } else if constexpr (std::is_same_v<Node, BinaryExpr>) {
                     line(depth, std::string("Binary ") + to_string(node.op) +
                                     position(node.line, node.col));
@@ -198,6 +201,11 @@ public:
         for (const ExprPtr& arg : node.args) expr(arg, depth + 1);
     }
 
+    void visit_stmt(const ReturnStmt& node, int depth) {
+        line(depth, "Retorne" + position(node.line, node.col));
+        if (node.value) expr(node.value, depth + 1);
+    }
+
     void visit_stmt(const RepitaStmt& node, int depth) {
         line(depth, "Repita" + position(node.line, node.col));
         labeled_block("corpo", node.body, depth + 1);
@@ -240,7 +248,10 @@ std::string print_ast(const Program& program) {
     }
     for (const VarDecl& decl : program.globals) printer.var(decl, 1);
     for (const ProcedureDecl& proc : program.procedures) {
-        printer.line(1, "Procedure " + proc.name + position(proc.line, proc.col));
+        printer.line(1, proc.is_function()
+                            ? "Function " + proc.name + " : " + type_name(proc.return_type) +
+                                  position(proc.line, proc.col)
+                            : "Procedure " + proc.name + position(proc.line, proc.col));
         for (const Param& param : proc.params) {
             printer.line(2, "Param " + param.name + " : " + type_name(param.type) +
                                 position(param.line, param.col));

@@ -43,7 +43,8 @@ StmtPtr Parser::parse_stmt() {
     if (check(TokenType::IDENTIFIER) && peek_next().type == TokenType::LPAREN) {
         return parse_call();
     }
-    if (match(TokenType::PROCEDIMENTO)) return reject_late_procedure();
+    if (match(TokenType::PROCEDIMENTO) || match(TokenType::FUNCAO)) return reject_late_procedure();
+    if (match(TokenType::RETORNE)) return parse_retorne();
     if (match(TokenType::ESCREVA))   return parse_escreva(false);
     if (match(TokenType::ESCREVAL))  return parse_escreva(true);
     if (match(TokenType::LEIA))      return parse_leia();

@@ -90,6 +90,17 @@ static void test_index(void) {
     CHECK(spike_str_eq(names[0], "") && spike_str_eq(names[2], ""));
 }
 
+static void test_call_depth(void) {
+    spike_enter(1);
+    spike_enter(1);
+    CHECK(spike_call_depth == 2);
+    spike_leave();
+    spike_leave();
+    spike_leave();
+    CHECK(spike_call_depth == 0);
+    CHECK(spike_stack_budget > 0);
+}
+
 static void test_arithmetic(void) {
     CHECK(spike_div_int(7, 2, 1) == 3);
     CHECK(spike_div_int(-7, 2, 1) == -3);
@@ -149,6 +160,7 @@ int main(void) {
     test_for_advance();
     test_arithmetic();
     test_index();
+    test_call_depth();
     test_power();
     test_parse_int();
     test_parse_real();

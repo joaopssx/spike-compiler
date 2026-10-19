@@ -28,6 +28,7 @@ typedef const char *spike_str;
 #define SPIKE_R_ZERO_STEP 6
 #define SPIKE_R_END_OF_INPUT 7
 #define SPIKE_R_OUT_OF_MEMORY 8
+#define SPIKE_R_MISSING_RETURN 9
 #define SPIKE_EXIT_RUNTIME_ERROR 101
 
 typedef struct spike_block

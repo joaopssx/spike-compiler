@@ -65,3 +65,7 @@ spike_add_runtime_io_test(index_out_of_range index "" 101
     "-DEXPECT_STDERR=R002\\]: .+ndice 11 fora do vetor 'notas' \\(v.+lido: 1 a 5\\).*linha 13")
 spike_add_runtime_io_test(index_out_of_dimension index2 "" 101
     "-DEXPECT_STDERR=R002\\]: .+ndice 5 fora da dimens.+o 2 de 'm' \\(v.+lido: 1 a 4\\).*linha 14")
+spike_add_runtime_io_test(call_depth depth "" 101
+    "-DEXPECT_STDERR=R008\\]: recurs.+o profunda demais \\(limite de 10000 chamadas\\).*linha 21")
+spike_add_runtime_io_test(missing_return noreturn "" 101
+    "-DEXPECT_STDERR=R009\\]: a fun.+o 'sinal' terminou sem retornar um valor.*linha 22")

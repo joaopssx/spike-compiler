@@ -20,7 +20,8 @@ std::optional<NameRef> SemanticAnalyzer::first_non_constant(const ExprPtr& expr)
                 const Symbol* symbol = symbols_.lookup(node.name);
                 if (symbol && symbol->is_const) return std::nullopt;
                 return NameRef{node.name, node.line, node.col};
-            } else if constexpr (std::is_same_v<Node, IndexExpr>) {
+            } else if constexpr (std::is_same_v<Node, IndexExpr> ||
+                                 std::is_same_v<Node, CallExpr>) {
                 return NameRef{node.name, node.line, node.col};
             } else if constexpr (std::is_same_v<Node, BinaryExpr>) {
                 if (auto left = first_non_constant(node.left)) return left;
@@ -41,6 +42,9 @@ bool SemanticAnalyzer::declared_anywhere(const std::string& name) const {
     }
     for (const ConstDecl& decl : program_.consts) {
         if (symbol_key(decl.name) == key) return true;
+    }
+    for (const ProcedureDecl& proc : program_.procedures) {
+        if (symbol_key(proc.name) == key) return true;
     }
     return false;
 }

@@ -44,6 +44,8 @@ void SemanticAnalyzer::check_stmt(const Stmt& stmt) {
                 check_escolha(node);
             } else if constexpr (std::is_same_v<Node, CallStmt>) {
                 check_call(node);
+            } else if constexpr (std::is_same_v<Node, ReturnStmt>) {
+                check_return(node);
             } else if constexpr (std::is_same_v<Node, BreakStmt>) {
                 if (loop_depth_ == 0) {
                     diags_.error("E750", "'interrompa' só pode ser usado dentro de um laço",

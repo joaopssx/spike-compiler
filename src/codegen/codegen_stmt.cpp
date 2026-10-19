@@ -31,6 +31,8 @@ const char* command_name(const Stmt& stmt) {
                 return "escolha";
             } else if constexpr (std::is_same_v<Node, CallStmt>) {
                 return "chamada de procedimento";
+            } else if constexpr (std::is_same_v<Node, ReturnStmt>) {
+                return "retorne";
             } else {
                 return "atribuição";
             }
@@ -103,6 +105,10 @@ void Generator::emit_stmt(const Stmt& stmt) {
     }
     if (const auto* call = std::get_if<CallStmt>(&stmt.node)) {
         emit_call(*call);
+        return;
+    }
+    if (const auto* ret = std::get_if<ReturnStmt>(&stmt.node)) {
+        emit_return(*ret);
         return;
     }
     if (std::holds_alternative<BreakStmt>(stmt.node)) {

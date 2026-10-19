@@ -30,8 +30,9 @@ void test_prototypes_come_before_definitions() {
     expect(c, "spike_int v_v[3];\n\n"
               "static void p_saudar(spike_str v_nome, spike_int v_vezes);\n"
               "static void p_linha(void);\n\n"
-              "static void p_saudar(spike_str v_nome, spike_int v_vezes) {\n}\n\n"
-              "static void p_linha(void) {\n}\n\n"
+              "static void p_saudar(spike_str v_nome, spike_int v_vezes) {\n"
+              "    spike_enter(5);\n    spike_leave();\n}\n\n"
+              "static void p_linha(void) {\n    spike_enter(8);\n    spike_leave();\n}\n\n"
               "int main(void) {\n");
     expect(c, "    p_saudar(\"Ana\", 2LL);\n    p_linha();\n");
 }
@@ -43,6 +44,7 @@ void test_locals_start_with_default_values() {
                                    "fimprocedimento\n",
                                    "  p(a)\n");
     expect(c, "static void p_p(spike_real v_x) {\n"
+              "    spike_enter(5);\n"
               "    spike_int v_i = 0LL;\n"
               "    spike_str v_t = \"\";\n"
               "    spike_bool v_ok = 0;\n"
@@ -50,6 +52,7 @@ void test_locals_start_with_default_values() {
               "    spike_str v_nomes[2];\n"
               "    spike_fill_str(v_nomes, 2);\n"
               "    v_i = 1LL;\n"
+              "    spike_leave();\n"
               "}\n");
     expect(c, "    p_p(((spike_real)v_a));\n");
 }

@@ -1,0 +1,4 @@
+12
+7
+a é maior que c
+8

@@ -93,11 +93,12 @@ set(SPIKE_RUNTIME_TEXT_CPP "${CMAKE_BINARY_DIR}/generated/runtime_text.cpp")
 add_custom_command(
     OUTPUT "${SPIKE_RUNTIME_TEXT_CPP}"
     COMMAND ${CMAKE_COMMAND}
-        "-DINPUTS=${CMAKE_SOURCE_DIR}/runtime/spike_runtime_core.h|${CMAKE_SOURCE_DIR}/runtime/spike_runtime_io.h"
+        "-DINPUTS=${CMAKE_SOURCE_DIR}/runtime/spike_runtime_core.h|${CMAKE_SOURCE_DIR}/runtime/spike_runtime_calls.h|${CMAKE_SOURCE_DIR}/runtime/spike_runtime_io.h"
         "-DOUTPUT=${SPIKE_RUNTIME_TEXT_CPP}"
         -P "${CMAKE_SOURCE_DIR}/cmake/embed_runtime.cmake"
     DEPENDS
         "${CMAKE_SOURCE_DIR}/runtime/spike_runtime_core.h"
+        "${CMAKE_SOURCE_DIR}/runtime/spike_runtime_calls.h"
         "${CMAKE_SOURCE_DIR}/runtime/spike_runtime_io.h"
         "${CMAKE_SOURCE_DIR}/cmake/embed_runtime.cmake"
     COMMENT "Embedding the C runtime"
@@ -107,6 +108,7 @@ set(SPIKE_RUNTIME_SOURCES
     "${SPIKE_RUNTIME_TEXT_CPP}"
     runtime/spike_runtime.h
     runtime/spike_runtime_core.h
+    runtime/spike_runtime_calls.h
     runtime/spike_runtime_io.h
 )
 set(SPIKE_PUBLIC_HEADERS
@@ -196,6 +198,9 @@ add_executable(spike_tests
     tests/parser/procedure_parse_test.cpp
     tests/semantic/semantic_procedure_test.cpp
     tests/codegen/codegen_procedure_test.cpp
+    tests/parser/function_parse_test.cpp
+    tests/semantic/semantic_function_test.cpp
+    tests/codegen/codegen_function_test.cpp
     tests/parser/name_positions_test.cpp
     tests/parser/program_test.cpp
     tests/parser/stmt_basic_test.cpp

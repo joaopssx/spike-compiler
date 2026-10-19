@@ -749,11 +749,32 @@ Estes erros acontecem quando o programa já compilou e está rodando. A mensagem
 
 ## R008 — memória insuficiente
 
-**Mensagem:** `memória insuficiente`
+**Mensagem:** `memória insuficiente` (ou `recursão profunda demais (limite de 10000 chamadas), verifique a condição de parada`, ou `recursão profunda demais (a memória para chamadas acabou), verifique a condição de parada`)
 
-**Quando acontece:** o programa criou textos demais e o computador ficou sem memória. Na prática, só acontece num laço que junta textos sem parar.
+**Quando acontece:** o programa criou textos demais e o computador ficou sem memória, o que na prática só acontece num laço que junta textos sem parar. Também acontece quando uma função ou procedimento chama a si mesmo sem parar: mais de 10000 chamadas ao mesmo tempo, ou chamadas com vetores locais grandes que enchem a memória reservada para elas.
 
-**Como corrigir:** confira se o laço termina.
+**Como corrigir:** confira se o laço termina. Numa recursão, confira o caso de parada (por exemplo `se n <= 1 entao retorne 1`) e se cada chamada se aproxima dele.
+
+## R009 — função terminou sem retornar valor
+
+**Mensagem:** `a função 'sinal' terminou sem retornar um valor`
+
+**Quando acontece:** a função chegou ao `fimfuncao` sem passar por nenhum `retorne`. Costuma ser um `se` que só retorna num dos caminhos.
+
+**Como corrigir:** garanta um `retorne` em todos os caminhos, por exemplo com um `senao`, ou com um `retorne` antes do `fimfuncao`.
+
+```
+algoritmo "exemplo"
+funcao sinal(n: inteiro): inteiro
+inicio
+  se n > 0 entao
+    retorne 1
+  fimse
+fimfuncao
+inicio
+  escreval(sinal(-5))
+fimalgoritmo
+```
 
 ## E740 — alterar uma constante
 
@@ -1051,9 +1072,9 @@ fimalgoritmo
 
 ## E780 — procedimento não definido
 
-**Mensagem:** `procedimento 'saudar' não foi definido`
+**Mensagem:** `procedimento 'saudar' não foi definido` (dentro de uma expressão: `função 'dobro' não foi definida`)
 
-**Quando acontece:** a linha chama `nome(...)`, mas não existe procedimento com esse nome. Também acontece quando o nome é de uma variável: só procedimentos são chamados com `( )`.
+**Quando acontece:** o programa chama `nome(...)`, mas não existe procedimento nem função com esse nome. Também acontece quando o nome é de uma variável: só procedimentos e funções são chamados com `( )`.
 
 **Como corrigir:** confira o nome (letra trocada é o mais comum) ou declare o procedimento antes do `inicio` do programa.
 
@@ -1102,9 +1123,9 @@ fimalgoritmo
 
 ## E783 — procedimento declarado duas vezes
 
-**Mensagem:** `procedimento 'p' já foi declarado` (ou `'total' já foi declarada como variável`, quando o nome já é de uma variável ou constante global)
+**Mensagem:** `procedimento 'p' já foi declarado` (ou `função 'f' já foi declarada`, ou `'total' já foi declarada como variável`, quando o nome já é de uma variável ou constante global)
 
-**Quando acontece:** dois procedimentos têm o mesmo nome (maiúsculas não contam), ou o procedimento tem o nome de uma variável ou constante do programa.
+**Quando acontece:** dois procedimentos ou funções têm o mesmo nome (maiúsculas não contam; procedimentos e funções dividem os nomes), ou o nome já é de uma variável ou constante do programa.
 
 **Como corrigir:** apague uma das declarações ou dê outro nome ao procedimento.
 
@@ -1122,11 +1143,11 @@ fimalgoritmo
 
 ## E784 — procedimento usado como valor
 
-**Mensagem:** `'mostrar' é um procedimento, não uma variável`
+**Mensagem:** `'mostrar' é um procedimento, não uma variável` (ou `'mostrar' é um procedimento e não devolve valor`, ou `'dobro' é uma função, não uma variável`)
 
-**Quando acontece:** o nome de um procedimento aparece numa conta, depois de `<-`, à esquerda de `<-` ou dentro de `leia`. Um procedimento não guarda nem devolve valor.
+**Quando acontece:** o nome de um procedimento aparece numa conta, depois de `<-`, à esquerda de `<-` ou dentro de `leia`; ou um procedimento é chamado dentro de uma expressão, como `x <- mostrar()`. Um procedimento não guarda nem devolve valor. O nome de uma função sem os parênteses também dá este erro.
 
-**Como corrigir:** para chamar o procedimento, escreva `mostrar()` sozinho na linha. Se precisava de um valor, use uma variável.
+**Como corrigir:** para chamar o procedimento, escreva `mostrar()` sozinho na linha. Se precisa de um valor, transforme o procedimento em função (`funcao ... : tipo` com `retorne`). Para usar o valor de uma função, chame com parênteses: `dobro(3)`.
 
 ```
 algoritmo "exemplo"
@@ -1137,6 +1158,57 @@ inicio
 fimprocedimento
 inicio
   x <- mostrar
+fimalgoritmo
+```
+
+## E790 — valor do 'retorne' com tipo errado
+
+**Mensagem:** `a função 'nome' devolve 'caractere', mas o valor é 'inteiro'`
+
+**Quando acontece:** o valor depois de `retorne` não é do tipo declarado no cabeçalho da função. Um `inteiro` numa função `real` é aceito; o contrário não.
+
+**Como corrigir:** devolva um valor do tipo da função, ou mude o tipo no cabeçalho. Para devolver um real numa função inteira, use `trunca()` ou `arredonda()`.
+
+```
+algoritmo "exemplo"
+funcao nome(): caractere
+inicio
+  retorne 42
+fimfuncao
+inicio
+fimalgoritmo
+```
+
+## E791 — 'retorne' fora de função ou procedimento
+
+**Mensagem:** `'retorne' só pode ser usado dentro de uma função ou procedimento`
+
+**Quando acontece:** há um `retorne` no corpo principal do programa.
+
+**Como corrigir:** apague o `retorne`. O programa principal termina sozinho ao chegar em `fimalgoritmo`; para parar antes, use um `se` em volta do que não deve rodar.
+
+```
+algoritmo "exemplo"
+inicio
+  retorne
+fimalgoritmo
+```
+
+## E793 — 'retorne' com ou sem valor no lugar errado
+
+**Mensagem:** `a função 'f' precisa devolver um valor` (ou `o procedimento 'p' não devolve valor`)
+
+**Quando acontece:** numa função, o `retorne` está sozinho, sem valor. Num procedimento, o `retorne` tem um valor, mas procedimentos não devolvem nada.
+
+**Como corrigir:** numa função, escreva o valor na mesma linha: `retorne resultado`. Num procedimento, use `retorne` sozinho, ou transforme o procedimento em função se precisa do valor.
+
+```
+algoritmo "exemplo"
+funcao f(): inteiro
+inicio
+  retorne
+fimfuncao
+inicio
 fimalgoritmo
 ```
 
@@ -1430,7 +1502,7 @@ fimalgoritmo
 
 ## E831 — parâmetros mal formados
 
-**Mensagem:** `'(' esperado depois do nome do procedimento 'p'` (ou `':' esperado depois do parâmetro 'a'`, `tipo do parâmetro 'a' esperado`, `')' esperado no fim dos parâmetros de 'p'`, `nome do parâmetro esperado`, `um parâmetro ainda não pode ser um vetor`)
+**Mensagem:** `'(' esperado depois do nome do procedimento 'p'` (ou `':' esperado depois do parâmetro 'a'`, `tipo do parâmetro 'a' esperado`, `')' esperado no fim dos parâmetros do procedimento 'p'`, `nome do parâmetro esperado`, `um parâmetro ainda não pode ser um vetor`)
 
 **Quando acontece:** o cabeçalho do procedimento não segue o formato `procedimento nome(a: tipo, b: tipo)`. A mensagem diz o que faltou.
 
@@ -1496,6 +1568,41 @@ inicio
 fimprocedimento
 inicio
   p(1
+fimalgoritmo
+```
+
+## E835 — falta o tipo de retorno da função
+
+**Mensagem:** `':' e o tipo de retorno esperados depois dos parâmetros da função 'f'` (ou `tipo de retorno da função 'f' esperado`, `uma função ainda não pode devolver um vetor`)
+
+**Quando acontece:** o cabeçalho da função não diz, depois dos parênteses, que tipo de valor ela devolve.
+
+**Como corrigir:** escreva `:` e o tipo depois dos parâmetros: `funcao dobro(n: inteiro): inteiro`. Se não precisa devolver valor, use `procedimento`.
+
+```
+algoritmo "exemplo"
+funcao f(a: inteiro)
+inicio
+  retorne a
+fimfuncao
+inicio
+fimalgoritmo
+```
+
+## E836 — falta o 'fimfuncao'
+
+**Mensagem:** `'fimfuncao' esperado para fechar 'f'`
+
+**Quando acontece:** o corpo da função chegou ao `inicio` do programa, a outro procedimento ou função, ou ao fim do arquivo sem `fimfuncao`. Também aparece quando a função é fechada com `fimprocedimento`.
+
+**Como corrigir:** feche cada função com `fimfuncao`.
+
+```
+algoritmo "exemplo"
+funcao f(): inteiro
+inicio
+  retorne 1
+inicio
 fimalgoritmo
 ```
 

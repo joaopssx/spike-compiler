@@ -27,7 +27,7 @@ fimalgoritmo
 
 - The program name is a string in double quotes.
 - The `const` and `var` sections are optional; when both are present, `const` comes first. A program with neither goes straight from `algoritmo` to `inicio`.
-- Procedures, if any, come after `var` and before the main `inicio`.
+- Procedures and functions, if any, come after `var` and before the main `inicio`.
 - The body can be empty.
 - Nothing may follow `fimalgoritmo` except comments and blank lines.
 
@@ -306,10 +306,37 @@ fimalgoritmo
 - `procedimento` and `fimprocedimento` are reserved words.
 - In the generated C, a procedure becomes `static void p_saudar(spike_str v_nome, spike_int v_vezes)`. All prototypes come first, so the order of the definitions does not matter.
 
+## Functions
+
+```
+funcao fatorial(n: inteiro): inteiro
+inicio
+  se n <= 1 entao
+    retorne 1
+  fimse
+  retorne n * fatorial(n - 1)
+fimfuncao
+```
+
+- A function is a procedure that gives back a value. The header adds the type after the parameters: `funcao nome(parâmetros): tipo`, with `inteiro`, `real`, `caractere` or `logico`; a vector cannot be returned yet. A missing or invalid type is E835. The function closes with `fimfuncao` (E836). Parameters, locals and scope work exactly as in procedures.
+- `retorne valor` ends the function and gives the value back. The value must have the function's type (E790); an `inteiro` is accepted in a `real` function. Inside a procedure, `retorne` alone ends the procedure early. `retorne` without a value in a function, or with a value in a procedure, is E793. Outside any function or procedure it is E791.
+- The value of `retorne` is what follows it on the same line. A `retorne` with nothing after it on its line has no value.
+- A call works anywhere a value of the function's type does: `escreval(fatorial(5))`, `se primo(n) entao`, `maximo(maximo(a, b), c)`. A function can also be called as a command on its own line; the value is then discarded.
+- Functions and procedures share one set of names (E783). Calling a procedure inside an expression is E784, since it has no value; so is using a function name without parentheses (`x <- fatorial`).
+- A function that may reach `fimfuncao` without passing through a `retorne` is not a compile error, because Spike cannot always tell whether that path really happens. If it happens while the program runs, the program stops with R009: `a função 'sinal' terminou sem retornar um valor`. The analyzer keeps the list of functions that may end that way, for a future warning.
+- `funcao`, `fimfuncao` and `retorne` are reserved words.
+- In the generated C, a function becomes `static spike_int f_fatorial(spike_int v_n)`, with the prototypes of every procedure and function first. Each `retorne` stores its value in a temporary, `spike_result`, then leaves.
+
+### Recursion limit
+
+- Every call to a function or procedure is counted while it runs. More than 10000 calls in progress at the same time stops the program with R008: `recursão profunda demais (limite de 10000 chamadas), verifique a condição de parada`. In practice this is a recursion that never reaches its stopping case.
+- Spike also watches the memory the calls use. A recursion with large local vectors can stop before 10000 calls, with R008 and `a memória para chamadas acabou`. Either way the program stops with a message instead of crashing.
+- On Windows the executable gets a 16 MB call stack, so 10000 ordinary calls fit. On Linux and macOS the system limit applies (usually 8 MB).
+
 ## Scope
 
-- Variables declared in the program's `var` section are global: the main body and every procedure can use them.
-- Parameters and the variables in a procedure's `var` section are local: they exist only inside that procedure, and every call starts them again with the default value of their type. Using a local name outside its procedure is E700.
+- Variables declared in the program's `var` section are global: the main body and every procedure and function can use them.
+- Parameters and the variables in the `var` section of a procedure or function are local: they exist only inside it, and every call starts them again with the default value of their type. Using a local name outside its procedure is E700.
 - A local name may repeat a global one (variable or constant). Inside the procedure, the name refers to the local; outside, to the global. A future warning will point these out.
 - Two names in the same scope are E701: two globals, two parameters, two locals, or a parameter and a local.
 - A local vector holds at most 10 thousand elements (E775), since it lives on the stack while the procedure runs. Larger vectors belong in the program's `var` section.
@@ -321,7 +348,6 @@ Each item below is **proposed**. The syntax is final only when the feature ships
 
 | Feature | Proposed syntax |
 | --- | --- |
-| Functions | `funcao nome(...): tipo` ... `retorne x` ... `fimfuncao` |
 | By-reference parameters | `var` before a parameter |
 | Initial value | `x : inteiro <- 5` in the `var` section |
 
@@ -410,6 +436,7 @@ A compiled program stops at the first runtime error. It prints a message in Port
 | R005 | math result that is not a number or is infinite: `^` (as in `0 ^ -1`), and later `raiz` of a negative or `log` of zero or less |
 | R006 | `para` with a step of 0 |
 | R007 | `leia` reached the end of the input |
-| R008 | the program ran out of memory |
+| R008 | the program ran out of memory, or a recursion went too deep (more than 10000 calls in progress) |
+| R009 | a function reached `fimfuncao` without `retorne` |
 
 The numbering is proposed and becomes final in v0.3.

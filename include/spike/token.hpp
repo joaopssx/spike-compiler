@@ -48,6 +48,9 @@ namespace spike
         VETOR,
         PROCEDIMENTO,
         FIM_PROCEDIMENTO,
+        FUNCAO,
+        FIM_FUNCAO,
+        RETORNE,
         ATE_QUE, // usado no repita...ate
 
         // Keywords - I/O

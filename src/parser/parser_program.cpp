@@ -66,7 +66,10 @@ Program Parser::parse_program() {
         prog.globals = parse_var_section();
     }
 
-    while (match(TokenType::PROCEDIMENTO)) prog.procedures.push_back(parse_procedure());
+    while (check(TokenType::PROCEDIMENTO) || check(TokenType::FUNCAO)) {
+        const bool function = advance().type == TokenType::FUNCAO;
+        prog.procedures.push_back(parse_subprogram(function));
+    }
 
     // inicio
     if (!check(TokenType::INICIO)) {
@@ -90,6 +93,11 @@ Program Parser::parse_program() {
     return prog;
 }
 
+bool Parser::ends_const_section() {
+    return check(TokenType::VAR) || check(TokenType::INICIO) || check(TokenType::PROCEDIMENTO) ||
+           check(TokenType::FUNCAO);
+}
+
 void Parser::skip_line(int line) {
     while (!is_at_end() && peek().line == line && !check(TokenType::VAR) &&
            !check(TokenType::INICIO)) {
@@ -100,12 +108,12 @@ void Parser::skip_line(int line) {
 std::vector<ConstDecl> Parser::parse_const_section() {
     std::vector<ConstDecl> result;
     const Token& keyword = previous();
-    if (check(TokenType::VAR) || check(TokenType::INICIO) || is_at_end()) {
+    if (ends_const_section() || is_at_end()) {
         diags_.error("E800", "nome da constante esperado depois de 'const'", keyword.line,
                      keyword.col, kHintConst);
         return result;
     }
-    while (!is_at_end() && !check(TokenType::VAR) && !check(TokenType::INICIO)) {
+    while (!is_at_end() && !ends_const_section()) {
         if (!check(TokenType::IDENTIFIER)) {
             const Token& t = peek();
             diags_.error("E800", "nome da constante esperado", t.line, t.col, kHintConst);
@@ -121,7 +129,7 @@ std::vector<ConstDecl> Parser::parse_const_section() {
             continue;
         }
         const Token equal = previous();
-        if (is_at_end() || check(TokenType::VAR) || check(TokenType::INICIO) ||
+        if (is_at_end() || ends_const_section() ||
             peek().line != equal.line) {
             diags_.error("E802", "valor esperado para a constante '" + name.lexeme + "'",
                          equal.line, equal.col + 1, kHintConst);
@@ -140,7 +148,8 @@ std::vector<ConstDecl> Parser::parse_const_section() {
 std::vector<VarDecl> Parser::parse_var_section() {
     std::vector<VarDecl> result;
 
-    while (!is_at_end() && !check(TokenType::INICIO) && !check(TokenType::PROCEDIMENTO)) {
+    while (!is_at_end() && !check(TokenType::INICIO) && !check(TokenType::PROCEDIMENTO) &&
+           !check(TokenType::FUNCAO)) {
         // Cada iteracao parseia uma linha: NOME (, NOME)* : TIPO
         if (!check(TokenType::IDENTIFIER)) {
             const Token& t = peek();

@@ -152,6 +152,7 @@ ExprPtr Parser::parse_primary() {
     }
     if (check(TokenType::IDENTIFIER)) {
         advance();
+        if (check(TokenType::LPAREN)) return parse_call_expr(tok);
         return parse_name_reference(tok);
     }
     if (check(TokenType::LPAREN)) {

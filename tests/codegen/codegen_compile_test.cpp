@@ -117,7 +117,33 @@ void test_procedures_compile_without_warnings() {
     SPIKE_EXPECT(read_all(base + ".out") == "=3\n=7\n3 2 1 37\n");
 }
 
+void test_functions_compile_without_warnings() {
+    const auto gen = generate_from_source(
+        "algoritmo \"funcs\"\nvar\n  i : inteiro\n"
+        "funcao fat(n: inteiro): inteiro\ninicio\n  se n <= 1 entao\n    retorne 1\n  fimse\n"
+        "  retorne n * fat(n - 1)\nfimfuncao\n"
+        "funcao media(a, b: real): real\ninicio\n  retorne (a + b) / 2\nfimfuncao\n"
+        "funcao par(n: inteiro): logico\ninicio\n  retorne n mod 2 = 0\nfimfuncao\n"
+        "funcao nome(): caractere\ninicio\n  retorne \"Spike\"\nfimfuncao\n"
+        "procedimento mostra(n: inteiro)\ninicio\n  se par(n) entao\n    retorne\n  fimse\n"
+        "  escreval(nome(), \" \", n)\nfimprocedimento\n"
+        "inicio\n  i <- fat(5)\n  mostra(i)\n  mostra(3)\n"
+        "  escreval(media(i, 1), \" \", par(i))\nfimalgoritmo\n",
+        "funcs.por");
+    SPIKE_EXPECT(gen.result.ok);
+    if (!gen.result.ok) return;
+
+    const std::string base = std::string(SPIKE_BINARY_DIR) + "/codegen_functions_test";
+    const bool compiled = compile_c(gen.result.c_source, base);
+    SPIKE_EXPECT(compiled);
+    if (!compiled) return;
+    SPIKE_EXPECT(run_to_file(base) == 0);
+    SPIKE_EXPECT(read_all(base + ".out") == "Spike 3\n60.5 verdadeiro\n");
+}
+
 #else
+
+void test_functions_compile_without_warnings() {}
 
 void test_generated_c_compiles_without_warnings() {}
 
@@ -135,6 +161,7 @@ void run_codegen_compile_tests() {
     test_generated_c_compiles_without_warnings();
     test_hello_example_runs();
     test_procedures_compile_without_warnings();
+    test_functions_compile_without_warnings();
 }
 
 } // namespace spike_tests

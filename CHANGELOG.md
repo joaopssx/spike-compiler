@@ -14,10 +14,13 @@ All notable changes to Spike are recorded here. The format follows [Keep a Chang
 - Vectors: `notas : vetor[1..5] de real`, used as `notas[i]` in expressions, assignments and `leia`. Limits can be negative or constants. An index outside the limits stops the program with runtime error R002, or is reported while compiling when the index is a fixed value (E774).
 - Matrices: vectors with 2 or 3 dimensions, `m : vetor[1..3, 1..4] de inteiro`, used as `m[i, j]`. Each index is checked against its own dimension, and the runtime error says which one failed.
 - Procedures: `procedimento nome(a: inteiro, b: real)` ... `fimprocedimento`, declared before the main `inicio` and called as a command, `nome(1, 2.5)`. Parameters are passed by value. A procedure can have its own `var` section, whose variables start fresh on every call and may reuse the name of a global. Procedures can call each other in any order and call themselves.
+- Functions: `funcao fatorial(n: inteiro): inteiro` ... `fimfuncao`, with `retorne valor`. A call works anywhere a value does, as in `escreval(fatorial(5))` or `se primo(n) entao`. Inside a procedure, `retorne` alone leaves early.
+- A recursion that never stops ends with runtime error R008 (more than 10000 calls in progress, or not enough memory left for calls) instead of crashing, and a function that reaches `fimfuncao` without `retorne` stops with the new runtime error R009.
 
 ### Changed
 
-- `div`, `mod`, `const`, `interrompa`, `escolha`, `caso`, `outrocaso`, `fimescolha`, `vetor`, `procedimento` and `fimprocedimento` are now reserved words. A program that used any of them as a variable name has to rename it.
+- `div`, `mod`, `const`, `interrompa`, `escolha`, `caso`, `outrocaso`, `fimescolha`, `vetor`, `procedimento`, `fimprocedimento`, `funcao`, `fimfuncao` and `retorne` are now reserved words. A program that used any of them as a variable name has to rename it.
+- On Windows, compiled programs get a 16 MB call stack, so deep recursion reaches the R008 limit before running out of stack.
 - A command that starts with a name followed by `(`, like `imprima("oi")`, is now read as a procedure call. When no such procedure exists the error is E780 instead of E300.
 
 ## [0.2.0] - 2026-10-15

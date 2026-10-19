@@ -1,10 +1,10 @@
 # The C runtime
 
-Every program Spike generates is a single C file. Its first part is the runtime, a header-only C99 library with the helpers the generated code calls. It lives in two files, `runtime/spike_runtime_core.h` (types, errors, memory, texts, arithmetic, `para` helpers) and `runtime/spike_runtime_io.h` (writing, reading, parsing). `runtime/spike_runtime.h` includes both, in that order, for the C tests; `io` relies on `core` being included first. Everything in it is `static inline`, so the C compiler drops what a program does not use and the result is still one standalone executable.
+Every program Spike generates is a single C file. Its first part is the runtime, a header-only C99 library with the helpers the generated code calls. It lives in three files: `runtime/spike_runtime_core.h` (types, errors, memory, texts, arithmetic, `para` helpers), `runtime/spike_runtime_calls.h` (call counting for procedures and functions) and `runtime/spike_runtime_io.h` (writing, reading, parsing). `runtime/spike_runtime.h` includes them in that order, for the C tests; the later files rely on `core` being included first. Everything in it is `static inline`, so the C compiler drops what a program does not use and the result is still one standalone executable.
 
 ## Rules
 
-- C99 and the standard library only. On Windows it also includes `windows.h`, to switch the console to UTF-8 so accented letters print and read correctly.
+- C99 and the standard library only. On Windows it also includes `windows.h`, to switch the console to UTF-8 so accented letters print and read correctly and to measure the stack. On Linux and macOS it includes `sys/resource.h` for the stack size. The driver links Windows executables with a 16 MB stack (`-Wl,--stack,16777216`).
 - Every name starts with `spike_` or `SPIKE_`. Student variables get a different prefix from the code generator, so the two never collide.
 - It compiles without warnings with `-Wall -Wextra -Wpedantic` on GCC and Clang.
 - It never calls `setlocale`, so the decimal separator is always a point.
@@ -42,6 +42,9 @@ Texts are immutable. Literals are plain C strings. Texts built while the program
 | `spike_fill_str(items, count)` | Sets every element of a `caractere` vector to `""`. The generated `main` calls it for each such vector before anything else, since C would leave them as null pointers. |
 | `spike_check_step(step, line)` | R006 if the step of a `para` is 0. Generated only when the step is not a literal. |
 | `spike_for_advance(&counter, step)` | Adds the step to a `para` counter and returns 1, or returns 0 without changing it when the sum would overflow. The generated loop `break`s on 0, so a `para` near the `inteiro` limits never loops forever. |
+| `spike_enter(line)` | First line of every generated procedure and function. Counts the call: more than 10000 calls in progress is R008. On the first call it also measures the stack (`getrlimit` on Linux and macOS, `VirtualQuery` on Windows) and allows recursion to use 3/4 of it; going past that is R008 too, so deep recursion stops with a message instead of crashing. `line` is the line of the procedure or function header. |
+| `spike_leave()` | Undoes one `spike_enter`. Generated before every exit: each `retorne` and the end of a procedure. |
+| `spike_missing_return(line, name)` | R009: the function `name` reached `fimfuncao` without `retorne`. Generated at the end of every function, followed by a `return` of the type's default value so the C compiler sees every path return. |
 | `spike_write_int(v)` | Prints an integer. |
 | `spike_write_real(v)` | Prints a real with `%.10g`: `3` for 3.0, `3.5`, `0.3` for 0.1 + 0.2. Negative zero prints `0`. |
 | `spike_write_str(v)` | Prints a text. |
@@ -65,16 +68,17 @@ Every read function takes the `.por` line of the `leia` and the variable name as
 | R005 | `^` produced a result that is not a number or is infinite. |
 | R006 | The step of a `para` is 0 when the loop starts. |
 | R007 | The input ended before `leia` could read a line. |
-| R008 | Out of memory. |
+| R008 | Out of memory, or recursion deeper than 10000 calls or than the stack allows. |
+| R009 | A function ended without `retorne`. |
 
 R004 is reserved by `language.md` for conversions, and arrives with those features. A program that stops on a runtime error always exits with code 101.
 
 ## How it gets into the compiler
 
-`cmake/embed_runtime.cmake` runs at build time (`cmake -P`). It reads `spike_runtime_core.h` and `spike_runtime_io.h`, joins them in that order, turns `\r\n` into `\n`, and writes `build/generated/runtime_text.cpp` with the file as a byte array. A byte array avoids the length limit some compilers put on string literals. `spike_core` compiles that file, and `include/spike/runtime_text.hpp` exposes it as `runtime_source()` and `runtime_source_size()`. The generated file is rebuilt whenever the header or the script changes, and it is never committed.
+`cmake/embed_runtime.cmake` runs at build time (`cmake -P`). It reads `spike_runtime_core.h`, `spike_runtime_calls.h` and `spike_runtime_io.h`, joins them in that order, turns `\r\n` into `\n`, and writes `build/generated/runtime_text.cpp` with the file as a byte array. A byte array avoids the length limit some compilers put on string literals. `spike_core` compiles that file, and `include/spike/runtime_text.hpp` exposes it as `runtime_source()` and `runtime_source_size()`. The generated file is rebuilt whenever the header or the script changes, and it is never committed.
 
 ## Tests
 
 - `runtime_c_unit` compiles `tests/runtime/runtime_test.c` as C99 and checks formatting, texts, arithmetic and parsing.
-- `runtime_io_*` run `tests/runtime/runtime_io_program.c` with real input through `tests/runtime/expect_run.cmake`, which checks the exit code, stdout and stderr. They cover reading every type, invalid input (R003), end of input (R007) and division by zero (R001).
+- `runtime_io_*` run `tests/runtime/runtime_io_program.c` with real input through `tests/runtime/expect_run.cmake`, which checks the exit code, stdout and stderr. They cover reading every type, invalid input (R003), end of input (R007), division by zero (R001), the call limit (R008) and a function without `retorne` (R009).
 - The C tests are skipped when CMake finds no C compiler.

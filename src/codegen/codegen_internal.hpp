@@ -28,6 +28,7 @@ private:
 
 std::string c_name(const std::string& name);
 std::string procedure_name(const std::string& name);
+std::string function_name(const std::string& name);
 std::string int_literal(double value);
 std::string integer_literal(long long value);
 std::string constant_literal(const ConstValue& value);
@@ -51,6 +52,7 @@ private:
     std::unordered_map<std::string, TypeKind> var_types_;
     std::unordered_map<std::string, std::vector<ArrayBounds>> var_dims_;
     std::unordered_map<std::string, const ProcedureDecl*> procedures_;
+    const ProcedureDecl* current_ = nullptr;
     CWriter out_;
     CodegenResult result_;
     int loop_count_ = 0;
@@ -66,7 +68,9 @@ private:
     void emit_procedures();
     void emit_procedure(const ProcedureDecl& proc);
     void emit_local(const VarDecl& decl);
-    void emit_call(const CallStmt& call);
+    void emit_call(const CallStmt& stmt);
+    void emit_return(const ReturnStmt& stmt);
+    std::string call(const std::string& name, const std::vector<ExprPtr>& args, int line, int col);
     std::string signature(const ProcedureDecl& proc) const;
     void emit_block(const StmtList& stmts);
     void emit_stmt(const Stmt& stmt);

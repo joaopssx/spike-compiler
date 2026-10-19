@@ -76,6 +76,9 @@ CompileResult compile_c(const CompilerInfo& compiler, const CompileRequest& requ
     ProcessOptions options;
     options.args = {compiler.path, request.optimize ? "-O2" : "-O0", "-std=c99", "-o",
                     request.output, request.c_file, "-lm"};
+#ifdef _WIN32
+    options.args.push_back("-Wl,--stack,16777216");
+#endif
     options.capture_stdout = true;
     options.capture_stderr = true;
     const ProcessResult process = run_process(options);

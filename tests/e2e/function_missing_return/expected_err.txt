@@ -1,0 +1,2 @@
+erro de execução[R009]: a função 'sinal' terminou sem retornar um valor
+  --> linha 7

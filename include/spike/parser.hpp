@@ -49,9 +49,14 @@ namespace spike
         std::vector<VarDecl> parse_var_section();
     std::vector<ConstDecl> parse_const_section();
     void skip_line(int line);
-        ProcedureDecl parse_procedure();
-        bool parse_params(std::vector<Param>& params, const std::string& procedure);
+        bool ends_const_section();
+        ProcedureDecl parse_subprogram(bool function);
+        bool parse_params(std::vector<Param>& params, const std::string& owner, bool function);
+        bool parse_return_type(ProcedureDecl& proc);
+        std::vector<ExprPtr> parse_call_args(const Token& name);
         StmtPtr parse_call();
+        ExprPtr parse_call_expr(const Token& name);
+        StmtPtr parse_retorne();
         StmtPtr reject_late_procedure();
 
         // Parsing de statements

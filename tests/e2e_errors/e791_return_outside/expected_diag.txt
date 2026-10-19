@@ -1,0 +1,3 @@
+erro[E791]: 'retorne' só pode ser usado dentro de uma função ou procedimento
+   3 |   retorne
+     |   ^

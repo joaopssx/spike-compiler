@@ -1,0 +1,4 @@
+erro[E790]: a função 'nome' devolve 'caractere', mas o valor é 'inteiro'
+   4 |   retorne 42
+     |           ^
+     = dica: o valor do 'retorne' precisa ser do tipo da função.

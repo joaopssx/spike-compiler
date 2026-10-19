@@ -40,6 +40,10 @@ const ConstantMap& SemanticAnalyzer::constants() const {
     return constants_;
 }
 
+const std::vector<NameRef>& SemanticAnalyzer::functions_without_return() const {
+    return functions_without_return_;
+}
+
 void SemanticAnalyzer::declare_globals() {
     for (const VarDecl& decl : program_.globals) declare_variable(decl, false);
 }
@@ -65,9 +69,15 @@ Symbol* SemanticAnalyzer::resolve(const std::string& name, int line, int col) {
     Symbol* symbol = symbols_.lookup(name);
     if (symbol) return symbol;
     if (!reported_undeclared_.insert({symbol_key(name), line}).second) return nullptr;
-    if (procedures_.count(symbol_key(name)) != 0) {
-        diags_.error("E784", "'" + name + "' é um procedimento, não uma variável", line, col,
-                     "para chamar o procedimento, escreva " + name + "(...) sozinho na linha.");
+    const auto subprogram = procedures_.find(symbol_key(name));
+    if (subprogram != procedures_.end()) {
+        if (subprogram->second.return_type != TypeKind::None) {
+            diags_.error("E784", "'" + name + "' é uma função, não uma variável", line, col,
+                         "para usar o valor da função, chame " + name + "(...).");
+        } else {
+            diags_.error("E784", "'" + name + "' é um procedimento, não uma variável", line, col,
+                         "para chamar o procedimento, escreva " + name + "(...) sozinho na linha.");
+        }
         return nullptr;
     }
     diags_.error("E700", "variável '" + name + "' não foi declarada", line, col,

@@ -43,6 +43,9 @@ std::string token_type_to_string(TokenType t) {
         case TokenType::VETOR:         return "VETOR";
         case TokenType::PROCEDIMENTO:  return "PROCEDIMENTO";
         case TokenType::FIM_PROCEDIMENTO: return "FIM_PROCEDIMENTO";
+        case TokenType::FUNCAO:        return "FUNCAO";
+        case TokenType::FIM_FUNCAO:    return "FIM_FUNCAO";
+        case TokenType::RETORNE:       return "RETORNE";
         case TokenType::DOTDOT:        return "DOTDOT";
         case TokenType::LBRACKET:      return "LBRACKET";
         case TokenType::RBRACKET:      return "RBRACKET";
