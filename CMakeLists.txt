@@ -60,6 +60,7 @@ set(SPIKE_SEMANTIC_SOURCES
     src/semantic/semantic_escolha.cpp
     src/semantic/semantic_array.cpp
     src/semantic/semantic_procedure.cpp
+    src/semantic/semantic_call.cpp
     src/semantic/const_eval.cpp
     src/semantic/semantic_internal.hpp
 )
@@ -201,6 +202,9 @@ add_executable(spike_tests
     tests/parser/function_parse_test.cpp
     tests/semantic/semantic_function_test.cpp
     tests/codegen/codegen_function_test.cpp
+    tests/parser/reference_parse_test.cpp
+    tests/semantic/semantic_reference_test.cpp
+    tests/codegen/codegen_reference_test.cpp
     tests/parser/name_positions_test.cpp
     tests/parser/program_test.cpp
     tests/parser/stmt_basic_test.cpp

@@ -89,7 +89,7 @@ std::string Generator::expr(const ExprPtr& value) {
             } else if constexpr (std::is_same_v<Node, BoolExpr>) {
                 return node.value ? "1" : "0";
             } else if constexpr (std::is_same_v<Node, VarExpr>) {
-                return c_name(node.name);
+                return variable(node.name);
             } else if constexpr (std::is_same_v<Node, IndexExpr>) {
                 return element(node);
             } else if constexpr (std::is_same_v<Node, CallExpr>) {

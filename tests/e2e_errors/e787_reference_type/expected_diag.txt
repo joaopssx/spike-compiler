@@ -1,0 +1,3 @@
+erro[E787]: o parâmetro 'n' é por referência e exige 'inteiro', mas recebeu 'real'
+   9 |   incrementa(r)
+     |              ^

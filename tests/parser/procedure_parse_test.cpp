@@ -117,11 +117,15 @@ void test_header_errors() {
                            "E831"));
     SPIKE_EXPECT(has_error(with_procedure("procedimento p(, a: real)\ninicio\nfimprocedimento\n"),
                            "E831"));
-    const std::string vetor =
-        parse_source(with_procedure("procedimento p(v: vetor[1..3] de inteiro)\ninicio\n"
-                                    "fimprocedimento\n"))
-            .diag_output;
-    SPIKE_EXPECT(vetor.find("um parâmetro ainda não pode ser um vetor") != std::string::npos);
+    auto vetor = parse_source(with_procedure("procedimento p(v: vetor[1..3] de inteiro)\ninicio\n"
+                                             "fimprocedimento\n"));
+    SPIKE_EXPECT(!vetor.had_error);
+    if (vetor.program.procedures.size() == 1 && vetor.program.procedures[0].params.size() == 1) {
+        SPIKE_EXPECT(vetor.program.procedures[0].params[0].dims.size() == 1);
+    }
+    SPIKE_EXPECT(has_error(with_procedure("procedimento p(v: vetor[1..3 de inteiro)\ninicio\n"
+                                          "fimprocedimento\n"),
+                           "E823"));
 }
 
 void test_header_error_keeps_parsing() {

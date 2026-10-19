@@ -141,7 +141,31 @@ void test_functions_compile_without_warnings() {
     SPIKE_EXPECT(read_all(base + ".out") == "Spike 3\n60.5 verdadeiro\n");
 }
 
+void test_references_compile_without_warnings() {
+    const auto gen = generate_from_source(
+        "algoritmo \"refs\"\nvar\n  x, y : inteiro\n  nomes : vetor[1..2] de caractere\n"
+        "procedimento troca(var a, b: caractere)\nvar\n  t : caractere\ninicio\n"
+        "  t <- a\n  a <- b\n  b <- t\nfimprocedimento\n"
+        "funcao incrementa(var n: inteiro, salto: inteiro): inteiro\ninicio\n"
+        "  n <- n + salto\n  retorne n\nfimfuncao\n"
+        "inicio\n  nomes[1] <- \"Ana\"\n  nomes[2] <- \"Bia\"\n  troca(nomes[1], nomes[2])\n"
+        "  troca(nomes[1], nomes[1])\n  y <- incrementa(x, 5)\n"
+        "  escreval(nomes[1], \" \", nomes[2], \" \", x, \" \", y)\nfimalgoritmo\n",
+        "refs.por");
+    SPIKE_EXPECT(gen.result.ok);
+    if (!gen.result.ok) return;
+
+    const std::string base = std::string(SPIKE_BINARY_DIR) + "/codegen_references_test";
+    const bool compiled = compile_c(gen.result.c_source, base);
+    SPIKE_EXPECT(compiled);
+    if (!compiled) return;
+    SPIKE_EXPECT(run_to_file(base) == 0);
+    SPIKE_EXPECT(read_all(base + ".out") == "Bia Ana 5 5\n");
+}
+
 #else
+
+void test_references_compile_without_warnings() {}
 
 void test_functions_compile_without_warnings() {}
 
@@ -162,6 +186,7 @@ void run_codegen_compile_tests() {
     test_hello_example_runs();
     test_procedures_compile_without_warnings();
     test_functions_compile_without_warnings();
+    test_references_compile_without_warnings();
 }
 
 } // namespace spike_tests

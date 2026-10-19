@@ -253,7 +253,10 @@ std::string print_ast(const Program& program) {
                                   position(proc.line, proc.col)
                             : "Procedure " + proc.name + position(proc.line, proc.col));
         for (const Param& param : proc.params) {
-            printer.line(2, "Param " + param.name + " : " + type_name(param.type) +
+            VarDecl shape;
+            shape.dims = param.dims;
+            printer.line(2, "Param " + std::string(param.by_ref ? "var " : "") + param.name +
+                                " : " + array_text(shape) + type_name(param.type) +
                                 position(param.line, param.col));
         }
         for (const VarDecl& decl : proc.locals) printer.var(decl, 2);

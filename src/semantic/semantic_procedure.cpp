@@ -14,13 +14,12 @@ using semantic_detail::quoted;
 
 namespace {
 
-std::string argument_count(std::size_t count) {
-    return std::to_string(count) + (count == 1 ? " argumento" : " argumentos");
-}
-
 bool accepts(TypeKind wanted, TypeKind value) {
     return wanted == value || (wanted == TypeKind::Real && value == TypeKind::Integer);
 }
+
+constexpr const char* kHintVectorParam =
+    "declare o vetor no var do programa; procedimentos e funções enxergam as variáveis globais.";
 
 std::string line_text(int line) {
     return std::to_string(line);
@@ -102,7 +101,13 @@ void SemanticAnalyzer::check_procedure(const ProcedureDecl& proc) {
     active_loop_vars_.clear();
     current_subprogram_ = &proc;
     for (const Param& param : proc.params) {
-        if (symbols_.declare(param.name, param.type, param.line, param.col)) {
+        const bool is_vector = !param.dims.empty();
+        if (is_vector) {
+            diags_.error("E788", "vetores ainda não podem ser passados a procedimentos ou funções",
+                         param.line, param.col, kHintVectorParam);
+        }
+        const TypeKind type = is_vector ? TypeKind::Invalid : param.type;
+        if (symbols_.declare(param.name, type, param.line, param.col)) {
             symbols_.lookup(param.name)->assigned = true;
             continue;
         }
@@ -120,78 +125,6 @@ void SemanticAnalyzer::check_procedure(const ProcedureDecl& proc) {
     loop_depth_ = saved_depth;
     active_loop_vars_ = std::move(saved_loop_vars);
     symbols_.pop_scope();
-}
-
-void SemanticAnalyzer::check_arguments(const ProcedureSignature& signature,
-                                       const std::vector<ExprPtr>& args,
-                                       const std::vector<TypeKind>& types, int line, int col) {
-    if (types.size() != signature.params.size()) {
-        diags_.error("E781",
-                     "'" + signature.name + "' espera " +
-                         argument_count(signature.params.size()) + ", recebeu " +
-                         std::to_string(types.size()),
-                     line, col,
-                     "a declaração de '" + signature.name + "' está na linha " +
-                         line_text(signature.line) + ".");
-        return;
-    }
-    for (std::size_t i = 0; i < types.size(); ++i) {
-        const Param& param = signature.params[i];
-        if (!args[i] || types[i] == TypeKind::Invalid || accepts(param.type, types[i])) continue;
-        const SourcePos pos = expr_start(*args[i]);
-        diags_.error("E782",
-                     "o argumento " + std::to_string(i + 1) + " de '" + signature.name +
-                         "' precisa ser " + quoted(param.type) + ", mas é " + quoted(types[i]),
-                     pos.line, pos.col,
-                     param.type == TypeKind::Integer && types[i] == TypeKind::Real
-                         ? "o parâmetro '" + param.name +
-                               "' é inteiro; use trunca() ou arredonda() no valor."
-                         : "o parâmetro '" + param.name + "' é " + quoted(param.type) +
-                               "; passe um valor desse tipo.");
-    }
-}
-
-void SemanticAnalyzer::check_call(const CallStmt& call) {
-    std::vector<TypeKind> types;
-    for (const ExprPtr& arg : call.args) types.push_back(check_expr(arg));
-    const auto it = procedures_.find(symbol_key(call.name));
-    if (it == procedures_.end()) {
-        const bool is_variable = symbols_.lookup(call.name) != nullptr;
-        diags_.error("E780", "procedimento '" + call.name + "' não foi definido", call.line,
-                     call.col,
-                     is_variable ? "'" + call.name +
-                                       "' é uma variável; só procedimentos e funções são "
-                                       "chamados com ( )."
-                                 : "declare 'procedimento " + call.name +
-                                       "(...)' antes do 'inicio' do programa.");
-        return;
-    }
-    check_arguments(it->second, call.args, types, call.line, call.col);
-}
-
-TypeKind SemanticAnalyzer::check_call_expr(const CallExpr& call) {
-    std::vector<TypeKind> types;
-    for (const ExprPtr& arg : call.args) types.push_back(check_expr(arg));
-    const auto it = procedures_.find(symbol_key(call.name));
-    if (it == procedures_.end()) {
-        const bool is_variable = symbols_.lookup(call.name) != nullptr;
-        diags_.error("E780", "função '" + call.name + "' não foi definida", call.line, call.col,
-                     is_variable ? "'" + call.name +
-                                       "' é uma variável; para um elemento de vetor, use [ ]."
-                                 : "declare 'funcao " + call.name +
-                                       "(...): tipo' antes do 'inicio' do programa.");
-        return TypeKind::Invalid;
-    }
-    const ProcedureSignature& signature = it->second;
-    if (signature.return_type == TypeKind::None) {
-        diags_.error("E784", "'" + signature.name + "' é um procedimento e não devolve valor",
-                     call.line, call.col,
-                     "chame " + signature.name +
-                         "(...) sozinho na linha, ou transforme o procedimento em uma função.");
-        return TypeKind::Invalid;
-    }
-    check_arguments(signature, call.args, types, call.line, call.col);
-    return signature.return_type;
 }
 
 void SemanticAnalyzer::check_return(const ReturnStmt& stmt) {

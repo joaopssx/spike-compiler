@@ -7,6 +7,7 @@
 
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 
 namespace spike::codegen_detail {
 
@@ -53,6 +54,7 @@ private:
     std::unordered_map<std::string, std::vector<ArrayBounds>> var_dims_;
     std::unordered_map<std::string, const ProcedureDecl*> procedures_;
     const ProcedureDecl* current_ = nullptr;
+    std::unordered_set<std::string> ref_params_;
     CWriter out_;
     CodegenResult result_;
     int loop_count_ = 0;
@@ -72,6 +74,8 @@ private:
     void emit_return(const ReturnStmt& stmt);
     std::string call(const std::string& name, const std::vector<ExprPtr>& args, int line, int col);
     std::string signature(const ProcedureDecl& proc) const;
+    std::string variable(const std::string& name) const;
+    std::string reference(const ExprPtr& arg);
     void emit_block(const StmtList& stmts);
     void emit_stmt(const Stmt& stmt);
     void emit_assign(const AssignStmt& stmt);

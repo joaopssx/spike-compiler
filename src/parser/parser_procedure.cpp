@@ -125,6 +125,7 @@ bool Parser::parse_params(std::vector<Param>& params, const std::string& owner, 
     }
     if (match(TokenType::RPAREN)) return true;
     while (true) {
+        const bool by_ref = match(TokenType::VAR);
         std::vector<Token> names;
         do {
             if (!check(TokenType::IDENTIFIER)) {
@@ -140,13 +141,8 @@ bool Parser::parse_params(std::vector<Param>& params, const std::string& owner, 
                          t.line, t.col, hint);
             return false;
         }
-        if (check(TokenType::VETOR)) {
-            const Token& t = peek();
-            diags_.error("E831", "um parâmetro ainda não pode ser um vetor", t.line, t.col,
-                         "declare o vetor no var do programa; procedimentos e funções enxergam "
-                         "as variáveis globais.");
-            return false;
-        }
+        std::vector<ArrayDim> dims;
+        if (match(TokenType::VETOR) && !parse_array_type(dims)) return false;
         if (!is_type_keyword(peek().type)) {
             const Token& t = peek();
             diags_.error("E831", "tipo do parâmetro '" + names.back().lexeme + "' esperado",
@@ -155,7 +151,7 @@ bool Parser::parse_params(std::vector<Param>& params, const std::string& owner, 
         }
         const TypeKind type = type_kind_for(advance().type);
         for (const Token& name : names) {
-            params.push_back(Param{name.lexeme, type, name.line, name.col});
+            params.push_back(Param{name.lexeme, type, name.line, name.col, by_ref, dims});
         }
         if (match(TokenType::COMMA)) continue;
         if (match(TokenType::RPAREN)) return true;

@@ -223,6 +223,8 @@ struct Param {
     std::string name;
     TypeKind    type = TypeKind::None;
     int line = 0, col = 0;
+    bool        by_ref = false;
+    std::vector<ArrayDim> dims;
 };
 
 struct ProcedureDecl {

@@ -86,7 +86,7 @@ void Generator::emit_repita(const RepitaStmt& stmt) {
 }
 
 void Generator::emit_para(const ParaStmt& stmt) {
-    const std::string counter = c_name(stmt.var_name);
+    const std::string counter = variable(stmt.var_name);
     double step_value = 1.0;
     double ignored = 0.0;
     const bool step_known = !stmt.step || constant_int(stmt.step, step_value);

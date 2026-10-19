@@ -68,7 +68,7 @@ std::string Generator::element(const IndexExpr& node) {
 std::string Generator::lvalue(const ExprPtr& target, std::string& name) {
     if (const VarExpr* var = target_variable(target)) {
         name = var->name;
-        return c_name(var->name);
+        return variable(var->name);
     }
     if (const auto* index = target ? std::get_if<IndexExpr>(&target->node) : nullptr) {
         name = index->name;

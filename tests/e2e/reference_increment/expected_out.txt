@@ -1,0 +1,2 @@
+contador: 3
+nota: 8.75

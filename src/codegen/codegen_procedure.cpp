@@ -19,7 +19,8 @@ std::string Generator::signature(const ProcedureDecl& proc) const {
     for (const Param& param : proc.params) {
         const char* type = c_type(param.type);
         if (!params.empty()) params += ", ";
-        params += std::string(type ? type : "int") + " " + c_name(param.name);
+        params += std::string(type ? type : "int") + (param.by_ref ? "* " : " ") +
+                  c_name(param.name);
     }
     const char* result = proc.is_function() ? c_type(proc.return_type) : "void";
     return std::string("static ") + (result ? result : "int") + " " + subprogram_name(proc) +
@@ -42,14 +43,21 @@ void Generator::emit_procedures() {
 void Generator::emit_procedure(const ProcedureDecl& proc) {
     const auto saved_types = var_types_;
     const auto saved_dims = var_dims_;
+    const auto saved_refs = ref_params_;
     for (const Param& param : proc.params) {
         const std::string key = symbol_key(param.name);
         var_types_[key] = param.type;
         var_dims_.erase(key);
+        if (param.by_ref) {
+            ref_params_.insert(key);
+        } else {
+            ref_params_.erase(key);
+        }
     }
     for (const VarDecl& decl : proc.locals) {
         const std::string key = symbol_key(decl.name);
         var_types_[key] = decl.type;
+        ref_params_.erase(key);
         if (decl.dims.empty()) {
             var_dims_.erase(key);
         } else {
@@ -77,6 +85,24 @@ void Generator::emit_procedure(const ProcedureDecl& proc) {
     current_ = nullptr;
     var_types_ = saved_types;
     var_dims_ = saved_dims;
+    ref_params_ = saved_refs;
+}
+
+std::string Generator::variable(const std::string& name) const {
+    if (ref_params_.count(symbol_key(name)) != 0) return "(*" + c_name(name) + ")";
+    return c_name(name);
+}
+
+std::string Generator::reference(const ExprPtr& arg) {
+    if (const VarExpr* var = target_variable(arg)) {
+        if (ref_params_.count(symbol_key(var->name)) != 0) return c_name(var->name);
+        return "&" + c_name(var->name);
+    }
+    if (const auto* index = arg ? std::get_if<IndexExpr>(&arg->node) : nullptr) {
+        return "&" + element(*index);
+    }
+    fail("E900", "erro interno do gerador: argumento por referência sem variável", 0, 0);
+    return "";
 }
 
 void Generator::emit_local(const VarDecl& decl) {
@@ -112,7 +138,8 @@ std::string Generator::call(const std::string& name, const std::vector<ExprPtr>&
     std::string text;
     for (std::size_t i = 0; i < args.size(); ++i) {
         if (i > 0) text += ", ";
-        text += expr_as(args[i], proc.params[i].type);
+        const Param& param = proc.params[i];
+        text += param.by_ref ? reference(args[i]) : expr_as(args[i], param.type);
     }
     return subprogram_name(proc) + "(" + text + ")";
 }

@@ -296,7 +296,7 @@ fimalgoritmo
 
 - A procedure is a named block of commands. It does not return a value. Procedures are declared after the program's `var` section and before the main `inicio`; one declared after it is error E833.
 - The header is `procedimento nome(parâmetros)`. Parameters are `nome: tipo`, separated by commas; names of the same type can share a group: `(a, b: inteiro, c: real)`. A procedure without parameters still has the parentheses: `procedimento linha()`. A malformed header is E830 (no name) or E831.
-- Parameters are passed by value: the procedure gets a copy, and changing it does not change the caller's variable. A parameter can be `inteiro`, `real`, `caractere` or `logico`; vectors cannot be passed yet (E831).
+- Parameters are passed by value: the procedure gets a copy, and changing it does not change the caller's variable. `var` before a parameter passes it by reference instead (see below). A parameter can be `inteiro`, `real`, `caractere` or `logico`; a whole vector cannot be passed yet (E788, see Future ideas).
 - A procedure may have its own `var` section, between the header and its `inicio`. It closes with `fimprocedimento` (E832).
 - A call is a command of its own: `saudar("Ana", 2)`, or `linha()` without arguments. Any name followed by `(` at the start of a command is read as a call; calling a name that is not a procedure is E780.
 - The call needs one argument per parameter (E781), each of the parameter's type (E782). An `inteiro` argument is accepted for a `real` parameter.
@@ -305,6 +305,29 @@ fimalgoritmo
 - `interrompa` inside a procedure only leaves a loop that is also inside that procedure.
 - `procedimento` and `fimprocedimento` are reserved words.
 - In the generated C, a procedure becomes `static void p_saudar(spike_str v_nome, spike_int v_vezes)`. All prototypes come first, so the order of the definitions does not matter.
+
+### Parameters by reference
+
+```
+procedimento troca(var a: inteiro, var b: inteiro)
+var
+  t : inteiro
+inicio
+  t <- a
+  a <- b
+  b <- t
+fimprocedimento
+...
+troca(x, y)
+```
+
+- `var` before a parameter group passes those parameters by reference: the procedure or function works on the caller's own variable, so a change inside shows up outside. `var a, b: inteiro` marks both names; in `(var a: inteiro, b: inteiro)` only `a` is by reference. Parameters without `var` are still copies.
+- The argument for a parameter by reference must be a variable or an element of a vector or matrix: `troca(x, y)`, `troca(v[i], v[i + 1])`. A literal, a calculation or a call is E785, and a constant is E786 (constants never change, and a `var` parameter could change it).
+- The type must be exactly the parameter's type, with no conversion: an `inteiro` variable cannot go to a `real` parameter by reference (E787). Parameters by value still accept `inteiro` for `real`.
+- Passing a variable by reference counts as assigning it, since the subprogram may change it.
+- The same variable can go to two parameters by reference: `troca(x, x)` leaves `x` as it was, and each change through one name is seen through the other.
+- An index is checked once, when the call starts: `troca(v[i], v[j])` with `i` outside the vector stops with R002 before the procedure runs.
+- In the generated C, a parameter by reference is a pointer (`spike_int* v_a`), each use inside is `(*v_a)`, and the call passes the address: `p_troca(&v_x, &v_v[spike_index(...)])`.
 
 ## Functions
 
@@ -348,7 +371,6 @@ Each item below is **proposed**. The syntax is final only when the feature ships
 
 | Feature | Proposed syntax |
 | --- | --- |
-| By-reference parameters | `var` before a parameter |
 | Initial value | `x : inteiro <- 5` in the `var` section |
 
 ```
@@ -393,7 +415,13 @@ inicio
 fimalgoritmo
 ```
 
-- Parameters work as in procedures: names of the same type share a group (`a, b: inteiro`) and groups are separated by commas. `var` before a group makes those parameters by reference.
+- Parameters work as in procedures and functions today: names of the same type share a group (`a, b: inteiro`), groups are separated by commas, and `var` before a group makes those parameters by reference.
+
+## Future ideas
+
+Not planned for a specific version yet.
+
+- Passing a whole vector or matrix to a procedure or function (`procedimento soma(v: vetor[1..10] de inteiro)`). Today the header is read, but it is error E788; the workaround is a global vector, which every subprogram can use.
 
 ## Built-in functions (proposed)
 

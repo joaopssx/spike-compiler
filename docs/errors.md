@@ -1161,6 +1161,85 @@ inicio
 fimalgoritmo
 ```
 
+## E785 — expressão onde precisava de variável
+
+**Mensagem:** `o argumento de 'n' precisa ser uma variável, porque o parâmetro é por referência`
+
+**Quando acontece:** o parâmetro foi declarado com `var`, e a chamada passou um número, uma conta ou o resultado de uma função. Um parâmetro por referência muda a variável de quem chamou, então precisa receber uma variável (ou um elemento de vetor).
+
+**Como corrigir:** guarde o valor numa variável e passe a variável. Se o procedimento não precisa mudar o valor, tire o `var` do parâmetro.
+
+```
+algoritmo "exemplo"
+var
+  x : inteiro
+procedimento incrementa(var n: inteiro)
+inicio
+  n <- n + 1
+fimprocedimento
+inicio
+  incrementa(x + 1)
+fimalgoritmo
+```
+
+## E786 — constante num parâmetro por referência
+
+**Mensagem:** `'MAX' é uma constante e não pode ir para o parâmetro 'a', que é por referência`
+
+**Quando acontece:** a chamada passou uma constante para um parâmetro com `var`. O procedimento poderia mudar o valor, e constantes nunca mudam.
+
+**Como corrigir:** copie o valor da constante para uma variável e passe a variável, ou tire o `var` do parâmetro.
+
+```
+algoritmo "exemplo"
+const
+  MAX = 3
+procedimento p(var a: inteiro)
+inicio
+fimprocedimento
+inicio
+  p(MAX)
+fimalgoritmo
+```
+
+## E787 — tipo diferente num parâmetro por referência
+
+**Mensagem:** `o parâmetro 'n' é por referência e exige 'inteiro', mas recebeu 'real'`
+
+**Quando acontece:** a variável passada não tem exatamente o tipo do parâmetro com `var`. Num parâmetro por valor, um `inteiro` serve para um `real`; por referência, não, porque o procedimento escreveria um tipo na variável de outro.
+
+**Como corrigir:** passe uma variável do mesmo tipo do parâmetro.
+
+```
+algoritmo "exemplo"
+var
+  r : real
+procedimento incrementa(var n: inteiro)
+inicio
+  n <- n + 1
+fimprocedimento
+inicio
+  incrementa(r)
+fimalgoritmo
+```
+
+## E788 — vetor como parâmetro
+
+**Mensagem:** `vetores ainda não podem ser passados a procedimentos ou funções`
+
+**Quando acontece:** um parâmetro foi declarado como `vetor[...]`, ou a chamada passou um vetor inteiro, sem índice. Isso ainda não existe no Spike.
+
+**Como corrigir:** declare o vetor no `var` do programa: procedimentos e funções enxergam as variáveis globais. Para passar um só elemento, use o índice: `mostra(v[2])`.
+
+```
+algoritmo "exemplo"
+procedimento soma(v: vetor[1..3] de inteiro)
+inicio
+fimprocedimento
+inicio
+fimalgoritmo
+```
+
 ## E790 — valor do 'retorne' com tipo errado
 
 **Mensagem:** `a função 'nome' devolve 'caractere', mas o valor é 'inteiro'`
@@ -1502,11 +1581,11 @@ fimalgoritmo
 
 ## E831 — parâmetros mal formados
 
-**Mensagem:** `'(' esperado depois do nome do procedimento 'p'` (ou `':' esperado depois do parâmetro 'a'`, `tipo do parâmetro 'a' esperado`, `')' esperado no fim dos parâmetros do procedimento 'p'`, `nome do parâmetro esperado`, `um parâmetro ainda não pode ser um vetor`)
+**Mensagem:** `'(' esperado depois do nome do procedimento 'p'` (ou `':' esperado depois do parâmetro 'a'`, `tipo do parâmetro 'a' esperado`, `')' esperado no fim dos parâmetros do procedimento 'p'`, `nome do parâmetro esperado`)
 
 **Quando acontece:** o cabeçalho do procedimento não segue o formato `procedimento nome(a: tipo, b: tipo)`. A mensagem diz o que faltou.
 
-**Como corrigir:** abra e feche os parênteses (mesmo sem parâmetros: `procedimento linha()`), escreva `nome: tipo` para cada parâmetro e separe-os com vírgula. Um vetor não pode ser parâmetro por enquanto: declare-o no `var` do programa, que o procedimento enxerga.
+**Como corrigir:** abra e feche os parênteses (mesmo sem parâmetros: `procedimento linha()`), escreva `nome: tipo` para cada parâmetro e separe-os com vírgula. Para passar por referência, escreva `var` antes do nome: `procedimento troca(var a, b: inteiro)`.
 
 ```
 algoritmo "exemplo"

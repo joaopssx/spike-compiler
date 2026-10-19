@@ -79,7 +79,9 @@ private:
     void check_call(const CallStmt& call);
     TypeKind check_call_expr(const CallExpr& call);
     void check_arguments(const ProcedureSignature& signature, const std::vector<ExprPtr>& args,
-                         const std::vector<TypeKind>& types, int line, int col);
+                         int line, int col);
+    TypeKind check_argument_value(const ExprPtr& arg);
+    void check_ref_argument(const Param& param, const ExprPtr& arg);
     void check_return(const ReturnStmt& stmt);
     Symbol* resolve(const std::string& name, int line, int col);
     Symbol* mark_assigned(const std::string& name, int line, int col);

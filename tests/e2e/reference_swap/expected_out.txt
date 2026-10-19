@@ -1,0 +1,2 @@
+antes: a = 3, b = 8
+depois: a = 8, b = 3

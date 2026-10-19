@@ -1,0 +1,4 @@
+erro[E785]: o argumento de 'n' precisa ser uma variável, porque o parâmetro é por referência
+   9 |   incrementa(x + 1)
+     |              ^
+     = dica: guarde o valor numa variável e passe a variável, ou tire o 'var' do parâmetro.

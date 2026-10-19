@@ -1,0 +1,3 @@
+3 resto 2
+3
+resto 0
