@@ -12,14 +12,14 @@
 #define SPIKE_MAX_CALL_DEPTH 10000
 
 #ifndef SPIKE_R_OUT_OF_MEMORY
-#define SPIKE_R_OUT_OF_MEMORY 1
+#define SPIKE_R_OUT_OF_MEMORY 8
 #endif
 
 #ifndef SPIKE_R_MISSING_RETURN
-#define SPIKE_R_MISSING_RETURN 2
+#define SPIKE_R_MISSING_RETURN 9
 #endif
 
-void spike_fail(int code, int line, const char* message);
+static inline void spike_fail(int code, int line, const char* message);
 
 static int spike_call_depth = 0;
 static uintptr_t spike_stack_start = 0;
