@@ -1,0 +1,4 @@
+erro[E782]: o argumento 1 de 'tamanho' precisa ser 'caractere', mas é 'inteiro'
+   5 |   n <- tamanho(5)
+     |                ^
+     = dica: use tamanho(caractere): inteiro.

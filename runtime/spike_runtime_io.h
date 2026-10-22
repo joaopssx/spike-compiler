@@ -104,22 +104,26 @@ static inline spike_bool spike_parse_bool(const char* text, spike_bool* out) {
     return 0;
 }
 
+static inline void spike_shorten(const char* text, char shown[48]) {
+    size_t length = strlen(text);
+    if (length > 40) {
+        length = 40;
+        while (length > 0 && ((unsigned char)text[length] & 0xC0) == 0x80) --length;
+        memcpy(shown, text, length);
+        memcpy(shown + length, "...", 4);
+    } else {
+        memcpy(shown, text, length + 1);
+    }
+}
+
 static inline void spike_input_error(int line, const char* expected, const char* received) {
     char shown[48];
     char message[160];
-    size_t length = strlen(received);
-    if (length == 0) {
+    if (*received == '\0') {
         snprintf(message, sizeof message, "esperava %s, mas recebeu uma linha vazia", expected);
         spike_fail(SPIKE_R_BAD_INPUT, line, message);
     }
-    if (length > 40) {
-        length = 40;
-        while (length > 0 && ((unsigned char)received[length] & 0xC0) == 0x80) --length;
-        memcpy(shown, received, length);
-        memcpy(shown + length, "...", 4);
-    } else {
-        memcpy(shown, received, length + 1);
-    }
+    spike_shorten(received, shown);
     snprintf(message, sizeof message, "esperava %s, mas recebeu '%s'", expected, shown);
     spike_fail(SPIKE_R_BAD_INPUT, line, message);
 }

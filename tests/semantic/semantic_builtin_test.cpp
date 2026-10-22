@@ -40,6 +40,33 @@ void test_result_types() {
     SPIKE_EXPECT(check_expression("abs(abs(i) - aleatorio(1, 6))").type == TypeKind::Integer);
 }
 
+void test_text_result_types() {
+    SPIKE_EXPECT(check_expression("tamanho(t) + pos(\"a\", t) + ord(t)").type == TypeKind::Integer);
+    SPIKE_EXPECT(check_expression("maiusculo(t) + minusculo(u) + copia(t, 1, i)").type ==
+                 TypeKind::String);
+    SPIKE_EXPECT(check_expression("concatena(t, chr(65))").type == TypeKind::String);
+    SPIKE_EXPECT(check_expression("paraTexto(i) + paraTexto(r) + PARATEXTO(b)").type ==
+                 TypeKind::String);
+    SPIKE_EXPECT(check_expression("paraInteiro(t) + 1").type == TypeKind::Integer);
+    SPIKE_EXPECT(check_expression("paraReal(t)").type == TypeKind::Real);
+    SPIKE_EXPECT(check_expression("ehNumero(t) e nao ehnumero(u)").type == TypeKind::Bool);
+}
+
+void test_text_errors() {
+    const std::string out = errors_of("  i <- tamanho(i)\n");
+    SPIKE_EXPECT(single_error(out, "E782"));
+    SPIKE_EXPECT(contains(out, "o argumento 1 de 'tamanho' precisa ser 'caractere', mas é 'inteiro'"));
+    const std::string overloaded = errors_of("  t <- paraTexto(u)\n");
+    SPIKE_EXPECT(contains(overloaded, "precisa ser 'inteiro' ou 'real' ou 'logico', mas é 'caractere'"));
+    SPIKE_EXPECT(contains(overloaded, "use paraTexto(inteiro): caractere ou paraTexto(real): caractere"));
+    SPIKE_EXPECT(contains(errors_of("  t <- copia(t, 1)\n"),
+                          "'copia' espera 3 argumentos, recebeu 2"));
+    SPIKE_EXPECT(contains(errors_of("  i <- pos(t, 3)\n"), "o argumento 2 de 'pos'"));
+    SPIKE_EXPECT(single_error(errors_of("  t <- \"nota: \" + 10\n"), "E710"));
+    SPIKE_EXPECT(errors_of("  t <- \"nota: \" + paraTexto(10)\n").empty());
+    SPIKE_EXPECT(errors_of("  tamanho(t)\n", "  pos, copia : inteiro\n").empty());
+}
+
 void test_valid_uses() {
     SPIKE_EXPECT(errors_of("  i <- arredonda(r)\n  aleatorio(1, 2)\n  se raiz(i) > 2 entao\n"
                            "  fimse\n")
@@ -95,6 +122,8 @@ namespace spike_tests {
 
 void run_semantic_builtin_tests() {
     test_result_types();
+    test_text_result_types();
+    test_text_errors();
     test_valid_uses();
     test_wrong_argument_count_is_e781();
     test_wrong_argument_type_is_e782();

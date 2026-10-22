@@ -1,0 +1,2 @@
+erro de execução[R011]: copia: a posição inicial precisa ser 1 ou mais, mas é 0
+  --> linha 6

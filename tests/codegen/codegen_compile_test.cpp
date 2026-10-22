@@ -183,7 +183,30 @@ void test_builtins_compile_without_warnings() {
     SPIKE_EXPECT(read_all(base + ".out") == "7 2.5 4 1024\n3 -2 -3 3\n1 2 1\n3\n");
 }
 
+void test_text_builtins_compile_without_warnings() {
+    const auto gen = generate_from_source(
+        "algoritmo \"textos\"\nvar\n  t : caractere\n"
+        "inicio\n  t <- \"ação\"\n"
+        "  escreval(tamanho(t), \" \", maiusculo(t), \" \", copia(t, 2, 2), \" \", pos(\"ã\", t))\n"
+        "  escreval(concatena(minusculo(\"ÁRVORE\"), paraTexto(2.5)), \" \", paraInteiro(\" 7 \") + 1)\n"
+        "  escreval(ehNumero(\"3,5\"), \" \", paraReal(\"3,5\"), \" \", ord(\"ç\"), \" \", chr(65))\n"
+        "fimalgoritmo\n",
+        "textos.por");
+    SPIKE_EXPECT(gen.result.ok);
+    if (!gen.result.ok) return;
+
+    const std::string base = std::string(SPIKE_BINARY_DIR) + "/codegen_text_builtins_test";
+    const bool compiled = compile_c(gen.result.c_source, base);
+    SPIKE_EXPECT(compiled);
+    if (!compiled) return;
+    SPIKE_EXPECT(run_to_file(base) == 0);
+    SPIKE_EXPECT(read_all(base + ".out") ==
+                 "4 AÇÃO çã 3\nárvore2.5 8\nverdadeiro 3.5 231 A\n");
+}
+
 #else
+
+void test_text_builtins_compile_without_warnings() {}
 
 void test_builtins_compile_without_warnings() {}
 
@@ -210,6 +233,7 @@ void run_codegen_compile_tests() {
     test_functions_compile_without_warnings();
     test_references_compile_without_warnings();
     test_builtins_compile_without_warnings();
+    test_text_builtins_compile_without_warnings();
 }
 
 } // namespace spike_tests

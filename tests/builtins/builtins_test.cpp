@@ -2,8 +2,8 @@
 #include "support/test_support.hpp"
 
 #include "spike/builtins.hpp"
+#include "spike/symbol_table.hpp"
 
-#include <cctype>
 #include <string>
 #include <vector>
 
@@ -11,21 +11,23 @@ namespace {
 
 using spike::TypeKind;
 
-void test_signatures_are_unique_and_lowercase() {
+void test_signatures_are_unique() {
     const auto& all = spike::all_builtins();
-    SPIKE_EXPECT(all.size() == 14);
+    SPIKE_EXPECT(all.size() == 28);
     for (std::size_t i = 0; i < all.size(); ++i) {
         SPIKE_EXPECT(!all[i].c_name.empty());
-        for (char c : all[i].name) SPIKE_EXPECT(!std::isupper(static_cast<unsigned char>(c)));
+        const std::string key = spike::symbol_key(all[i].name);
         for (std::size_t j = i + 1; j < all.size(); ++j) {
-            SPIKE_EXPECT(!(all[i].name == all[j].name && all[i].params == all[j].params));
+            const bool same_name = key == spike::symbol_key(all[j].name);
+            SPIKE_EXPECT(!(same_name && all[i].params == all[j].params));
+            if (same_name) SPIKE_EXPECT(all[i].name == all[j].name);
         }
     }
 }
 
 void test_overloads_are_never_ambiguous() {
     for (const auto& sig : spike::all_builtins()) {
-        SPIKE_EXPECT(spike::find_builtin(sig.name, sig.params) == &sig);
+        SPIKE_EXPECT(spike::find_builtin(spike::symbol_key(sig.name), sig.params) == &sig);
     }
 }
 
@@ -52,12 +54,19 @@ void test_names_ignore_case() {
     SPIKE_EXPECT(spike::is_builtin_name("RAIZ") && spike::is_builtin_name("Aleatorio"));
     SPIKE_EXPECT(!spike::is_builtin_name("fatorial"));
     SPIKE_EXPECT(spike::builtins_named("Abs").size() == 2);
+    SPIKE_EXPECT(spike::builtins_named("PARATEXTO").size() == 3);
+    const auto* text = spike::find_builtin("paratexto", {TypeKind::Integer});
+    SPIKE_EXPECT(text && text->c_name == "spike_int_to_str");
 }
 
 void test_signature_text() {
     SPIKE_EXPECT(spike::signature_text(*spike::builtins_named("raiz")[0]) == "raiz(real): real");
     SPIKE_EXPECT(spike::signature_text(*spike::builtins_named("aleatorio")[0]) ==
                  "aleatorio(inteiro, inteiro): inteiro");
+    SPIKE_EXPECT(spike::signature_text(*spike::builtins_named("ehnumero")[0]) ==
+                 "ehNumero(caractere): logico");
+    SPIKE_EXPECT(spike::signature_text(*spike::builtins_named("copia")[0]) ==
+                 "copia(caractere, inteiro, inteiro): caractere");
 }
 
 } // namespace
@@ -65,7 +74,7 @@ void test_signature_text() {
 namespace spike_tests {
 
 void run_builtins_tests() {
-    test_signatures_are_unique_and_lowercase();
+    test_signatures_are_unique();
     test_overloads_are_never_ambiguous();
     test_exact_match_wins_over_conversion();
     test_no_match();

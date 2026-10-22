@@ -33,6 +33,18 @@ int main(int argc, char** argv) {
         spike_write_int(spike_random(5, 1, 35));
     } else if (strcmp(mode, "seeded") == 0) {
         spike_write_int(spike_random(1, 1000000, 36));
+    } else if (strcmp(mode, "slicezero") == 0) {
+        spike_write_str(spike_str_slice("abc", 0, 2, 41));
+    } else if (strcmp(mode, "ordempty") == 0) {
+        spike_write_int(spike_ord("", 42));
+    } else if (strcmp(mode, "chrzero") == 0) {
+        spike_write_str(spike_chr(0, 43));
+    } else if (strcmp(mode, "chrbig") == 0) {
+        spike_write_str(spike_chr(1114112, 44));
+    } else if (strcmp(mode, "toint") == 0) {
+        spike_write_int(spike_str_to_int("abc", 45));
+    } else if (strcmp(mode, "toreal") == 0) {
+        spike_write_real(spike_str_to_real("", 46));
     } else if (strcmp(mode, "pow") == 0) {
         spike_write_real(spike_pow(0.0, -1.0, 11));
     } else if (strcmp(mode, "powneg") == 0) {

@@ -1,6 +1,6 @@
 # The C runtime
 
-Every program Spike generates is a single C file. Its first part is the runtime, a header-only C99 library with the helpers the generated code calls. It lives in four files: `runtime/spike_runtime_core.h` (types, errors, memory, texts, arithmetic, `para` helpers), `runtime/spike_runtime_calls.h` (call counting for procedures and functions), `runtime/spike_runtime_math.h` (the math built-ins) and `runtime/spike_runtime_io.h` (writing, reading, parsing). `runtime/spike_runtime.h` includes them in that order, for the C tests; the later files rely on `core` being included first. Everything in it is `static inline`, so the C compiler drops what a program does not use and the result is still one standalone executable.
+Every program Spike generates is a single C file. Its first part is the runtime, a header-only C99 library with the helpers the generated code calls. It lives in four files: `runtime/spike_runtime_core.h` (types, errors, memory, texts, arithmetic, `para` helpers), `runtime/spike_runtime_calls.h` (call counting for procedures and functions), `runtime/spike_runtime_math.h` (the math built-ins), `runtime/spike_runtime_io.h` (writing, reading, parsing) and `runtime/spike_runtime_text.h` (the text built-ins, after `io` because they reuse its formatting and parsing). `runtime/spike_runtime.h` includes them in that order, for the C tests; the later files rely on `core` being included first. Everything in it is `static inline`, so the C compiler drops what a program does not use and the result is still one standalone executable.
 
 ## Rules
 
@@ -52,6 +52,15 @@ Texts are immutable. Literals are plain C strings. Texts built while the program
 | `spike_round`, `spike_trunc`, `spike_floor`, `spike_ceil` | `arredonda` (`round`, halves away from zero), `trunca`, `piso` and `teto`, each followed by `spike_real_to_int`. |
 | `spike_random(low, high, line)` | `aleatorio`: a uniform integer from `low` to `high`, both included, without modulo bias. `low > high` is R010. The generator is splitmix64, so a seed gives the same numbers on every system. |
 | `spike_seed_random(seed)` | Sets the seed. The first `spike_random` seeds itself from `SPIKE_SEED` when that environment variable holds a number, or from `time(NULL)` otherwise. |
+| `spike_utf8_size(s)` | Bytes of the UTF-8 character at `s`: 1 to 4, or 1 for a byte that does not start a valid sequence. Every text function walks the text with it. |
+| `spike_str_length(t)` | `tamanho`: characters, not bytes. |
+| `spike_str_upper(t)`, `spike_str_lower(t)` | `maiusculo` and `minusculo`: ASCII letters plus U+00C0 to U+00FE (two bytes, `C3 xx`), leaving `×` and `÷` alone. The result has the same number of bytes. |
+| `spike_str_slice(t, start, count, line)` | `copia`. `start` below 1 is R011; past the end it returns what fits. |
+| `spike_str_find(needle, t)` | `pos`: `strstr`, then counts the characters before the match. An empty `needle` gives 0. |
+| `spike_int_to_str`, `spike_real_to_str`, `spike_bool_to_str` | `paraTexto`, using the same formatting as the write functions. |
+| `spike_str_to_int(t, line)`, `spike_str_to_real(t, line)` | `paraInteiro` and `paraReal`, built on `spike_parse_int` and `spike_parse_real`; invalid text is R004, with the text cut by `spike_shorten` as in R003. |
+| `spike_str_is_number(t)` | `ehNumero`. |
+| `spike_ord(t, line)`, `spike_chr(code, line)` | Code point of the first character, and the UTF-8 text of a code point. An empty text, a code outside 1 to 1114111 or a surrogate (U+D800 to U+DFFF) is R011. |
 | `spike_write_int(v)` | Prints an integer. |
 | `spike_write_real(v)` | Prints a real with `%.10g`: `3` for 3.0, `3.5`, `0.3` for 0.1 + 0.2. Negative zero prints `0`. |
 | `spike_write_str(v)` | Prints a text. |
@@ -72,22 +81,24 @@ Every read function takes the `.por` line of the `leia` and the variable name as
 | R001 | Division by zero in `/`, `div` or `mod`. |
 | R002 | A vector index is outside the declared limits. |
 | R003 | `leia` got text that does not fit the variable's type. |
-| R004 | A real number does not fit in an `inteiro` (`arredonda`, `trunca`, `piso`, `teto`). |
+| R004 | A real number does not fit in an `inteiro` (`arredonda`, `trunca`, `piso`, `teto`), or `paraInteiro`/`paraReal` got invalid text. |
 | R005 | `^` or `pot` produced a result that is not a number or is infinite; `raiz` of a negative; `log` of zero or less. |
 | R006 | The step of a `para` is 0 when the loop starts. |
 | R007 | The input ended before `leia` could read a line. |
 | R008 | Out of memory, or recursion deeper than 10000 calls or than the stack allows. |
 | R009 | A function ended without `retorne`. |
 | R010 | `aleatorio` got its limits in the wrong order. |
+| R011 | A text function got a position or code out of range (`copia`, `ord`, `chr`). |
 
 A program that stops on a runtime error always exits with code 101.
 
 ## How it gets into the compiler
 
-`cmake/embed_runtime.cmake` runs at build time (`cmake -P`). It reads `spike_runtime_core.h`, `spike_runtime_calls.h`, `spike_runtime_math.h` and `spike_runtime_io.h`, joins them in that order, turns `\r\n` into `\n`, and writes `build/generated/runtime_text.cpp` with the file as a byte array. A byte array avoids the length limit some compilers put on string literals. `spike_core` compiles that file, and `include/spike/runtime_text.hpp` exposes it as `runtime_source()` and `runtime_source_size()`. The generated file is rebuilt whenever the header or the script changes, and it is never committed.
+`cmake/embed_runtime.cmake` runs at build time (`cmake -P`). It reads `spike_runtime_core.h`, `spike_runtime_calls.h`, `spike_runtime_math.h`, `spike_runtime_io.h` and `spike_runtime_text.h`, joins them in that order, turns `\r\n` into `\n`, and writes `build/generated/runtime_text.cpp` with the file as a byte array. A byte array avoids the length limit some compilers put on string literals. `spike_core` compiles that file, and `include/spike/runtime_text.hpp` exposes it as `runtime_source()` and `runtime_source_size()`. The generated file is rebuilt whenever the header or the script changes, and it is never committed.
 
 ## Tests
 
 - `runtime_c_unit` compiles `tests/runtime/runtime_test.c` as C99 and checks formatting, texts, arithmetic and parsing.
 - `runtime_io_*` run `tests/runtime/runtime_io_program.c` with real input through `tests/runtime/expect_run.cmake`, which checks the exit code, stdout and stderr. They cover reading every type, invalid input (R003), end of input (R007), division by zero (R001), the call limit (R008), a function without `retorne` (R009), the math errors (R004, R005, R010) and `SPIKE_SEED`.
+- `runtime_c_strings` compiles `tests/runtime/runtime_strings_test.c` and checks the text functions with accents, empty text, a 4-byte emoji and broken UTF-8.
 - The C tests are skipped when CMake finds no C compiler.

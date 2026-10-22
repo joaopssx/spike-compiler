@@ -1,5 +1,6 @@
 #include "spike/builtins.hpp"
 #include "spike/semantic.hpp"
+#include "spike/symbol_table.hpp"
 #include "semantic/semantic_internal.hpp"
 
 #include <string>
@@ -68,7 +69,7 @@ TypeKind SemanticAnalyzer::check_builtin_call(const std::string& name,
     for (TypeKind type : types) {
         if (type == TypeKind::Invalid) return TypeKind::Invalid;
     }
-    if (const BuiltinSig* sig = find_builtin(canonical, types)) return sig->result;
+    if (const BuiltinSig* sig = find_builtin(symbol_key(canonical), types)) return sig->result;
 
     std::size_t wrong = 0;
     for (std::size_t i = 0; i < types.size(); ++i) {

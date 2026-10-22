@@ -1,0 +1,4 @@
+ignorado: abc
+total: 12.5
+texto: 12.5 / verdadeiro / 12
+65 B ç

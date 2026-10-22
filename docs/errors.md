@@ -725,11 +725,11 @@ Estes erros acontecem quando o programa já compilou e está rodando. A mensagem
 
 ## R004 — conversão impossível
 
-**Mensagem:** `número grande demais para virar inteiro` (ou `o valor não é um número e não pode virar inteiro`)
+**Mensagem:** `número grande demais para virar inteiro` (ou `o valor não é um número e não pode virar inteiro`, ou `não foi possível converter 'abc' para inteiro`)
 
-**Quando acontece:** `arredonda`, `trunca`, `piso` ou `teto` recebeu um número real que não cabe num `inteiro` (o limite é perto de 9,2 × 10^18), ou um valor que nem é um número, como o resultado de uma conta inválida.
+**Quando acontece:** `arredonda`, `trunca`, `piso` ou `teto` recebeu um número real que não cabe num `inteiro` (o limite é perto de 9,2 × 10^18), ou um valor que nem é um número, como o resultado de uma conta inválida. Também acontece quando `paraInteiro` ou `paraReal` recebe um texto que não é um número.
 
-**Como corrigir:** confira a conta que gera o número. Se ele precisa mesmo ser tão grande, deixe-o como `real`.
+**Como corrigir:** confira a conta que gera o número; se ele precisa mesmo ser tão grande, deixe-o como `real`. Antes de converter um texto, teste com `ehNumero(texto)`.
 
 ```
 algoritmo "exemplo"
@@ -806,6 +806,21 @@ fimalgoritmo
 algoritmo "exemplo"
 inicio
   escreval(aleatorio(10, 1))
+fimalgoritmo
+```
+
+## R011 — posição ou código fora do alcance
+
+**Mensagem:** `copia: a posição inicial precisa ser 1 ou mais, mas é 0` (ou `ord: o texto está vazio`, ou `chr: 0 não é o código de um caractere (válido: 1 a 1114111)`)
+
+**Quando acontece:** uma função de texto recebeu um valor que não faz sentido: `copia` começando antes da primeira letra, `ord` de um texto vazio, ou `chr` com um código que não existe.
+
+**Como corrigir:** em `copia`, as posições começam em 1. Antes de `ord`, confira se o texto não está vazio (`tamanho(t) > 0`). Em `chr`, use um código entre 1 e 1114111.
+
+```
+algoritmo "exemplo"
+inicio
+  escreval(copia("Spike", 0, 2))
 fimalgoritmo
 ```
 

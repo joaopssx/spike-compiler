@@ -1,0 +1,10 @@
+Texto: São Paulo
+Letras: 9
+Maiúsculo: SÃO PAULO
+Minúsculo: são paulo
+Sigla: SP
+Posição de 'Paulo': 5
+Ano que vem: 2027
+Junto: ano 2026
+'12,5' é número? verdadeiro
+Código de 'ç': 231, caractere 65: A

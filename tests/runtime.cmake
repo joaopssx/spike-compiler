@@ -25,6 +25,10 @@ spike_add_runtime_program(spike_runtime_test tests/runtime/runtime_test.c)
 add_test(NAME runtime_c_unit COMMAND spike_runtime_test)
 set_tests_properties(runtime_c_unit PROPERTIES PASS_REGULAR_EXPRESSION "runtime tests passed")
 
+spike_add_runtime_program(spike_runtime_strings_test tests/runtime/runtime_strings_test.c)
+add_test(NAME runtime_c_strings COMMAND spike_runtime_strings_test)
+set_tests_properties(runtime_c_strings PROPERTIES PASS_REGULAR_EXPRESSION "string tests passed")
+
 spike_add_runtime_program(spike_runtime_io tests/runtime/runtime_io_program.c)
 
 function(spike_add_runtime_io_test name mode input code)
@@ -80,3 +84,13 @@ spike_add_runtime_io_test(random_range randrange "" 101
     "-DEXPECT_STDERR=R010\\]: aleatorio\\(5, 1\\): o primeiro n.+mero precisa ser menor ou igual ao segundo.*linha 35")
 spike_add_runtime_io_test(random_seed seeded "" 0 "-DEXPECT_STDOUT=^275414$")
 set_tests_properties(runtime_io_random_seed PROPERTIES ENVIRONMENT "SPIKE_SEED=42")
+spike_add_runtime_io_test(slice_start_zero slicezero "" 101
+    "-DEXPECT_STDERR=R011\\]: copia: a posi.+o inicial precisa ser 1 ou mais, mas .+ 0.*linha 41")
+spike_add_runtime_io_test(ord_empty ordempty "" 101 "-DEXPECT_STDERR=R011\\]: ord: o texto est.+ vazio.*linha 42")
+spike_add_runtime_io_test(chr_zero chrzero "" 101
+    "-DEXPECT_STDERR=R011\\]: chr: 0 n.+o .+ o c.+digo de um caractere \\(v.+lido: 1 a 1114111\\).*linha 43")
+spike_add_runtime_io_test(chr_too_big chrbig "" 101 "-DEXPECT_STDERR=R011.*linha 44")
+spike_add_runtime_io_test(text_to_int toint "" 101
+    "-DEXPECT_STDERR=R004\\]: n.+o foi poss.+vel converter 'abc' para inteiro.*linha 45")
+spike_add_runtime_io_test(empty_to_real toreal "" 101
+    "-DEXPECT_STDERR=R004\\]: n.+o foi poss.+vel converter um texto vazio para real.*linha 46")

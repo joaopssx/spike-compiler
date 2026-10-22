@@ -101,7 +101,7 @@ set(SPIKE_RUNTIME_TEXT_CPP "${CMAKE_BINARY_DIR}/generated/runtime_text.cpp")
 add_custom_command(
     OUTPUT "${SPIKE_RUNTIME_TEXT_CPP}"
     COMMAND ${CMAKE_COMMAND}
-        "-DINPUTS=${CMAKE_SOURCE_DIR}/runtime/spike_runtime_core.h|${CMAKE_SOURCE_DIR}/runtime/spike_runtime_calls.h|${CMAKE_SOURCE_DIR}/runtime/spike_runtime_math.h|${CMAKE_SOURCE_DIR}/runtime/spike_runtime_io.h"
+        "-DINPUTS=${CMAKE_SOURCE_DIR}/runtime/spike_runtime_core.h|${CMAKE_SOURCE_DIR}/runtime/spike_runtime_calls.h|${CMAKE_SOURCE_DIR}/runtime/spike_runtime_math.h|${CMAKE_SOURCE_DIR}/runtime/spike_runtime_io.h|${CMAKE_SOURCE_DIR}/runtime/spike_runtime_text.h"
         "-DOUTPUT=${SPIKE_RUNTIME_TEXT_CPP}"
         -P "${CMAKE_SOURCE_DIR}/cmake/embed_runtime.cmake"
     DEPENDS
@@ -109,6 +109,7 @@ add_custom_command(
         "${CMAKE_SOURCE_DIR}/runtime/spike_runtime_calls.h"
         "${CMAKE_SOURCE_DIR}/runtime/spike_runtime_math.h"
         "${CMAKE_SOURCE_DIR}/runtime/spike_runtime_io.h"
+        "${CMAKE_SOURCE_DIR}/runtime/spike_runtime_text.h"
         "${CMAKE_SOURCE_DIR}/cmake/embed_runtime.cmake"
     COMMENT "Embedding the C runtime"
     VERBATIM
@@ -120,6 +121,7 @@ set(SPIKE_RUNTIME_SOURCES
     runtime/spike_runtime_calls.h
     runtime/spike_runtime_math.h
     runtime/spike_runtime_io.h
+    runtime/spike_runtime_text.h
 )
 set(SPIKE_PUBLIC_HEADERS
     include/spike/ast.hpp

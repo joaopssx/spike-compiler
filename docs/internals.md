@@ -41,6 +41,12 @@ If the program cannot be found or started, `launched` is false and `launch_error
 - `interrompa` becomes a plain C `break;`. It always leaves the innermost C loop, which is the innermost Portugol loop: a `para` is wrapped in a `{ }` block for its temporaries, but the block is not a loop, so `break` still leaves the `while` inside it.
 - Because of that, `escolha` must never be generated as a C `switch`. A `break` inside a `switch` leaves the `switch`, so an `interrompa` written inside an `escolha` that sits in a loop would stop the `escolha` instead of the loop. `escolha` has to become an `if` / `else if` chain.
 
+## Text memory
+
+Texts built while a program runs (joins with `+`, `copia`, `maiusculo`, `paraTexto`, lines read by `leia`) are never freed one by one. Each lives in its own block in a list owned by the runtime, and `spike_cleanup` frees the whole list when the program ends. This keeps the generated C simple, with no ownership to track, and a normal student program uses little memory.
+
+The cost shows up when a text grows inside a loop: `t <- t + "x"` repeated n times copies the whole text each time and keeps every old copy, so it takes time and memory proportional to n². Ten thousand rounds use about 50 MB; a hundred thousand would need several GB. Nothing is optimized for this yet. If it becomes a problem, the likely fix is to free the old text when the generated code can prove nothing else points to it, or a builder for texts that grow.
+
 ## Temporary files
 
 `TempDir` (`include/spike/temp_dir.hpp`) creates a uniquely named folder under the system temp directory (`spike-<pid>-<random>`) and deletes it with everything inside when it goes out of scope, even on an error path. The generated `.c` lives there; with `--c` it is copied next to the executable before the folder is removed.

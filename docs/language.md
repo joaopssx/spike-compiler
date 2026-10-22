@@ -450,22 +450,28 @@ Spike comes with ready-made functions. They are called like any function, `raiz(
 - A built-in can be called as a command on its own line; the result is discarded.
 - In the generated C, a call becomes the function named in the table: `spike_round(v_nota, 8)` for functions that can fail (they get the line), or the C library function when it behaves the same, like `sin(v_x)` and `fabs(v_x)`.
 
-### Text and conversion (proposed)
+### Text and conversion
 
-They arrive in v0.3.
-
-| Function | Returns | Description |
+| Function | Result | What it does |
 | --- | --- | --- |
-| `tamanho(t)` | inteiro | number of characters in `t` |
-| `maiusculo(t)`, `minusculo(t)` | caractere | `t` in upper or lower case |
-| `copia(t, inicio, n)` | caractere | `n` characters of `t` starting at position `inicio` (first is 1) |
-| `pos(sub, t)` | inteiro | position of `sub` in `t`, or 0 if absent |
-| `concatena(a, b)` | caractere | same as `a + b` |
-| `paraTexto(x)` | caractere | number or logico as text |
-| `paraInteiro(t)` | inteiro | text to integer; invalid text is R004 |
-| `paraReal(t)` | real | text to real; invalid text is R004 |
-| `ord(c)` | inteiro | code of the first character of `c` |
-| `chr(n)` | caractere | character with code `n` |
+| `tamanho(caractere)` | inteiro | number of characters: `tamanho("ação")` is 4 |
+| `maiusculo(caractere)`, `minusculo(caractere)` | caractere | the text in upper or lower case, accented letters included: `maiusculo("ação")` is `"AÇÃO"` |
+| `copia(caractere, inteiro, inteiro)` | caractere | `copia(texto, inicio, quantidade)`: `quantidade` characters starting at position `inicio` (the first is 1) |
+| `pos(caractere, caractere)` | inteiro | `pos(procurado, texto)`: position of the first `procurado` in `texto`, or 0 when it is absent |
+| `concatena(caractere, caractere)` | caractere | same as `a + b` |
+| `paraTexto(inteiro)` / `paraTexto(real)` / `paraTexto(logico)` | caractere | the value as text, written exactly as `escreva` would: `paraTexto(2.5)` is `"2.5"`, `paraTexto(verdadeiro)` is `"verdadeiro"` |
+| `paraInteiro(caractere)` | inteiro | text to integer; invalid text is R004 |
+| `paraReal(caractere)` | real | text to real, with a point or a comma (`"3,5"`); invalid text is R004 |
+| `ehNumero(caractere)` | logico | whether `paraInteiro` or `paraReal` would accept the text |
+| `ord(caractere)` | inteiro | code (Unicode code point) of the first character: `ord("A")` is 65, `ord("ç")` is 231; an empty text is R011 |
+| `chr(inteiro)` | caractere | the character with that code; outside 1 to 1114111 is R011 |
+
+- Texts are UTF-8, and these functions count characters, not bytes: `ç` is one character even though it takes two bytes. A byte that is not valid UTF-8 counts as one character, so a broken text never makes them stop or skip.
+- `maiusculo` and `minusculo` change ASCII letters and the accented letters of Latin languages (`à á â ã ä ç é ê í ó ô õ ú ü` and the others between U+00C0 and U+00FE). Other characters stay as they are.
+- `copia` never fails because of the end of the text: it returns what fits, and an empty text when `inicio` is past the end or `quantidade` is 0 or negative. Only `inicio` below 1 is an error (R011).
+- `pos` with an empty `procurado` returns 0.
+- `paraInteiro` and `paraReal` accept spaces around the number, like `leia`. The R004 message shows the text: `não foi possível converter 'abc' para inteiro`.
+- Each new text lives in memory owned by the runtime until the program ends; nothing needs to be freed by hand.
 
 ## Runtime errors
 
@@ -476,12 +482,13 @@ A compiled program stops at the first runtime error. It prints a message in Port
 | R001 | division by zero (`/`, `div`, `mod`) |
 | R002 | vector index outside the declared range |
 | R003 | `leia` got input that does not match the variable's type |
-| R004 | a conversion failed: `arredonda`, `trunca`, `piso` or `teto` got a number too big for `inteiro` (and later `paraInteiro` or `paraReal` got invalid text) |
+| R004 | a conversion failed: `arredonda`, `trunca`, `piso` or `teto` got a number too big for `inteiro`, or `paraInteiro` or `paraReal` got invalid text |
 | R005 | math result that is not a number or is infinite: `^` and `pot` (as in `0 ^ -1`), `raiz` of a negative, `log` of zero or less |
 | R006 | `para` with a step of 0 |
 | R007 | `leia` reached the end of the input |
 | R008 | the program ran out of memory, or a recursion went too deep (more than 10000 calls in progress) |
 | R009 | a function reached `fimfuncao` without `retorne` |
 | R010 | `aleatorio` got a first number greater than the second |
+| R011 | a text function got a position or code out of range: `copia` starting below 1, `ord` of an empty text, `chr` outside 1 to 1114111 |
 
 The numbering is proposed and becomes final in v0.3.

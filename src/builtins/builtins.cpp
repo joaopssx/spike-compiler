@@ -10,6 +10,8 @@ namespace {
 
 constexpr TypeKind kInt = TypeKind::Integer;
 constexpr TypeKind kReal = TypeKind::Real;
+constexpr TypeKind kText = TypeKind::String;
+constexpr TypeKind kBool = TypeKind::Bool;
 
 bool convertible(const BuiltinSig& sig, const std::vector<TypeKind>& args) {
     if (sig.params.size() != args.size()) return false;
@@ -38,6 +40,20 @@ const std::vector<BuiltinSig>& all_builtins() {
         {"log", {kReal}, kReal, "spike_log", true},
         {"exp", {kReal}, kReal, "exp", false},
         {"aleatorio", {kInt, kInt}, kInt, "spike_random", true},
+        {"tamanho", {kText}, kInt, "spike_str_length", false},
+        {"maiusculo", {kText}, kText, "spike_str_upper", false},
+        {"minusculo", {kText}, kText, "spike_str_lower", false},
+        {"copia", {kText, kInt, kInt}, kText, "spike_str_slice", true},
+        {"pos", {kText, kText}, kInt, "spike_str_find", false},
+        {"concatena", {kText, kText}, kText, "spike_str_concat", false},
+        {"paraTexto", {kInt}, kText, "spike_int_to_str", false},
+        {"paraTexto", {kReal}, kText, "spike_real_to_str", false},
+        {"paraTexto", {kBool}, kText, "spike_bool_to_str", false},
+        {"paraInteiro", {kText}, kInt, "spike_str_to_int", true},
+        {"paraReal", {kText}, kReal, "spike_str_to_real", true},
+        {"ehNumero", {kText}, kBool, "spike_str_is_number", false},
+        {"ord", {kText}, kInt, "spike_ord", true},
+        {"chr", {kInt}, kText, "spike_chr", true},
     };
     return kBuiltins;
 }
@@ -46,7 +62,7 @@ const BuiltinSig* find_builtin(const std::string& name_lowercase,
                                const std::vector<TypeKind>& arg_types) {
     const BuiltinSig* widened = nullptr;
     for (const BuiltinSig& sig : all_builtins()) {
-        if (sig.name != name_lowercase) continue;
+        if (symbol_key(sig.name) != name_lowercase) continue;
         if (sig.params == arg_types) return &sig;
         if (!widened && convertible(sig, arg_types)) widened = &sig;
     }
@@ -61,7 +77,7 @@ std::vector<const BuiltinSig*> builtins_named(const std::string& name) {
     const std::string key = symbol_key(name);
     std::vector<const BuiltinSig*> found;
     for (const BuiltinSig& sig : all_builtins()) {
-        if (sig.name == key) found.push_back(&sig);
+        if (symbol_key(sig.name) == key) found.push_back(&sig);
     }
     return found;
 }

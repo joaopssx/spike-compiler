@@ -31,6 +31,7 @@ typedef const char *spike_str;
 #define SPIKE_R_OUT_OF_MEMORY 8
 #define SPIKE_R_MISSING_RETURN 9
 #define SPIKE_R_RANDOM_RANGE 10
+#define SPIKE_R_TEXT_RANGE 11
 #define SPIKE_EXIT_RUNTIME_ERROR 101
 
 typedef struct spike_block
