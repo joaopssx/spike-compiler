@@ -21,6 +21,18 @@ int main(int argc, char** argv) {
         for (;;) spike_enter(21);
     } else if (strcmp(mode, "noreturn") == 0) {
         spike_missing_return(22, "sinal");
+    } else if (strcmp(mode, "sqrtneg") == 0) {
+        spike_write_real(spike_sqrt(-1.0, 31));
+    } else if (strcmp(mode, "logzero") == 0) {
+        spike_write_real(spike_log(0.0, 32));
+    } else if (strcmp(mode, "bigint") == 0) {
+        spike_write_int(spike_round(1e19, 33));
+    } else if (strcmp(mode, "nanint") == 0) {
+        spike_write_int(spike_trunc(NAN, 34));
+    } else if (strcmp(mode, "randrange") == 0) {
+        spike_write_int(spike_random(5, 1, 35));
+    } else if (strcmp(mode, "seeded") == 0) {
+        spike_write_int(spike_random(1, 1000000, 36));
     } else if (strcmp(mode, "pow") == 0) {
         spike_write_real(spike_pow(0.0, -1.0, 11));
     } else if (strcmp(mode, "powneg") == 0) {

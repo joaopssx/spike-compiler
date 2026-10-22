@@ -73,6 +73,8 @@ private:
     void emit_call(const CallStmt& stmt);
     void emit_return(const ReturnStmt& stmt);
     std::string call(const std::string& name, const std::vector<ExprPtr>& args, int line, int col);
+    std::string builtin_call(const std::string& name, const std::vector<ExprPtr>& args, int line,
+                             int col);
     std::string signature(const ProcedureDecl& proc) const;
     std::string variable(const std::string& name) const;
     std::string reference(const ExprPtr& arg);

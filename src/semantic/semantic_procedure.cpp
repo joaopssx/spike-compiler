@@ -1,3 +1,4 @@
+#include "spike/builtins.hpp"
 #include "spike/semantic.hpp"
 #include "semantic/semantic_internal.hpp"
 
@@ -65,6 +66,13 @@ bool always_returns(const StmtList& stmts) {
 void SemanticAnalyzer::declare_procedures() {
     for (const ProcedureDecl& proc : program_.procedures) {
         if (proc.name.empty()) continue;
+        if (is_builtin_name(proc.name)) {
+            diags_.error("E789",
+                         "'" + proc.name + "' é uma função pronta do Spike, escolha outro nome",
+                         proc.line, proc.col,
+                         "as funções prontas, como raiz e abs, já existem em todo programa.");
+            continue;
+        }
         const std::string key = symbol_key(proc.name);
         const auto it = procedures_.find(key);
         if (it != procedures_.end()) {

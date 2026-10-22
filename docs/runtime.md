@@ -1,6 +1,6 @@
 # The C runtime
 
-Every program Spike generates is a single C file. Its first part is the runtime, a header-only C99 library with the helpers the generated code calls. It lives in three files: `runtime/spike_runtime_core.h` (types, errors, memory, texts, arithmetic, `para` helpers), `runtime/spike_runtime_calls.h` (call counting for procedures and functions) and `runtime/spike_runtime_io.h` (writing, reading, parsing). `runtime/spike_runtime.h` includes them in that order, for the C tests; the later files rely on `core` being included first. Everything in it is `static inline`, so the C compiler drops what a program does not use and the result is still one standalone executable.
+Every program Spike generates is a single C file. Its first part is the runtime, a header-only C99 library with the helpers the generated code calls. It lives in four files: `runtime/spike_runtime_core.h` (types, errors, memory, texts, arithmetic, `para` helpers), `runtime/spike_runtime_calls.h` (call counting for procedures and functions), `runtime/spike_runtime_math.h` (the math built-ins) and `runtime/spike_runtime_io.h` (writing, reading, parsing). `runtime/spike_runtime.h` includes them in that order, for the C tests; the later files rely on `core` being included first. Everything in it is `static inline`, so the C compiler drops what a program does not use and the result is still one standalone executable.
 
 ## Rules
 
@@ -45,6 +45,13 @@ Texts are immutable. Literals are plain C strings. Texts built while the program
 | `spike_enter(line)` | First line of every generated procedure and function. Counts the call: more than 10000 calls in progress is R008. On the first call it also measures the stack (`getrlimit` on Linux and macOS, `VirtualQuery` on Windows) and allows recursion to use 3/4 of it; going past that is R008 too, so deep recursion stops with a message instead of crashing. `line` is the line of the procedure or function header. |
 | `spike_leave()` | Undoes one `spike_enter`. Generated before every exit: each `retorne` and the end of a procedure. |
 | `spike_missing_return(line, name)` | R009: the function `name` reached `fimfuncao` without `retorne`. Generated at the end of every function, followed by a `return` of the type's default value so the C compiler sees every path return. |
+| `spike_abs_int(x)` | `abs` of an `inteiro`. `abs` of the smallest `inteiro` wraps to itself instead of being undefined in C. `abs` of a `real` calls `fabs` directly. |
+| `spike_sqrt(x, line)` | `raiz`; a negative `x` is R005. |
+| `spike_log(x, line)` | `log`, base 10 (`log10`); zero, negative or NaN is R005. |
+| `spike_real_to_int(x, line)` | Converts a real to `inteiro`. NaN, or a value outside the 64-bit range, is R004. |
+| `spike_round`, `spike_trunc`, `spike_floor`, `spike_ceil` | `arredonda` (`round`, halves away from zero), `trunca`, `piso` and `teto`, each followed by `spike_real_to_int`. |
+| `spike_random(low, high, line)` | `aleatorio`: a uniform integer from `low` to `high`, both included, without modulo bias. `low > high` is R010. The generator is splitmix64, so a seed gives the same numbers on every system. |
+| `spike_seed_random(seed)` | Sets the seed. The first `spike_random` seeds itself from `SPIKE_SEED` when that environment variable holds a number, or from `time(NULL)` otherwise. |
 | `spike_write_int(v)` | Prints an integer. |
 | `spike_write_real(v)` | Prints a real with `%.10g`: `3` for 3.0, `3.5`, `0.3` for 0.1 + 0.2. Negative zero prints `0`. |
 | `spike_write_str(v)` | Prints a text. |
@@ -65,20 +72,22 @@ Every read function takes the `.por` line of the `leia` and the variable name as
 | R001 | Division by zero in `/`, `div` or `mod`. |
 | R002 | A vector index is outside the declared limits. |
 | R003 | `leia` got text that does not fit the variable's type. |
-| R005 | `^` produced a result that is not a number or is infinite. |
+| R004 | A real number does not fit in an `inteiro` (`arredonda`, `trunca`, `piso`, `teto`). |
+| R005 | `^` or `pot` produced a result that is not a number or is infinite; `raiz` of a negative; `log` of zero or less. |
 | R006 | The step of a `para` is 0 when the loop starts. |
 | R007 | The input ended before `leia` could read a line. |
 | R008 | Out of memory, or recursion deeper than 10000 calls or than the stack allows. |
 | R009 | A function ended without `retorne`. |
+| R010 | `aleatorio` got its limits in the wrong order. |
 
-R004 is reserved by `language.md` for conversions, and arrives with those features. A program that stops on a runtime error always exits with code 101.
+A program that stops on a runtime error always exits with code 101.
 
 ## How it gets into the compiler
 
-`cmake/embed_runtime.cmake` runs at build time (`cmake -P`). It reads `spike_runtime_core.h`, `spike_runtime_calls.h` and `spike_runtime_io.h`, joins them in that order, turns `\r\n` into `\n`, and writes `build/generated/runtime_text.cpp` with the file as a byte array. A byte array avoids the length limit some compilers put on string literals. `spike_core` compiles that file, and `include/spike/runtime_text.hpp` exposes it as `runtime_source()` and `runtime_source_size()`. The generated file is rebuilt whenever the header or the script changes, and it is never committed.
+`cmake/embed_runtime.cmake` runs at build time (`cmake -P`). It reads `spike_runtime_core.h`, `spike_runtime_calls.h`, `spike_runtime_math.h` and `spike_runtime_io.h`, joins them in that order, turns `\r\n` into `\n`, and writes `build/generated/runtime_text.cpp` with the file as a byte array. A byte array avoids the length limit some compilers put on string literals. `spike_core` compiles that file, and `include/spike/runtime_text.hpp` exposes it as `runtime_source()` and `runtime_source_size()`. The generated file is rebuilt whenever the header or the script changes, and it is never committed.
 
 ## Tests
 
 - `runtime_c_unit` compiles `tests/runtime/runtime_test.c` as C99 and checks formatting, texts, arithmetic and parsing.
-- `runtime_io_*` run `tests/runtime/runtime_io_program.c` with real input through `tests/runtime/expect_run.cmake`, which checks the exit code, stdout and stderr. They cover reading every type, invalid input (R003), end of input (R007), division by zero (R001), the call limit (R008) and a function without `retorne` (R009).
+- `runtime_io_*` run `tests/runtime/runtime_io_program.c` with real input through `tests/runtime/expect_run.cmake`, which checks the exit code, stdout and stderr. They cover reading every type, invalid input (R003), end of input (R007), division by zero (R001), the call limit (R008), a function without `retorne` (R009), the math errors (R004, R005, R010) and `SPIKE_SEED`.
 - The C tests are skipped when CMake finds no C compiler.

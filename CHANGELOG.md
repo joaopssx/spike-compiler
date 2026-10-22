@@ -15,12 +15,14 @@ All notable changes to Spike are recorded here. The format follows [Keep a Chang
 - Matrices: vectors with 2 or 3 dimensions, `m : vetor[1..3, 1..4] de inteiro`, used as `m[i, j]`. Each index is checked against its own dimension, and the runtime error says which one failed.
 - Procedures: `procedimento nome(a: inteiro, b: real)` ... `fimprocedimento`, declared before the main `inicio` and called as a command, `nome(1, 2.5)`. Parameters are passed by value. A procedure can have its own `var` section, whose variables start fresh on every call and may reuse the name of a global. Procedures can call each other in any order and call themselves.
 - Functions: `funcao fatorial(n: inteiro): inteiro` ... `fimfuncao`, with `retorne valor`. A call works anywhere a value does, as in `escreval(fatorial(5))` or `se primo(n) entao`. Inside a procedure, `retorne` alone leaves early.
+- Math built-in functions: `abs`, `raiz`, `pot`, `arredonda`, `trunca`, `piso`, `teto`, `seno`, `cosseno`, `tangente`, `log`, `exp` and `aleatorio`. Runtime errors: `raiz` of a negative and `log` of zero or less are R005, a real too big for `arredonda` and friends is R004, and `aleatorio` with its limits reversed is the new R010. Setting `SPIKE_SEED` makes `aleatorio` repeat the same numbers.
 - Parameters by reference: `procedimento troca(var a: inteiro, var b: inteiro)`. The subprogram changes the caller's own variable or vector element, as in `troca(x, y)` or `troca(v[i], v[i + 1])`. The argument must be a variable of exactly the same type.
 - A recursion that never stops ends with runtime error R008 (more than 10000 calls in progress, or not enough memory left for calls) instead of crashing, and a function that reaches `fimfuncao` without `retorne` stops with the new runtime error R009.
 
 ### Changed
 
 - `div`, `mod`, `const`, `interrompa`, `escolha`, `caso`, `outrocaso`, `fimescolha`, `vetor`, `procedimento`, `fimprocedimento`, `funcao`, `fimfuncao` and `retorne` are now reserved words. A program that used any of them as a variable name has to rename it.
+- A procedure or function can no longer use the name of a built-in function such as `raiz` or `abs` (E789).
 - On Windows, compiled programs get a 16 MB call stack, so deep recursion reaches the R008 limit before running out of stack.
 - A command that starts with a name followed by `(`, like `imprima("oi")`, is now read as a procedure call. When no such procedure exists the error is E780 instead of E300.
 

@@ -723,13 +723,31 @@ Estes erros acontecem quando o programa já compilou e está rodando. A mensagem
 
 **Como corrigir:** digite um valor do tipo certo, um por linha. Para `real`, valem `3.5` e `3,5`.
 
+## R004 — conversão impossível
+
+**Mensagem:** `número grande demais para virar inteiro` (ou `o valor não é um número e não pode virar inteiro`)
+
+**Quando acontece:** `arredonda`, `trunca`, `piso` ou `teto` recebeu um número real que não cabe num `inteiro` (o limite é perto de 9,2 × 10^18), ou um valor que nem é um número, como o resultado de uma conta inválida.
+
+**Como corrigir:** confira a conta que gera o número. Se ele precisa mesmo ser tão grande, deixe-o como `real`.
+
+```
+algoritmo "exemplo"
+var
+  x : real
+inicio
+  x <- pot(10, 20)
+  escreval(arredonda(x))
+fimalgoritmo
+```
+
 ## R005 — resultado inválido numa conta
 
-**Mensagem:** `resultado inválido na potência`
+**Mensagem:** `resultado inválido na potência` (ou `raiz de número negativo`, ou `logaritmo de número que não é positivo`)
 
-**Quando acontece:** uma potência não tem resultado que caiba num número real: `0 ^ -1` daria infinito, e `(-8) ^ 0.5` (raiz quadrada de negativo) não é um número real.
+**Quando acontece:** uma potência não tem resultado que caiba num número real: `0 ^ -1` daria infinito, e `(-8) ^ 0.5` (raiz quadrada de negativo) não é um número real. Vale também para `pot`, para `raiz` de um número negativo e para `log` de zero ou de um número negativo.
 
-**Como corrigir:** confira a base e o expoente antes da conta. Base zero não pode ter expoente negativo, e base negativa só aceita expoente inteiro.
+**Como corrigir:** confira a base e o expoente antes da conta. Base zero não pode ter expoente negativo, e base negativa só aceita expoente inteiro. Antes de `raiz` ou `log`, teste o valor com um `se`.
 
 ## R006 — passo zero no para
 
@@ -773,6 +791,21 @@ inicio
 fimfuncao
 inicio
   escreval(sinal(-5))
+fimalgoritmo
+```
+
+## R010 — sorteio com limites invertidos
+
+**Mensagem:** `aleatorio(10, 1): o primeiro número precisa ser menor ou igual ao segundo`
+
+**Quando acontece:** `aleatorio(a, b)` foi chamado com `a` maior que `b`.
+
+**Como corrigir:** passe o menor número primeiro: `aleatorio(1, 10)`.
+
+```
+algoritmo "exemplo"
+inicio
+  escreval(aleatorio(10, 1))
 fimalgoritmo
 ```
 
@@ -1091,7 +1124,7 @@ fimalgoritmo
 
 **Quando acontece:** a chamada passa mais ou menos valores do que o procedimento tem de parâmetros.
 
-**Como corrigir:** passe um valor para cada parâmetro, na mesma ordem da declaração. A dica mostra a linha onde o procedimento foi declarado.
+**Como corrigir:** passe um valor para cada parâmetro, na mesma ordem da declaração. A dica mostra a linha onde o procedimento foi declarado; numa função pronta, mostra a assinatura, como `raiz(real): real`.
 
 ```
 algoritmo "exemplo"
@@ -1107,7 +1140,7 @@ fimalgoritmo
 
 **Mensagem:** `o argumento 1 de 'saudar' precisa ser 'caractere', mas é 'inteiro'`
 
-**Quando acontece:** o valor passado não combina com o tipo do parâmetro. Um `inteiro` pode ir para um parâmetro `real`; o contrário não.
+**Quando acontece:** o valor passado não combina com o tipo do parâmetro. Um `inteiro` pode ir para um parâmetro `real`; o contrário não. Vale também para as funções prontas: `raiz("16")` dá este erro, e a dica mostra a assinatura.
 
 **Como corrigir:** passe um valor do tipo do parâmetro. Para mandar um real para um parâmetro inteiro, use `trunca()` ou `arredonda()`.
 
@@ -1236,6 +1269,24 @@ algoritmo "exemplo"
 procedimento soma(v: vetor[1..3] de inteiro)
 inicio
 fimprocedimento
+inicio
+fimalgoritmo
+```
+
+## E789 — nome de função pronta
+
+**Mensagem:** `'raiz' é uma função pronta do Spike, escolha outro nome`
+
+**Quando acontece:** um procedimento ou função do programa tem o nome de uma função pronta, como `raiz`, `abs` ou `aleatorio` (maiúsculas não contam).
+
+**Como corrigir:** dê outro nome ao seu procedimento ou função, por exemplo `minha_raiz`. Se queria só usar a função pronta, apague a declaração e chame `raiz(...)` direto.
+
+```
+algoritmo "exemplo"
+funcao raiz(x: real): real
+inicio
+  retorne x
+fimfuncao
 inicio
 fimalgoritmo
 ```

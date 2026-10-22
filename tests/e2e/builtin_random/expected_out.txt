@@ -1,0 +1,2 @@
+2 6 3 1 4 4 1 2 3 3
+fora do intervalo: falso

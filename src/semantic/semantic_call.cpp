@@ -1,3 +1,4 @@
+#include "spike/builtins.hpp"
 #include "spike/semantic.hpp"
 #include "semantic/semantic_internal.hpp"
 
@@ -129,6 +130,10 @@ void SemanticAnalyzer::check_arguments(const ProcedureSignature& signature,
 
 void SemanticAnalyzer::check_call(const CallStmt& call) {
     const auto it = procedures_.find(symbol_key(call.name));
+    if (it == procedures_.end() && is_builtin_name(call.name)) {
+        check_builtin_call(call.name, call.args, call.line, call.col);
+        return;
+    }
     if (it == procedures_.end()) {
         for (const ExprPtr& arg : call.args) check_expr(arg);
         const bool is_variable = symbols_.lookup(call.name) != nullptr;
@@ -146,6 +151,9 @@ void SemanticAnalyzer::check_call(const CallStmt& call) {
 
 TypeKind SemanticAnalyzer::check_call_expr(const CallExpr& call) {
     const auto it = procedures_.find(symbol_key(call.name));
+    if (it == procedures_.end() && is_builtin_name(call.name)) {
+        return check_builtin_call(call.name, call.args, call.line, call.col);
+    }
     if (it == procedures_.end()) {
         for (const ExprPtr& arg : call.args) check_expr(arg);
         const bool is_variable = symbols_.lookup(call.name) != nullptr;

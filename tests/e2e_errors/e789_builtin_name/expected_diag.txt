@@ -1,0 +1,4 @@
+erro[E789]: 'raiz' é uma função pronta do Spike, escolha outro nome
+   2 | funcao raiz(x: real): real
+     |        ^
+     = dica: as funções prontas, como raiz e abs, já existem em todo programa.

@@ -1,3 +1,4 @@
+#include "spike/builtins.hpp"
 #include "spike/semantic.hpp"
 
 #include <string>
@@ -70,6 +71,11 @@ Symbol* SemanticAnalyzer::resolve(const std::string& name, int line, int col) {
     if (symbol) return symbol;
     if (!reported_undeclared_.insert({symbol_key(name), line}).second) return nullptr;
     const auto subprogram = procedures_.find(symbol_key(name));
+    if (subprogram == procedures_.end() && is_builtin_name(name)) {
+        diags_.error("E784", "'" + name + "' é uma função pronta, não uma variável", line, col,
+                     "para usar o valor da função, chame " + name + "(...).");
+        return nullptr;
+    }
     if (subprogram != procedures_.end()) {
         if (subprogram->second.return_type != TypeKind::None) {
             diags_.error("E784", "'" + name + "' é uma função, não uma variável", line, col,

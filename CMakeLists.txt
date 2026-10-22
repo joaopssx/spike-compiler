@@ -49,6 +49,12 @@ set(SPIKE_PARSER_SOURCES
     src/parser/parser_procedure.cpp
     src/parser/parser_expr.cpp
 )
+
+set(SPIKE_BUILTINS_SOURCES
+    src/builtins/builtins.cpp
+    include/spike/builtins.hpp
+)
+
 set(SPIKE_SEMANTIC_SOURCES
     src/semantic/symbol_table.cpp
     src/semantic/semantic_core.cpp
@@ -61,6 +67,7 @@ set(SPIKE_SEMANTIC_SOURCES
     src/semantic/semantic_array.cpp
     src/semantic/semantic_procedure.cpp
     src/semantic/semantic_call.cpp
+    src/semantic/semantic_builtin.cpp
     src/semantic/const_eval.cpp
     src/semantic/semantic_internal.hpp
 )
@@ -94,12 +101,13 @@ set(SPIKE_RUNTIME_TEXT_CPP "${CMAKE_BINARY_DIR}/generated/runtime_text.cpp")
 add_custom_command(
     OUTPUT "${SPIKE_RUNTIME_TEXT_CPP}"
     COMMAND ${CMAKE_COMMAND}
-        "-DINPUTS=${CMAKE_SOURCE_DIR}/runtime/spike_runtime_core.h|${CMAKE_SOURCE_DIR}/runtime/spike_runtime_calls.h|${CMAKE_SOURCE_DIR}/runtime/spike_runtime_io.h"
+        "-DINPUTS=${CMAKE_SOURCE_DIR}/runtime/spike_runtime_core.h|${CMAKE_SOURCE_DIR}/runtime/spike_runtime_calls.h|${CMAKE_SOURCE_DIR}/runtime/spike_runtime_math.h|${CMAKE_SOURCE_DIR}/runtime/spike_runtime_io.h"
         "-DOUTPUT=${SPIKE_RUNTIME_TEXT_CPP}"
         -P "${CMAKE_SOURCE_DIR}/cmake/embed_runtime.cmake"
     DEPENDS
         "${CMAKE_SOURCE_DIR}/runtime/spike_runtime_core.h"
         "${CMAKE_SOURCE_DIR}/runtime/spike_runtime_calls.h"
+        "${CMAKE_SOURCE_DIR}/runtime/spike_runtime_math.h"
         "${CMAKE_SOURCE_DIR}/runtime/spike_runtime_io.h"
         "${CMAKE_SOURCE_DIR}/cmake/embed_runtime.cmake"
     COMMENT "Embedding the C runtime"
@@ -110,6 +118,7 @@ set(SPIKE_RUNTIME_SOURCES
     runtime/spike_runtime.h
     runtime/spike_runtime_core.h
     runtime/spike_runtime_calls.h
+    runtime/spike_runtime_math.h
     runtime/spike_runtime_io.h
 )
 set(SPIKE_PUBLIC_HEADERS
@@ -142,6 +151,7 @@ add_library(spike_core STATIC
     ${SPIKE_DIAGNOSTICS_SOURCES}
     ${SPIKE_CLI_SOURCES}
     ${SPIKE_PARSER_SOURCES}
+    ${SPIKE_BUILTINS_SOURCES}
     ${SPIKE_SEMANTIC_SOURCES}
     ${SPIKE_RUNTIME_SOURCES}
     ${SPIKE_CODEGEN_SOURCES}
@@ -205,6 +215,9 @@ add_executable(spike_tests
     tests/parser/reference_parse_test.cpp
     tests/semantic/semantic_reference_test.cpp
     tests/codegen/codegen_reference_test.cpp
+    tests/builtins/builtins_test.cpp
+    tests/semantic/semantic_builtin_test.cpp
+    tests/codegen/codegen_builtin_test.cpp
     tests/parser/name_positions_test.cpp
     tests/parser/program_test.cpp
     tests/parser/stmt_basic_test.cpp

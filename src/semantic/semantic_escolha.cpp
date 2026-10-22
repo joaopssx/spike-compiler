@@ -1,3 +1,4 @@
+#include "spike/builtins.hpp"
 #include "spike/semantic.hpp"
 #include "semantic/semantic_internal.hpp"
 
@@ -34,7 +35,8 @@ std::string repeated_message(long long low, long long high) {
 TypeKind SemanticAnalyzer::check_case_value(const ExprPtr& value, TypeKind selector) {
     if (!value) return TypeKind::Invalid;
     if (const auto bad = first_non_constant(value)) {
-        const bool is_subprogram = procedures_.count(symbol_key(bad->name)) != 0;
+        const bool is_subprogram =
+            procedures_.count(symbol_key(bad->name)) != 0 || is_builtin_name(bad->name);
         if (symbols_.lookup(bad->name) || is_subprogram) {
             diags_.error("E763", "o valor de um caso precisa ser fixo (literal ou constante)",
                          bad->line, bad->col,

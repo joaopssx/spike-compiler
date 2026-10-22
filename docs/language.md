@@ -423,23 +423,39 @@ Not planned for a specific version yet.
 
 - Passing a whole vector or matrix to a procedure or function (`procedimento soma(v: vetor[1..10] de inteiro)`). Today the header is read, but it is error E788; the workaround is a global vector, which every subprogram can use.
 
-## Built-in functions (proposed)
+## Built-in functions
 
-Names ignore case, like everything else. They arrive in v0.3.
+Spike comes with ready-made functions. They are called like any function, `raiz(16)`, and work anywhere a value of their result type does. Their names ignore case, and a procedure or function of the program cannot reuse one (E789). The list lives in a single table (`src/builtins/builtins.cpp`) that both the analyzer and the C generator read.
+
+### Math
+
+| Function | Result | What it does |
+| --- | --- | --- |
+| `abs(inteiro)` / `abs(real)` | same type as the argument | absolute value |
+| `raiz(real)` | real | square root; a negative argument is R005 |
+| `pot(real, real)` | real | first number raised to the second, same as `^` (R005 when there is no real result) |
+| `arredonda(real)` | inteiro | nearest integer; halves go away from zero: `2.5` gives `3`, `-2.5` gives `-3` |
+| `trunca(real)` | inteiro | drops the decimal part: `-2.7` gives `-2` |
+| `piso(real)` | inteiro | largest integer not above the number: `-2.1` gives `-3` |
+| `teto(real)` | inteiro | smallest integer not below the number: `-2.9` gives `-2` |
+| `seno(real)`, `cosseno(real)`, `tangente(real)` | real | trigonometry, angle in radians |
+| `log(real)` | real | base-10 logarithm, as in VisuAlg; zero or less is R005 |
+| `exp(real)` | real | e raised to the number (VisuAlg uses `exp` for power; Spike uses `pot`) |
+| `aleatorio(inteiro, inteiro)` | inteiro | random integer from the first number to the second, both included; first greater than second is R010 |
+
+- An `inteiro` argument is accepted where `real` is asked, as in assignments: `raiz(16)` works. When a function has two versions, like `abs`, the one with the exact types wins.
+- `arredonda`, `trunca`, `piso` and `teto` stop with R004 when the result does not fit in an `inteiro` (more than about 9.2 × 10^18), or when the number is not a number at all.
+- Calling with the wrong number of arguments is E781, and with an argument of the wrong type is E782; the hint shows the signature, such as `raiz(real): real`. Using the name without parentheses (`x <- raiz`) is E784.
+- `aleatorio` starts from the clock, so each run gives different numbers. When the environment variable `SPIKE_SEED` holds a number, the program uses it as the seed and repeats the same sequence on any system. The tests use this.
+- A built-in can be called as a command on its own line; the result is discarded.
+- In the generated C, a call becomes the function named in the table: `spike_round(v_nota, 8)` for functions that can fail (they get the line), or the C library function when it behaves the same, like `sin(v_x)` and `fabs(v_x)`.
+
+### Text and conversion (proposed)
+
+They arrive in v0.3.
 
 | Function | Returns | Description |
 | --- | --- | --- |
-| `abs(x)` | same as `x` | absolute value |
-| `raiz(x)` | real | square root; negative `x` is R005 |
-| `pot(b, e)` | real | `b` raised to `e` |
-| `arredonda(x)` | inteiro | nearest integer, halves away from zero |
-| `trunca(x)` | inteiro | drops the decimal part |
-| `piso(x)` | inteiro | largest integer not above `x` |
-| `teto(x)` | inteiro | smallest integer not below `x` |
-| `seno(x)`, `cosseno(x)`, `tangente(x)` | real | trigonometry, `x` in radians |
-| `log(x)` | real | base-10 logarithm, as in VisuAlg; `x <= 0` is R005 |
-| `exp(x)` | real | e raised to `x` (VisuAlg uses `exp` for power; Spike uses `pot`) |
-| `aleatorio(a, b)` | inteiro | random integer from `a` to `b`, inclusive |
 | `tamanho(t)` | inteiro | number of characters in `t` |
 | `maiusculo(t)`, `minusculo(t)` | caractere | `t` in upper or lower case |
 | `copia(t, inicio, n)` | caractere | `n` characters of `t` starting at position `inicio` (first is 1) |
@@ -460,11 +476,12 @@ A compiled program stops at the first runtime error. It prints a message in Port
 | R001 | division by zero (`/`, `div`, `mod`) |
 | R002 | vector index outside the declared range |
 | R003 | `leia` got input that does not match the variable's type |
-| R004 | `paraInteiro` or `paraReal` got invalid text |
-| R005 | math result that is not a number or is infinite: `^` (as in `0 ^ -1`), and later `raiz` of a negative or `log` of zero or less |
+| R004 | a conversion failed: `arredonda`, `trunca`, `piso` or `teto` got a number too big for `inteiro` (and later `paraInteiro` or `paraReal` got invalid text) |
+| R005 | math result that is not a number or is infinite: `^` and `pot` (as in `0 ^ -1`), `raiz` of a negative, `log` of zero or less |
 | R006 | `para` with a step of 0 |
 | R007 | `leia` reached the end of the input |
 | R008 | the program ran out of memory, or a recursion went too deep (more than 10000 calls in progress) |
 | R009 | a function reached `fimfuncao` without `retorne` |
+| R010 | `aleatorio` got a first number greater than the second |
 
 The numbering is proposed and becomes final in v0.3.

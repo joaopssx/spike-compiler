@@ -1,0 +1,8 @@
+Hipotenusa de 3 e 4: 5
+Nota arredondada: 7
+Parte inteira de -7.45: -7
+Piso e teto de 7.45: 7 e 8
+Distância entre 3 e 10: 7
+Seno de 30 graus (vezes 1000): 500
+Logaritmo de 1000: 3
+Um dado: 2

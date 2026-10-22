@@ -101,6 +101,35 @@ static void test_call_depth(void) {
     CHECK(spike_stack_budget > 0);
 }
 
+static void test_math(void) {
+    CHECK(spike_abs_int(-5) == 5 && spike_abs_int(7) == 7);
+    CHECK(spike_abs_int(LLONG_MIN) == LLONG_MIN);
+    CHECK(spike_sqrt(16.0, 1) == 4.0);
+    CHECK(fabs(spike_log(1000.0, 1) - 3.0) < 1e-12);
+    CHECK(spike_round(2.4, 1) == 2 && spike_round(2.5, 1) == 3 && spike_round(-2.5, 1) == -3);
+    CHECK(spike_trunc(-2.7, 1) == -2 && spike_trunc(2.7, 1) == 2);
+    CHECK(spike_floor(-2.1, 1) == -3 && spike_floor(2.9, 1) == 2);
+    CHECK(spike_ceil(-2.9, 1) == -2 && spike_ceil(2.1, 1) == 3);
+    CHECK(spike_real_to_int(9.2e18, 1) == 9200000000000000000LL);
+    CHECK(spike_real_to_int(-9223372036854775808.0, 1) == LLONG_MIN);
+}
+
+static void test_random(void) {
+    int i;
+    spike_seed_random(42);
+    CHECK(spike_random(1, 1000000, 1) == 275414);
+    CHECK(spike_random(-5, -5, 1) == -5);
+    spike_seed_random(42);
+    CHECK(spike_random(1, 6, 1) == 2 && spike_random(1, 6, 1) == 2 &&
+          spike_random(1, 6, 1) == 1 && spike_random(1, 6, 1) == 1 &&
+          spike_random(1, 6, 1) == 5);
+    for (i = 0; i < 1000; ++i) {
+        spike_int value = spike_random(-3, 3, 1);
+        CHECK(value >= -3 && value <= 3);
+    }
+    (void)spike_random(LLONG_MIN, LLONG_MAX, 1);
+}
+
 static void test_arithmetic(void) {
     CHECK(spike_div_int(7, 2, 1) == 3);
     CHECK(spike_div_int(-7, 2, 1) == -3);
@@ -161,6 +190,8 @@ int main(void) {
     test_arithmetic();
     test_index();
     test_call_depth();
+    test_math();
+    test_random();
     test_power();
     test_parse_int();
     test_parse_real();

@@ -163,7 +163,29 @@ void test_references_compile_without_warnings() {
     SPIKE_EXPECT(read_all(base + ".out") == "Bia Ana 5 5\n");
 }
 
+void test_builtins_compile_without_warnings() {
+    const auto gen = generate_from_source(
+        "algoritmo \"prontas\"\nvar\n  i : inteiro\n  r : real\n"
+        "inicio\n  i <- -7\n  r <- 2.5\n"
+        "  escreval(abs(i), \" \", abs(-r), \" \", raiz(16), \" \", pot(2, 10))\n"
+        "  escreval(arredonda(r), \" \", trunca(-r), \" \", piso(-r), \" \", teto(r))\n"
+        "  escreval(arredonda(seno(0) + cosseno(0) + tangente(0)), \" \", log(100), \" \", "
+        "exp(0))\n  i <- aleatorio(3, 3)\n  aleatorio(1, 2)\n  escreval(i)\nfimalgoritmo\n",
+        "prontas.por");
+    SPIKE_EXPECT(gen.result.ok);
+    if (!gen.result.ok) return;
+
+    const std::string base = std::string(SPIKE_BINARY_DIR) + "/codegen_builtins_test";
+    const bool compiled = compile_c(gen.result.c_source, base);
+    SPIKE_EXPECT(compiled);
+    if (!compiled) return;
+    SPIKE_EXPECT(run_to_file(base) == 0);
+    SPIKE_EXPECT(read_all(base + ".out") == "7 2.5 4 1024\n3 -2 -3 3\n1 2 1\n3\n");
+}
+
 #else
+
+void test_builtins_compile_without_warnings() {}
 
 void test_references_compile_without_warnings() {}
 
@@ -187,6 +209,7 @@ void run_codegen_compile_tests() {
     test_procedures_compile_without_warnings();
     test_functions_compile_without_warnings();
     test_references_compile_without_warnings();
+    test_builtins_compile_without_warnings();
 }
 
 } // namespace spike_tests

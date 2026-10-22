@@ -1,3 +1,4 @@
+#include "spike/builtins.hpp"
 #include "spike/semantic.hpp"
 #include "semantic/semantic_internal.hpp"
 
@@ -46,7 +47,7 @@ bool SemanticAnalyzer::declared_anywhere(const std::string& name) const {
     for (const ProcedureDecl& proc : program_.procedures) {
         if (symbol_key(proc.name) == key) return true;
     }
-    return false;
+    return is_builtin_name(name);
 }
 
 void SemanticAnalyzer::declare_const(const ConstDecl& decl) {

@@ -69,3 +69,14 @@ spike_add_runtime_io_test(call_depth depth "" 101
     "-DEXPECT_STDERR=R008\\]: recurs.+o profunda demais \\(limite de 10000 chamadas\\).*linha 21")
 spike_add_runtime_io_test(missing_return noreturn "" 101
     "-DEXPECT_STDERR=R009\\]: a fun.+o 'sinal' terminou sem retornar um valor.*linha 22")
+spike_add_runtime_io_test(sqrt_negative sqrtneg "" 101
+    "-DEXPECT_STDERR=R005\\]: raiz de n.+mero negativo.*linha 31")
+spike_add_runtime_io_test(log_not_positive logzero "" 101
+    "-DEXPECT_STDERR=R005\\]: logaritmo de n.+mero que n.+o .+ positivo.*linha 32")
+spike_add_runtime_io_test(real_too_big_for_int bigint "" 101
+    "-DEXPECT_STDERR=R004\\]: n.+mero grande demais para virar inteiro.*linha 33")
+spike_add_runtime_io_test(nan_to_int nanint "" 101 "-DEXPECT_STDERR=R004.*linha 34")
+spike_add_runtime_io_test(random_range randrange "" 101
+    "-DEXPECT_STDERR=R010\\]: aleatorio\\(5, 1\\): o primeiro n.+mero precisa ser menor ou igual ao segundo.*linha 35")
+spike_add_runtime_io_test(random_seed seeded "" 0 "-DEXPECT_STDOUT=^275414$")
+set_tests_properties(runtime_io_random_seed PROPERTIES ENVIRONMENT "SPIKE_SEED=42")

@@ -81,6 +81,8 @@ private:
     void check_arguments(const ProcedureSignature& signature, const std::vector<ExprPtr>& args,
                          int line, int col);
     TypeKind check_argument_value(const ExprPtr& arg);
+    TypeKind check_builtin_call(const std::string& name, const std::vector<ExprPtr>& args, int line,
+                                int col);
     void check_ref_argument(const Param& param, const ExprPtr& arg);
     void check_return(const ReturnStmt& stmt);
     Symbol* resolve(const std::string& name, int line, int col);

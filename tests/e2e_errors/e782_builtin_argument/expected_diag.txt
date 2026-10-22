@@ -1,0 +1,4 @@
+erro[E782]: o argumento 1 de 'raiz' precisa ser 'real', mas é 'caractere'
+   6 |   escreval(raiz(t))
+     |                 ^
+     = dica: use raiz(real): real.

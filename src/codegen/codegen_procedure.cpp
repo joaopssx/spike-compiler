@@ -1,4 +1,5 @@
 #include "codegen/codegen_internal.hpp"
+#include "spike/builtins.hpp"
 #include "spike/symbol_table.hpp"
 
 #include <string>
@@ -129,7 +130,8 @@ void Generator::emit_local(const VarDecl& decl) {
 std::string Generator::call(const std::string& name, const std::vector<ExprPtr>& args, int line,
                             int col) {
     const auto it = procedures_.find(symbol_key(name));
-    if (it == procedures_.end() || it->second->params.size() != args.size()) {
+    if (it == procedures_.end()) return builtin_call(name, args, line, col);
+    if (it->second->params.size() != args.size()) {
         fail("E900", "erro interno do gerador: subprograma '" + name + "' desconhecido", line,
              col);
         return "";
@@ -142,6 +144,26 @@ std::string Generator::call(const std::string& name, const std::vector<ExprPtr>&
         text += param.by_ref ? reference(args[i]) : expr_as(args[i], param.type);
     }
     return subprogram_name(proc) + "(" + text + ")";
+}
+
+std::string Generator::builtin_call(const std::string& name, const std::vector<ExprPtr>& args,
+                                    int line, int col) {
+    std::vector<TypeKind> types;
+    for (const ExprPtr& arg : args) types.push_back(arg ? type_of(*arg) : TypeKind::Invalid);
+    if (failed()) return "";
+    const BuiltinSig* sig = find_builtin(symbol_key(name), types);
+    if (!sig) {
+        fail("E900", "erro interno do gerador: função pronta '" + name + "' sem assinatura", line,
+             col);
+        return "";
+    }
+    std::string text;
+    for (std::size_t i = 0; i < args.size(); ++i) {
+        if (i > 0) text += ", ";
+        text += expr_as(args[i], sig->params[i]);
+    }
+    if (sig->takes_line) text += (args.empty() ? "" : ", ") + std::to_string(line);
+    return sig->c_name + "(" + text + ")";
 }
 
 void Generator::emit_call(const CallStmt& stmt) {

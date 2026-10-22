@@ -1,0 +1,2 @@
+erro de execução[R005]: raiz de número negativo
+  --> linha 7
