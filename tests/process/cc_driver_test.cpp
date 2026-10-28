@@ -52,6 +52,12 @@ void test_empty_path_without_spike_cc_is_e902() {
     SPIKE_EXPECT(error.message.find("SPIKE_CC") != std::string::npos);
     SPIKE_EXPECT(error.message.find("PATH") != std::string::npos);
     SPIKE_EXPECT(!error.hint.empty());
+    using spike::HostSystem;
+    SPIKE_EXPECT(spike::no_compiler_hint(HostSystem::MacOS).find("xcode-select --install") !=
+                 std::string::npos);
+    SPIKE_EXPECT(spike::no_compiler_hint(HostSystem::Windows).find("MinGW-w64") != std::string::npos);
+    SPIKE_EXPECT(spike::no_compiler_hint(HostSystem::Linux).find("build-essential") !=
+                 std::string::npos);
 }
 
 void test_failing_compiler_is_e903() {
@@ -63,7 +69,7 @@ void test_failing_compiler_is_e903() {
     SPIKE_EXPECT(compiler->kind == "other");
 
     const spike::CompileResult result =
-        spike::compile_c(*compiler, spike::CompileRequest{"programa.c", "programa", false});
+        spike::compile_c(*compiler, spike::CompileRequest{"programa.c", "programa", false, std::nullopt});
     SPIKE_EXPECT(!result.ok);
     SPIKE_EXPECT(result.error.code == "E903");
     SPIKE_EXPECT(result.error.message == "o compilador C recusou o código gerado");
@@ -151,7 +157,7 @@ void test_real_compile_with_awkward_paths() {
     SPIKE_EXPECT(spike::write_text_file(c_file, gen.result.c_source, error));
 
     const auto result = spike::compile_c(
-        compiler, spike::CompileRequest{c_file.u8string(), exe.u8string(), true});
+        compiler, spike::CompileRequest{c_file.u8string(), exe.u8string(), true, std::nullopt});
     SPIKE_EXPECT(result.ok);
     if (!result.ok) return;
 

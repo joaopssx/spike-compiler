@@ -7,6 +7,7 @@
 #include "spike/file_reader.hpp"
 #include "spike/lexer.hpp"
 #include "spike/parser.hpp"
+#include "spike/platform.hpp"
 #include "spike/token.hpp"
 
 #include <algorithm>
@@ -126,7 +127,10 @@ int run_tokens(const spike::CliArgs& args) {
 int main(int argc, char** argv) {
     spike::init_console();
 
-    spike::CliArgs args = spike::parse_args(argc, argv);
+    std::vector<std::string> arguments = spike::utf8_arguments(argc, argv);
+    std::vector<char*> pointers;
+    for (std::string& argument : arguments) pointers.push_back(argument.data());
+    spike::CliArgs args = spike::parse_args(static_cast<int>(pointers.size()), pointers.data());
     spike::set_color_mode(args.color);
 
     if (args.parse_error) {

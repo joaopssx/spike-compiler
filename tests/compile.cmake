@@ -131,3 +131,10 @@ foreach(program IN LISTS SPIKE_EXAMPLE_PROGRAMS)
         -DEXPECT_CODE=0
     )
 endforeach()
+
+add_test(NAME compile_accented_paths_and_encodings
+    COMMAND ${CMAKE_COMMAND} -DSPIKE=$<TARGET_FILE:spike> -DWORK_DIR=${SPIKE_E2E_DIR}
+        -P ${CMAKE_SOURCE_DIR}/tests/driver/encoding_paths.cmake
+)
+set_tests_properties(compile_accented_paths_and_encodings PROPERTIES
+    ENVIRONMENT "SPIKE_CC=${SPIKE_TEST_C}")

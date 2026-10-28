@@ -81,6 +81,7 @@ CompileResult compile_c(const CompilerInfo& compiler, const CompileRequest& requ
 #endif
     options.capture_stdout = true;
     options.capture_stderr = true;
+    options.working_dir = request.working_dir;
     const ProcessResult process = run_process(options);
 
     CompileResult result;
@@ -102,13 +103,28 @@ DriverError no_compiler_error() {
         return error;
     }
     error.message = "nenhum compilador C encontrado (procurei em SPIKE_CC e no PATH)";
-#ifdef _WIN32
-    error.hint = "instale o MinGW-w64 (por exemplo pelo MSYS2) e coloque a pasta bin dele no "
-                 "PATH, ou aponte SPIKE_CC para o gcc.exe.";
+#if defined(_WIN32)
+    error.hint = no_compiler_hint(HostSystem::Windows);
+#elif defined(__APPLE__)
+    error.hint = no_compiler_hint(HostSystem::MacOS);
 #else
-    error.hint = "instale o gcc (sudo apt install build-essential) ou o clang.";
+    error.hint = no_compiler_hint(HostSystem::Linux);
 #endif
     return error;
+}
+
+std::string no_compiler_hint(HostSystem system) {
+    switch (system) {
+        case HostSystem::Windows:
+            return "instale o MinGW-w64 (por exemplo pelo MSYS2) e coloque a pasta bin dele no "
+                   "PATH, ou aponte SPIKE_CC para o gcc.exe.";
+        case HostSystem::MacOS:
+            return "instale as ferramentas de linha de comando da Apple: rode "
+                   "'xcode-select --install' no Terminal e confirme a instalação.";
+        case HostSystem::Linux:
+            break;
+    }
+    return "instale o gcc (sudo apt install build-essential) ou o clang.";
 }
 
 DriverError compiler_failed_error(const std::string& compiler_output) {

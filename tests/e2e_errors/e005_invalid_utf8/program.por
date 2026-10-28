@@ -1,4 +1,4 @@
-algoritmo "latin1"
+algoritmo "misturado"
 inicio
-  escreval("Ol·")
+  escreval("a√ß√£o Ol·")
 fimalgoritmo

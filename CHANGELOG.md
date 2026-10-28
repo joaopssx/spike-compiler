@@ -33,6 +33,9 @@ All notable changes to Spike are recorded here. The format follows [Keep a Chang
 
 ### Changed
 
+- Source files with Windows line endings or a UTF-8 byte order mark are read exactly like plain UTF-8 files, with the same line and column numbers. A file saved as Windows-1252 ("ANSI") is converted to UTF-8 and compiles, with the new warning W010 explaining how to save it as UTF-8.
+- On Windows, Spike reads its command line as UTF-8 and switches the console input to UTF-8 too, so paths and folders with accents, spaces or letters outside the Windows code page work, including with `-o`.
+- On macOS, E902 now suggests `xcode-select --install`.
 - R008 for a recursion that never stops now points at the line of the call, not at the header of the subprogram.
 - Generated procedures and functions take the line of the call as a first parameter (`f_fatorial(9, v_n)`), used by the call stack in runtime errors.
 - Every push and pull request now builds and tests Spike on Linux (GCC and Clang), macOS and Windows (MSVC, with MinGW-w64 GCC compiling the generated C), plus a build with AddressSanitizer and UndefinedBehaviorSanitizer and a check that no source file passes 300 lines.

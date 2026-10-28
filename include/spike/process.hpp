@@ -12,6 +12,9 @@ struct ProcessOptions {
     std::optional<std::string> stdin_file;
     bool capture_stdout = false;
     bool capture_stderr = false;
+    // Windows only: lets a compiler run on relative ASCII names, because MinGW programs read
+    // their arguments in the ANSI code page. POSIX passes UTF-8 paths through unchanged.
+    std::optional<std::string> working_dir;
 };
 
 struct ProcessResult {

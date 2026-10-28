@@ -28,6 +28,45 @@ std::string seconds(double ms) {
     return buffer;
 }
 
+// MinGW's gcc reads its arguments in the ANSI code page, so a name with a Greek letter or a
+// user folder such as "C:\\Users\\Joao" with accents would reach it broken. On Windows it
+// compiles plain ASCII names inside the temporary folder, and Spike moves the result.
+constexpr const char* kWindowsCFile = "programa.c";
+constexpr const char* kWindowsExe = "programa.exe";
+
+CompileRequest compile_request(const fs::path& c_file, const std::string& output,
+                               const TempDir& temp) {
+    CompileRequest request{c_file.u8string(), output, false, std::nullopt};
+#ifdef _WIN32
+    request.c_file = kWindowsCFile;
+    request.output = kWindowsExe;
+    request.working_dir = temp.path().u8string();
+#else
+    (void)temp;
+#endif
+    return request;
+}
+
+bool move_windows_output(const TempDir& temp, const std::string& output, Reporter& reporter) {
+#ifdef _WIN32
+    std::error_code ec;
+    const fs::path built = temp.path() / kWindowsExe;
+    const fs::path target = fs::u8path(output);
+    fs::rename(built, target, ec);
+    if (!ec) return true;
+    ec.clear();
+    fs::copy_file(built, target, fs::copy_options::overwrite_existing, ec);
+    if (!ec) return true;
+    print_driver_error(write_failed_error(output, ec.message()), reporter);
+    return false;
+#else
+    (void)temp;
+    (void)output;
+    (void)reporter;
+    return true;
+#endif
+}
+
 bool prepare_output(const std::string& output, Reporter& reporter) {
     std::error_code ec;
     const fs::path path = fs::u8path(output);
@@ -99,7 +138,11 @@ int build(const CliArgs& args, const std::string& output, Reporter& reporter) {
         print_driver_error(write_failed_error("pasta temporária", temp.error()), reporter);
         return kExitInternalError;
     }
+#ifdef _WIN32
+    const fs::path c_file = temp.path() / kWindowsCFile;
+#else
     const fs::path c_file = temp.path() / fs::u8path(c_name);
+#endif
     std::string write_error;
     if (!write_text_file(c_file, generated.c_source, write_error)) {
         print_driver_error(write_failed_error(c_file.u8string(), write_error), reporter);
@@ -108,8 +151,7 @@ int build(const CliArgs& args, const std::string& output, Reporter& reporter) {
 
     if (!prepare_output(output, reporter)) return kExitInternalError;
     const Stopwatch compile_time;
-    const CompileResult compiled =
-        compile_c(*compiler, CompileRequest{c_file.u8string(), output, false});
+    const CompileResult compiled = compile_c(*compiler, compile_request(c_file, output, temp));
     reporter.add_phase("compilador C", compile_time.ms());
     if (!compiled.ok) {
         DriverError error = compiled.error;
@@ -117,6 +159,8 @@ int build(const CliArgs& args, const std::string& output, Reporter& reporter) {
         print_driver_error(error, reporter);
         return kExitInternalError;
     }
+
+    if (!move_windows_output(temp, output, reporter)) return kExitInternalError;
 
     if (args.flag_keep_c) {
         const std::string kept = c_file_path_for(output);

@@ -91,7 +91,7 @@ fimalgoritmo
 
 **Mensagem:** `o arquivo não está em UTF-8 válido`
 
-**Quando acontece:** o arquivo foi salvo em outra codificação, geralmente Windows-1252 ou ISO-8859-1 (o padrão de editores antigos no Windows). As letras com acento ficam gravadas de um jeito que o Spike não lê. A seta aponta para o primeiro byte inválido, que aparece como `?` na linha mostrada. Nenhum outro erro é mostrado enquanto este não for corrigido.
+**Quando acontece:** o arquivo não é UTF-8 e também não é um texto em Windows-1252 (esse caso o Spike converte sozinho, com o aviso W010). Em geral o arquivo tem caracteres de controle, mistura duas codificações, ou nem é um arquivo de texto. A seta aponta para o primeiro byte inválido, que aparece como `?` na linha mostrada. Nenhum outro erro é mostrado enquanto este não for corrigido.
 
 **Como corrigir:** salve o arquivo como UTF-8. No Bloco de Notas, use "Salvar como" e escolha "UTF-8" em "Codificação"; no VS Code, clique na codificação na barra de baixo e escolha "Salvar com codificação" e depois "UTF-8".
 
@@ -2188,5 +2188,28 @@ inicio
     interrompa
     i <- i + 1
   fimenquanto
+fimalgoritmo
+```
+
+## W010 — arquivo em Windows-1252
+
+**Mensagem:** `o arquivo estava em Windows-1252 e foi convertido para UTF-8; salve como UTF-8 para evitar problemas`
+
+**Quando acontece:** o arquivo `.por` foi salvo na codificação antiga do Windows (aparece como "ANSI" no Bloco de Notas e como "Windows 1252" no VS Code), não em UTF-8. O Spike percebe isso pelos acentos, converte o texto e compila normalmente. A seta aponta o primeiro caractere convertido.
+
+**Como corrigir:** salve o arquivo como UTF-8.
+
+- Bloco de Notas: Arquivo > Salvar como, e em "Codificação" escolha UTF-8.
+- VS Code: clique em "Windows 1252" na barra de baixo, escolha "Salvar com Codificação" e depois UTF-8.
+- Notepad++: menu Codificação > Converter para UTF-8, e salve.
+
+Se o arquivo tiver bytes que nem em Windows-1252 formam texto (como caracteres de controle), o erro é o E005.
+
+Este programa, salvo pelo Bloco de Notas como "ANSI", compila com o aviso W010 apontando para o `ç`:
+
+```
+algoritmo "exemplo"
+inicio
+  escreval("Situação")
 fimalgoritmo
 ```

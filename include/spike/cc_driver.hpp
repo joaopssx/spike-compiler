@@ -25,6 +25,7 @@ struct CompileRequest {
     std::string c_file;
     std::string output;
     bool optimize = false;
+    std::optional<std::string> working_dir;
 };
 
 struct CompileResult {
@@ -40,6 +41,9 @@ std::optional<CompilerInfo> find_c_compiler(const std::string& bundled_dir = "")
 CompileResult compile_c(const CompilerInfo& compiler, const CompileRequest& request);
 
 DriverError no_compiler_error();
+
+enum class HostSystem { Windows, MacOS, Linux };
+std::string no_compiler_hint(HostSystem system);
 DriverError compiler_failed_error(const std::string& compiler_output);
 int compiler_error_line(const std::string& compiler_output, const std::string& source_name);
 void point_to_source(DriverError& error, const std::string& compiler_output,

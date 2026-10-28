@@ -154,8 +154,11 @@ ProcessResult run_process(const ProcessOptions& options) {
     PROCESS_INFORMATION info{};
     const std::wstring application = to_wide(*program);
     std::wstring command_line = build_command_line(application, options.args);
+    const std::wstring working_dir = options.working_dir ? to_wide(*options.working_dir) : L"";
     const BOOL created = CreateProcessW(application.c_str(), command_line.data(), nullptr, nullptr,
-                                        TRUE, 0, nullptr, nullptr, &startup, &info);
+                                        TRUE, 0, nullptr,
+                                        options.working_dir ? working_dir.c_str() : nullptr,
+                                        &startup, &info);
     const DWORD create_error = GetLastError();
     close_handle(child_in);
     close_handle(child_out);

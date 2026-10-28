@@ -20,6 +20,10 @@ namespace spike::pipeline_detail {
 namespace {
 
 constexpr const char* kIssuesUrl = "https://github.com/joaopssx/spike-compiler/issues";
+constexpr const char* kHintW010 =
+    "salve o arquivo como UTF-8. Bloco de Notas: Arquivo > Salvar como > Codificação: UTF-8. "
+    "VS Code: clique em 'Windows 1252' na barra de baixo > Salvar com Codificação > UTF-8. "
+    "Notepad++: Codificação > Converter para UTF-8, e salve.";
 
 std::size_t line_count(const std::string& text) {
     std::size_t lines = 0;
@@ -29,9 +33,28 @@ std::size_t line_count(const std::string& text) {
     return lines;
 }
 
+bool report_encoding(const ReadResult& file, const std::string& path, Reporter& reporter,
+                     const WarningPolicy& warnings) {
+    if (!file.encoding.converted_from_cp1252) return true;
+    Diagnostics notes(path, file.content);
+    notes.warning("W010",
+                  "o arquivo estava em Windows-1252 e foi convertido para UTF-8; salve como UTF-8 "
+                  "para evitar problemas",
+                  file.encoding.line, file.encoding.col, kHintW010);
+    if (warnings.show || warnings.as_errors) {
+        notes.print_all();
+        reporter.record(notes);
+    }
+    if (!warnings.as_errors) return true;
+    std::cerr << red(bold("erro:")) << " 1 aviso e '--warnings-as-errors' está ligado, então o "
+              << "programa não foi compilado." << std::endl;
+    return false;
+}
+
 } // namespace
 
-int read_phase(const std::string& path, Analysis& analysis, Reporter& reporter) {
+int read_phase(const std::string& path, Analysis& analysis, Reporter& reporter,
+               const WarningPolicy& warnings) {
     reporter.step(1, "lendo arquivo '" + path + "'");
     const ReadResult file = read_file(path);
     if (!file.ok) {
@@ -40,6 +63,7 @@ int read_phase(const std::string& path, Analysis& analysis, Reporter& reporter) 
         return kExitProgramError;
     }
     if (!file.error.empty()) std::cerr << yellow(file.error) << std::endl;
+    if (!report_encoding(file, path, reporter, warnings)) return kExitProgramError;
     analysis.path = path;
     analysis.source = file.content;
     return kExitOk;
@@ -125,7 +149,7 @@ int codegen_phase(const Analysis& analysis, CodegenResult& generated, Reporter& 
 
 int analyze_file(const std::string& path, Analysis& analysis, Reporter& reporter,
                  bool parse_only, const WarningPolicy& warnings) {
-    int status = read_phase(path, analysis, reporter);
+    int status = read_phase(path, analysis, reporter, warnings);
     if (status != kExitOk) return status;
     std::vector<Token> tokens;
     status = lex_phase(analysis, tokens, reporter);

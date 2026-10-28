@@ -12,6 +12,7 @@ Sections marked **proposed** describe syntax that does not exist yet. They are w
 - Windows, Linux and macOS get the same level of support: same features, installer and tests on all three.
 - Integers are 64 bits. `/` always produces a real number (`7 / 2` is `3.5`); `div` is integer division.
 - Keywords and names ignore case. Names use ASCII letters only.
+- Source files are UTF-8. A UTF-8 byte order mark is ignored, Windows line endings (`\r\n`, or a lone `\r`) are read as `\n`, and line and column numbers come out the same either way. A file saved as Windows-1252 ("ANSI") is converted to UTF-8 with warning W010; a file that is not text in either encoding is error E005.
 
 ## Program structure
 

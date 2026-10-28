@@ -144,7 +144,7 @@ void test_compiler_error_points_to_por_line() {
     const spike::CompilerInfo compiler{SPIKE_TEST_C_COMPILER,
                                        spike::compiler_kind(SPIKE_TEST_C_COMPILER)};
     const spike::CompileResult result =
-        spike::compile_c(compiler, spike::CompileRequest{base + ".c", base + ".exe", false});
+        spike::compile_c(compiler, spike::CompileRequest{base + ".c", base + ".exe", false, std::nullopt});
     SPIKE_EXPECT(!result.ok);
     SPIKE_EXPECT(spike::compiler_error_line(result.compiler_output, "linhas.por") == 9);
     spike::DriverError error = result.error;

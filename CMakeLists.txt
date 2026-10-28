@@ -40,6 +40,12 @@ set(SPIKE_AST_SOURCES
 )
 set(SPIKE_IO_SOURCES
     src/io/file_reader.cpp
+    src/io/text_encoding.cpp
+)
+
+set(SPIKE_PLATFORM_SOURCES
+    src/platform/arguments.cpp
+    include/spike/platform.hpp
 )
 set(SPIKE_LEXER_SOURCES
     src/lexer/token.cpp
@@ -206,6 +212,7 @@ set(SPIKE_PUBLIC_HEADERS
 add_library(spike_core STATIC
     ${SPIKE_AST_SOURCES}
     ${SPIKE_IO_SOURCES}
+    ${SPIKE_PLATFORM_SOURCES}
     ${SPIKE_LEXER_SOURCES}
     ${SPIKE_DIAGNOSTICS_SOURCES}
     ${SPIKE_CLI_SOURCES}
@@ -222,6 +229,9 @@ add_library(spike_core STATIC
 target_include_directories(spike_core PUBLIC include PRIVATE src)
 target_compile_definitions(spike_core PUBLIC SPIKE_VERSION="${PROJECT_VERSION}")
 target_link_libraries(spike_core PRIVATE spike_warnings)
+if(WIN32)
+    target_link_libraries(spike_core PUBLIC shell32)
+endif()
 
 # ---- CLI executable ----------------------------------------------------------
 add_executable(spike src/main.cpp)
@@ -255,6 +265,7 @@ add_executable(spike_tests
     tests/diagnostics/summary_test.cpp
     tests/driver/output_paths_test.cpp
     tests/file_reader/file_reader_test.cpp
+    tests/file_reader/encoding_test.cpp
     tests/lexer/lexer_comments_test.cpp
     tests/lexer/lexer_errors_test.cpp
     tests/lexer/lexer_keywords_test.cpp

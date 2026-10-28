@@ -75,7 +75,8 @@ struct WarningPolicy {
     bool as_errors = false;
 };
 
-int read_phase(const std::string& path, Analysis& analysis, Reporter& reporter);
+int read_phase(const std::string& path, Analysis& analysis, Reporter& reporter,
+               const WarningPolicy& warnings = {});
 int lex_phase(const Analysis& analysis, std::vector<Token>& tokens, Reporter& reporter);
 int parse_phase(Analysis& analysis, std::vector<Token> tokens, Reporter& reporter);
 int semantic_phase(Analysis& analysis, Reporter& reporter,

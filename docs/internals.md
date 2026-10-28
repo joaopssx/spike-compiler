@@ -64,6 +64,12 @@ The parser keeps going after an error, so a student sees every real mistake in o
 - **Colors.** All color goes through `paint` in `src/cli/colors.cpp`, which asks `enabled(stream)` every time: `--color` wins, then `NO_COLOR`, then `FORCE_COLOR`, then whether that stream is a terminal (`isatty` / `_isatty`). The helpers (`red`, `bold`...) take the stream the text is written to, stderr by default. On Windows `init_colors` turns on ANSI sequences for both consoles.
 - **Error catalog.** `cmake/embed_errors.cmake` reads `docs/errors.md` at build time and writes `build/generated/error_catalog.cpp`, a table sorted by code behind `all_errors()` and `find_error()` (`include/spike/error_catalog.hpp`). A malformed entry stops the build with a message saying what is missing. `cmake/check_error_docs.cmake` (CTest `error_docs_consistency`) compares the codes quoted in `src/` and `runtime/` (plus the `SPIKE_R_*` numbers of the C runtime) with the titles in the doc.
 
+### Names the C compiler sees on Windows
+
+MinGW's `gcc.exe` reads its command line in the ANSI code page, so a path with a character outside it (a Greek letter, or a user folder with letters the code page lacks) reaches it broken, even though Spike passes UTF-8 converted to UTF-16 through `CreateProcessW`. On Windows the pipeline therefore writes the C file as `programa.c` in the temporary folder, runs the compiler with that folder as its working directory (`ProcessOptions::working_dir`) and the output `programa.exe`, and then moves the executable to the requested path with `std::filesystem`, which uses the wide API. On Linux and macOS paths are bytes, UTF-8 passes through unchanged, and the compiler gets the real names.
+
+Spike reads its own arguments with `GetCommandLineW` and `CommandLineToArgvW` (`src/platform/arguments.cpp`), because the narrow `argv` of `main` is also in the ANSI code page.
+
 ## Code generation notes
 
 - `generate_c` takes a `CodegenOptions{source, emit_line_directives, c_file_name}`. `source` is the `.por` text; its lines (with `\r\n` already turned into `\n`) become `spike_source_lines` at the top of the C file, so a runtime error can show the line. That array is the only copy of the source in the C file.

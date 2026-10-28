@@ -81,6 +81,10 @@ ProcessResult run_process(const ProcessOptions& options) {
         result.launch_error = "nenhum programa informado";
         return result;
     }
+    if (options.working_dir) {
+        result.launch_error = "working_dir só é usado no Windows";
+        return result;
+    }
     const std::optional<std::string> program = find_executable(options.args[0]);
     if (!program) {
         result.launch_error = "programa não encontrado: '" + options.args[0] + "'";
