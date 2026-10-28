@@ -1,5 +1,7 @@
 # Spike
 
+[![CI](https://github.com/joaopssx/spike-compiler/actions/workflows/ci.yml/badge.svg)](https://github.com/joaopssx/spike-compiler/actions/workflows/ci.yml)
+
 Spike compiles Portugol, the pseudo-language used to teach programming in Brazilian schools and universities, into a real executable. It is made for students in their first programming course.
 
 ## Why

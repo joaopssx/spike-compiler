@@ -12,7 +12,22 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 add_library(spike_warnings INTERFACE)
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     target_compile_options(spike_warnings INTERFACE -Wall -Wextra -Wpedantic)
+elseif(MSVC)
+    # /utf-8: the sources are UTF-8 and the messages carry accents.
+    # _CRT_SECURE_NO_WARNINGS: getenv, strcpy and fopen are standard C++ and stay.
+    target_compile_options(spike_warnings INTERFACE /W4 /permissive- /utf-8)
+    target_compile_definitions(spike_warnings INTERFACE _CRT_SECURE_NO_WARNINGS)
 endif()
+
+option(SPIKE_SANITIZE "Build with AddressSanitizer and UndefinedBehaviorSanitizer" OFF)
+
+function(spike_sanitize target)
+    if(SPIKE_SANITIZE)
+        target_compile_options(${target} PRIVATE
+            -fsanitize=address,undefined -fno-sanitize-recover=all -fno-omit-frame-pointer)
+        target_link_options(${target} PRIVATE -fsanitize=address,undefined)
+    endif()
+endfunction()
 
 # ---- Core library ------------------------------------------------------------
 # Headers sao auto-descobertos pelo dependency scanner do CMake, entao
@@ -168,6 +183,8 @@ target_link_libraries(spike_core PRIVATE spike_warnings)
 # ---- CLI executable ----------------------------------------------------------
 add_executable(spike src/main.cpp)
 target_link_libraries(spike PRIVATE spike_core spike_warnings)
+spike_sanitize(spike_core)
+spike_sanitize(spike)
 
 # ---- Tests -------------------------------------------------------------------
 enable_testing()
@@ -253,6 +270,12 @@ add_test(NAME spike_unit_tests COMMAND spike_tests)
 set_tests_properties(spike_unit_tests PROPERTIES
     PASS_REGULAR_EXPRESSION "all tests passed"
 )
+
+spike_sanitize(spike_tests)
+
+add_test(NAME check_file_sizes
+    COMMAND ${CMAKE_COMMAND} -DSOURCE_DIR=${CMAKE_SOURCE_DIR}
+        -P ${CMAKE_SOURCE_DIR}/cmake/check_file_sizes.cmake)
 
 include(tests/programs.cmake)
 include(tests/runtime.cmake)

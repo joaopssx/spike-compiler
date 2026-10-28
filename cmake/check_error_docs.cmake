@@ -1,0 +1,58 @@
+cmake_minimum_required(VERSION 3.16)
+
+if(NOT DEFINED SOURCE_DIR)
+    message(FATAL_ERROR "usage: cmake -DSOURCE_DIR=<repo> -P check_error_docs.cmake")
+endif()
+
+# A code is used when it appears between quotes in src/ or runtime/. The C
+# runtime numbers its errors with SPIKE_R_* macros (printed as R%03d), so each
+# of those counts as a use of the matching R code.
+file(GLOB_RECURSE sources
+    "${SOURCE_DIR}/src/*.cpp" "${SOURCE_DIR}/src/*.hpp"
+    "${SOURCE_DIR}/runtime/*.h" "${SOURCE_DIR}/runtime/*.c")
+set(used "")
+foreach(source IN LISTS sources)
+    file(READ "${source}" content)
+    string(REGEX MATCHALL "\"[EWR][0-9][0-9][0-9]\"" quoted "${content}")
+    foreach(match IN LISTS quoted)
+        string(REPLACE "\"" "" match "${match}")
+        list(APPEND used "${match}")
+    endforeach()
+    string(REGEX MATCHALL "#define SPIKE_R_[A-Z_]+ [0-9]+" runtime_codes "${content}")
+    foreach(match IN LISTS runtime_codes)
+        string(REGEX REPLACE ".* ([0-9]+)$" "\\1" number "${match}")
+        string(LENGTH "${number}" digits)
+        while(digits LESS 3)
+            set(number "0${number}")
+            string(LENGTH "${number}" digits)
+        endwhile()
+        list(APPEND used "R${number}")
+    endforeach()
+endforeach()
+list(REMOVE_DUPLICATES used)
+
+file(READ "${SOURCE_DIR}/docs/errors.md" docs)
+string(REGEX MATCHALL "\n## [EWR][0-9][0-9][0-9]" titles "${docs}")
+set(documented "")
+foreach(title IN LISTS titles)
+    string(REGEX REPLACE "^\n## " "" title "${title}")
+    list(APPEND documented "${title}")
+endforeach()
+
+set(problems "")
+foreach(code IN LISTS used)
+    if(NOT code IN_LIST documented)
+        string(APPEND problems "  ${code} is used in the code but has no '## ${code}' entry in docs/errors.md\n")
+    endif()
+endforeach()
+foreach(code IN LISTS documented)
+    if(NOT code IN_LIST used)
+        string(APPEND problems "  ${code} is documented in docs/errors.md but never used in src/ or runtime/\n")
+    endif()
+endforeach()
+
+if(NOT problems STREQUAL "")
+    message(FATAL_ERROR "error codes and docs/errors.md disagree:\n${problems}")
+endif()
+list(LENGTH documented count)
+message(STATUS "docs/errors.md matches the code: ${count} codes")

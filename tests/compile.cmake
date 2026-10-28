@@ -1,4 +1,4 @@
-if(NOT CMAKE_C_COMPILER)
+if(NOT SPIKE_TEST_C)
     message(STATUS "No C compiler found: skipping compile and run tests")
     return()
 endif()
@@ -14,7 +14,7 @@ function(spike_add_expect_test name)
             ${ARGN}
             -P "${CMAKE_SOURCE_DIR}/tests/runtime/expect_run.cmake"
     )
-    set_tests_properties(${name} PROPERTIES ENVIRONMENT "SPIKE_CC=${CMAKE_C_COMPILER}")
+    set_tests_properties(${name} PROPERTIES ENVIRONMENT "SPIKE_CC=${SPIKE_TEST_C}")
 endfunction()
 
 if(WIN32)

@@ -22,6 +22,7 @@ All notable changes to Spike are recorded here. The format follows [Keep a Chang
 
 ### Changed
 
+- Every push and pull request now builds and tests Spike on Linux (GCC and Clang), macOS and Windows (MSVC, with MinGW-w64 GCC compiling the generated C), plus a build with AddressSanitizer and UndefinedBehaviorSanitizer and a check that no source file passes 300 lines.
 - `div`, `mod`, `const`, `interrompa`, `escolha`, `caso`, `outrocaso`, `fimescolha`, `vetor`, `procedimento`, `fimprocedimento`, `funcao`, `fimfuncao` and `retorne` are now reserved words. A program that used any of them as a variable name has to rename it.
 - A procedure or function can no longer use the name of a built-in function such as `raiz` or `abs` (E789).
 - On Windows, compiled programs get a 16 MB call stack, so deep recursion reaches the R008 limit before running out of stack.

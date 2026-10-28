@@ -1,16 +1,34 @@
+set(SPIKE_TEST_CC "" CACHE FILEPATH
+    "C compiler for the tests that compile generated C (default: the C compiler CMake finds)")
+
 include(CheckLanguage)
 check_language(C)
-if(NOT CMAKE_C_COMPILER)
-    message(STATUS "No C compiler found: skipping C runtime tests")
+if(CMAKE_C_COMPILER)
+    enable_language(C)
+endif()
+
+# The Spike driver speaks GCC and Clang flags, so MSVC's cl.exe cannot run these tests.
+set(SPIKE_TEST_C "")
+if(SPIKE_TEST_CC)
+    file(TO_CMAKE_PATH "${SPIKE_TEST_CC}" SPIKE_TEST_C)
+elseif(CMAKE_C_COMPILER AND NOT CMAKE_C_COMPILER_ID STREQUAL "MSVC")
+    set(SPIKE_TEST_C "${CMAKE_C_COMPILER}")
+endif()
+if(SPIKE_TEST_C)
+    target_compile_definitions(spike_tests PRIVATE SPIKE_TEST_C_COMPILER="${SPIKE_TEST_C}")
+    message(STATUS "C compiler for generated-C tests: ${SPIKE_TEST_C}")
+endif()
+
+if(NOT CMAKE_C_COMPILER OR CMAKE_C_COMPILER_ID STREQUAL "MSVC")
+    message(STATUS "No GCC or Clang C compiler for CMake: skipping C runtime tests")
     return()
 endif()
-enable_language(C)
-target_compile_definitions(spike_tests PRIVATE SPIKE_TEST_C_COMPILER="${CMAKE_C_COMPILER}")
 
 function(spike_add_runtime_program target source)
     add_executable(${target} ${source})
     target_include_directories(${target} PRIVATE "${CMAKE_SOURCE_DIR}/runtime")
     target_link_libraries(${target} PRIVATE spike_warnings)
+    spike_sanitize(${target})
     if(UNIX)
         target_link_libraries(${target} PRIVATE m)
     endif()

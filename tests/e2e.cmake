@@ -3,6 +3,7 @@ add_executable(spike_e2e
     tests/e2e/runner/compare.cpp
 )
 target_link_libraries(spike_e2e PRIVATE spike_core spike_warnings)
+spike_sanitize(spike_e2e)
 
 set(SPIKE_E2E_WORK "${CMAKE_BINARY_DIR}/e2e_work")
 
@@ -23,8 +24,8 @@ function(spike_add_e2e_cases folder prefix)
             TIMEOUT 60
         )
         set(environment "SPIKE_SEED=2026")
-        if(CMAKE_C_COMPILER)
-            list(APPEND environment "SPIKE_CC=${CMAKE_C_COMPILER}")
+        if(SPIKE_TEST_C)
+            list(APPEND environment "SPIKE_CC=${SPIKE_TEST_C}")
         endif()
         set_tests_properties(${test_name} PROPERTIES ENVIRONMENT "${environment}")
     endforeach()
