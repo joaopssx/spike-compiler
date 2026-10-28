@@ -1,5 +1,6 @@
 #include "spike/builtins.hpp"
 #include "spike/semantic.hpp"
+#include "spike/suggest.hpp"
 
 #include <string>
 
@@ -87,7 +88,8 @@ Symbol* SemanticAnalyzer::resolve(const std::string& name, int line, int col) {
         return nullptr;
     }
     diags_.error("E700", "variável '" + name + "' não foi declarada", line, col,
-                 "declare '" + name + "' na seção var.");
+                 hint_with_suggestion(name, symbols_.visible_names(),
+                                      "declare '" + name + "' na seção var."));
     return nullptr;
 }
 

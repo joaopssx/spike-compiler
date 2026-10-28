@@ -37,6 +37,7 @@ public:
     Symbol* lookup(const std::string& name);
     const Symbol* lookup(const std::string& name) const;
     const Symbol* lookup_global(const std::string& name) const;
+    std::vector<std::string> visible_names() const;
 
     void push_scope();
     void pop_scope();

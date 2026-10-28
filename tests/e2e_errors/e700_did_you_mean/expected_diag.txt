@@ -1,0 +1,4 @@
+erro[E700]: variável 'contadr' não foi declarada
+   6 |   escreval(contadr)
+     |            ^
+     = dica: você quis dizer 'contador'? Declare 'contadr' na seção var.

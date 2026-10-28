@@ -31,7 +31,7 @@ Títulos sem código (`# Erros de execução`, `## Formato deste arquivo`) separ
 
 **Quando acontece:** o programa tem um símbolo que o Portugol não usa, como `@`, `#`, `$` ou `;`. Letras com acento fora de um texto entre aspas também dão este erro, porque nomes de variáveis só aceitam letras sem acento.
 
-**Como corrigir:** apague o símbolo ou troque pelo certo. Em nomes, escreva sem acento: `media` em vez de `média`. Para um nome com acento aparece um erro só, na primeira letra acentuada, e a dica já mostra o nome escrito sem acento.
+**Como corrigir:** apague o símbolo ou troque pelo certo. Os símbolos de C, Java e Python têm dica própria: `!=` vira `<>`, `!` vira `nao`, `&&` vira `e`, `||` vira `ou`, e o `;` no fim da linha pode ser apagado. Em nomes, escreva sem acento: `media` em vez de `média`. Para um nome com acento aparece um erro só, na primeira letra acentuada, e a dica já mostra o nome escrito sem acento.
 
 ```
 algoritmo "exemplo"
@@ -166,7 +166,7 @@ inicio
 
 **Quando acontece:** uma variável foi declarada com um tipo que não existe.
 
-**Como corrigir:** use um dos tipos válidos: `inteiro`, `real`, `caractere` ou `logico`.
+**Como corrigir:** use um dos tipos válidos: `inteiro`, `real`, `caractere` ou `logico`. Um tipo parecido com um válido ganha sugestão (`intero` dá `você quis dizer 'inteiro'?`), e tipos de outras linguagens têm dica própria (`int`, `float`, `string`, `bool`).
 
 ```
 algoritmo "exemplo"
@@ -243,6 +243,25 @@ inicio
 fimalgoritmo
 ```
 
+## E203 — '==' na comparação
+
+**Mensagem:** `em Portugol a comparação de igualdade usa um único '='`
+
+**Quando acontece:** a condição usa `==`, como em C, Java ou Python. Em Portugol, a igualdade é um `=` só (e a atribuição é `<-`). O Spike aponta o segundo `=` e continua lendo a linha normalmente, sem erros extras.
+
+**Como corrigir:** apague um dos `=`: `se x = 1 entao`.
+
+```
+algoritmo "exemplo"
+var
+  x : inteiro
+inicio
+  se x == 1 entao
+    escreval("um")
+  fimse
+fimalgoritmo
+```
+
 ## E300 — instrução não reconhecida
 
 **Mensagem:** `instrução não reconhecida: 'imprima'`
@@ -250,6 +269,8 @@ fimalgoritmo
 **Quando acontece:** uma linha do corpo não começa com um comando que o Spike conhece.
 
 **Como corrigir:** use um comando válido: atribuição (`<-`), `escreva`, `escreval`, `leia`, `se`, `enquanto`, `para`, `repita` ou a chamada de um procedimento, `nome(...)`. Um nome seguido de `(` é sempre lido como chamada; se o procedimento não existir, o erro é o E780.
+
+A dica tenta adivinhar o que você quis: `escrva` sozinho sugere `você quis dizer 'escreva'?`, `x = 5` lembra que a atribuição é `x <- 5`, `x += 1` e `x++` viram `x <- x + 1`, e palavras de outras linguagens têm dica própria (`print` aponta para `escreva()`, `if` para `se ... entao ... fimse`). Um fechamento digitado errado, como `fimsi` dentro de um `se`, dá `você quis dizer 'fimse'?` e conta como o fechamento, então o `se` não acusa erro de bloco aberto.
 
 ```
 algoritmo "exemplo"
@@ -542,7 +563,7 @@ fimalgoritmo
 
 **Quando acontece:** o programa usa um nome que não está na seção `var`. Vale para qualquer lugar: atribuição, expressão, `escreva`, `leia`, condição e `para`. Se o mesmo nome aparece várias vezes na mesma linha, o erro aparece uma vez só.
 
-**Como corrigir:** declare a variável na seção `var`, ou confira se o nome está escrito igual à declaração. Maiúsculas e minúsculas não importam: `Idade` e `idade` são a mesma variável.
+**Como corrigir:** declare a variável na seção `var`, ou confira se o nome está escrito igual à declaração. Maiúsculas e minúsculas não importam: `Idade` e `idade` são a mesma variável. Quando há um nome parecido entre as variáveis e constantes visíveis ali, a dica sugere: `você quis dizer 'contador'?`. Palavras de outras linguagens, como `true`, têm dica própria (`em Portugol use verdadeiro e falso`).
 
 ```
 algoritmo "exemplo"
@@ -1308,7 +1329,7 @@ fimalgoritmo
 
 **Quando acontece:** o programa chama `nome(...)`, mas não existe procedimento nem função com esse nome. Também acontece quando o nome é de uma variável: só procedimentos e funções são chamados com `( )`.
 
-**Como corrigir:** confira o nome (letra trocada é o mais comum) ou declare o procedimento antes do `inicio` do programa.
+**Como corrigir:** confira o nome (letra trocada é o mais comum) ou declare o procedimento antes do `inicio` do programa. A dica sugere o nome mais parecido entre os seus procedimentos e funções e as funções prontas: `raix(4)` dá `você quis dizer 'raiz'?`, e `escrva("oi")` dá `você quis dizer 'escreva'?`.
 
 ```
 algoritmo "exemplo"

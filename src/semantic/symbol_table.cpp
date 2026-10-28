@@ -41,6 +41,17 @@ const Symbol* SymbolTable::lookup_global(const std::string& name) const {
     return it == scopes_.front().end() ? nullptr : &symbols_[it->second];
 }
 
+std::vector<std::string> SymbolTable::visible_names() const {
+    std::vector<std::string> names;
+    std::unordered_map<std::string, bool> seen;
+    for (auto scope = scopes_.rbegin(); scope != scopes_.rend(); ++scope) {
+        for (const auto& entry : *scope) {
+            if (seen.emplace(entry.first, true).second) names.push_back(symbols_[entry.second].name);
+        }
+    }
+    return names;
+}
+
 void SymbolTable::push_scope() {
     scopes_.emplace_back();
 }

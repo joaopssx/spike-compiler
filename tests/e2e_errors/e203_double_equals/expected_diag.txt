@@ -1,0 +1,4 @@
+erro[E203]: em Portugol a comparação de igualdade usa um único '='
+   5 |   se x == 1 entao
+     |         ^
+     = dica: escreva 'se x = 1 entao': o '==' do C, do Java e do Python não existe em Portugol.

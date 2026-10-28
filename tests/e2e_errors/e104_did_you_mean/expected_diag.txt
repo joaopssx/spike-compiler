@@ -1,0 +1,4 @@
+erro[E104]: tipo inválido 'intero'
+   3 |   x : intero
+     |       ^
+     = dica: você quis dizer 'inteiro'? Tipos válidos: inteiro, real, caractere, logico.

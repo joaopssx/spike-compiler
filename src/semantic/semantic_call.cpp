@@ -1,5 +1,6 @@
 #include "spike/builtins.hpp"
 #include "spike/semantic.hpp"
+#include "spike/suggest.hpp"
 #include "semantic/semantic_internal.hpp"
 
 #include <string>
@@ -25,6 +26,13 @@ bool accepts(TypeKind wanted, TypeKind value) {
 }
 
 } // namespace
+
+std::vector<std::string> SemanticAnalyzer::callable_names() const {
+    std::vector<std::string> names;
+    for (const auto& entry : procedures_) names.push_back(entry.second.name);
+    for (const BuiltinSig& sig : all_builtins()) names.push_back(sig.name);
+    return names;
+}
 
 TypeKind SemanticAnalyzer::check_argument_value(const ExprPtr& arg) {
     const auto* var = arg ? std::get_if<VarExpr>(&arg->node) : nullptr;
@@ -137,13 +145,16 @@ void SemanticAnalyzer::check_call(const CallStmt& call) {
     if (it == procedures_.end()) {
         for (const ExprPtr& arg : call.args) check_expr(arg);
         const bool is_variable = symbols_.lookup(call.name) != nullptr;
+        std::vector<std::string> candidates = callable_names();
+        candidates.insert(candidates.end(), {"escreva", "escreval", "leia"});
         diags_.error("E780", "procedimento '" + call.name + "' não foi definido", call.line,
                      call.col,
                      is_variable ? "'" + call.name +
                                        "' é uma variável; só procedimentos e funções são "
                                        "chamados com ( )."
-                                 : "declare 'procedimento " + call.name +
-                                       "(...)' antes do 'inicio' do programa.");
+                                 : hint_with_suggestion(call.name, candidates,
+                                                        "declare 'procedimento " + call.name +
+                                                            "(...)' antes do 'inicio' do programa."));
         return;
     }
     check_arguments(it->second, call.args, call.line, call.col);
@@ -160,8 +171,10 @@ TypeKind SemanticAnalyzer::check_call_expr(const CallExpr& call) {
         diags_.error("E780", "função '" + call.name + "' não foi definida", call.line, call.col,
                      is_variable ? "'" + call.name +
                                        "' é uma variável; para um elemento de vetor, use [ ]."
-                                 : "declare 'funcao " + call.name +
-                                       "(...): tipo' antes do 'inicio' do programa.");
+                                 : hint_with_suggestion(call.name, callable_names(),
+                                                        "declare 'funcao " + call.name +
+                                                            "(...): tipo' antes do 'inicio' do "
+                                                            "programa."));
         return TypeKind::Invalid;
     }
     const ProcedureSignature& signature = it->second;

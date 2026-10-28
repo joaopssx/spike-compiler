@@ -1,0 +1,4 @@
+erro[E780]: procedimento 'escrva' não foi definido
+   3 |   escrva("oi")
+     |   ^
+     = dica: você quis dizer 'escreva'? Declare 'procedimento escrva(...)' antes do 'inicio' do programa.

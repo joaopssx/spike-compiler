@@ -1,0 +1,4 @@
+erro[E300]: instrução não reconhecida: 'fimsi'
+   8 |   fimsi
+     |   ^
+     = dica: você quis dizer 'fimse'?

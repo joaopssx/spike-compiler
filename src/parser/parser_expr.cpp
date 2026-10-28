@@ -86,6 +86,12 @@ ExprPtr Parser::parse_comparison() {
             check(TokenType::LESS)       || check(TokenType::GREATER)   ||
             check(TokenType::LESS_EQ)    || check(TokenType::GREATER_EQ))) {
         Token op = advance();
+        if (op.type == TokenType::EQUAL && check(TokenType::EQUAL)) {
+            const Token extra = advance();
+            report("E203", "em Portugol a comparação de igualdade usa um único '='", extra.line,
+                   extra.col, "escreva 'se x = 1 entao': o '==' do C, do Java e do Python não "
+                              "existe em Portugol.");
+        }
         ExprPtr right = parse_term();
         left = make_expr(BinaryExpr{
             binary_op_for(op.type), std::move(left), std::move(right),

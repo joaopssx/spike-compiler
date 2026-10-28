@@ -86,6 +86,9 @@ set(SPIKE_DIAGNOSTICS_SOURCES
     src/diagnostics/utf8.hpp
     src/diagnostics/error_catalog.cpp
     src/diagnostics/summary.cpp
+    src/diagnostics/suggest.cpp
+    src/diagnostics/common_mistakes.cpp
+    include/spike/suggest.hpp
     "${SPIKE_ERROR_CATALOG_CPP}"
 )
 set(SPIKE_CLI_SOURCES
@@ -103,6 +106,7 @@ set(SPIKE_PARSER_SOURCES
     src/parser/parser_escolha.cpp
     src/parser/parser_array.cpp
     src/parser/parser_procedure.cpp
+    src/parser/parser_suggest.cpp
     src/parser/parser_expr.cpp
     src/parser/parser_recovery.cpp
 )
@@ -282,6 +286,9 @@ add_executable(spike_tests
     tests/file_reader/encoding_test.cpp
     tests/util/sha256_test.cpp
     tests/setup/setup_test.cpp
+    tests/diagnostics/suggest_test.cpp
+    tests/parser/suggest_parse_test.cpp
+    tests/semantic/semantic_suggest_test.cpp
     tests/lexer/lexer_comments_test.cpp
     tests/lexer/lexer_errors_test.cpp
     tests/lexer/lexer_keywords_test.cpp

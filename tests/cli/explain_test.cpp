@@ -101,7 +101,7 @@ void test_explain_without_code_lists_all() {
 
 void test_summarize_codes_collapses_ranges() {
     const std::string summary = spike::summarize_codes();
-    SPIKE_EXPECT(summary.rfind("E001-E005, E100-E105, E200-E202, ", 0) == 0);
+    SPIKE_EXPECT(summary.rfind("E001-E005, E100-E105, E200-E203, ", 0) == 0);
     SPIKE_EXPECT(summary.find(", E600, ") != std::string::npos);
 }
 

@@ -169,6 +169,32 @@ bool Lexer::scan_one_token(Token& out) {
         return true;
     }
 
+    if (c == '!') {
+        advance();
+        if (match('=')) {
+            add_error("E001", "caractere desconhecido '!'", kNotEqualHint);
+            out = make_token(TokenType::NOT_EQUAL, "!=");
+            return true;
+        }
+        add_error("E001", "caractere desconhecido '!'", kNotHint);
+        out = make_token(TokenType::NAO, "!");
+        return true;
+    }
+    if (c == '&' || c == '|') {
+        advance();
+        match(c);
+        const bool is_and = c == '&';
+        add_error("E001", std::string("caractere desconhecido '") + c + "'",
+                  is_and ? kAndHint : kOrHint);
+        out = make_token(is_and ? TokenType::E : TokenType::OU, is_and ? "&&" : "||");
+        return true;
+    }
+    if (c == ';') {
+        advance();
+        add_error("E001", "caractere desconhecido ';'", kSemicolonHint);
+        return false;
+    }
+
     const std::size_t start = static_cast<std::size_t>(current_);
     advance();
     while (!is_at_end() && utf8::is_continuation(peek())) advance();

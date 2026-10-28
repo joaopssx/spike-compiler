@@ -38,6 +38,7 @@ namespace spike
 
         // Recuperacao de erros (parser_recovery.cpp)
         std::vector<std::vector<TokenType>> block_stops_;
+        std::vector<std::string> subprogram_names_;
         std::set<std::pair<int, int>> error_positions_;
         int error_events_ = 0;
         int nesting_ = 0;
@@ -88,6 +89,9 @@ namespace spike
         ExprPtr parse_call_expr(const Token& name);
         StmtPtr parse_retorne();
         StmtPtr reject_late_procedure();
+        std::string unknown_statement_hint(const Token& t);
+        bool fix_misspelled_closer();
+        TokenType token_after_next() const;
 
         // Parsing de statements
         StmtList parse_stmt_list(TokenType stop_at);

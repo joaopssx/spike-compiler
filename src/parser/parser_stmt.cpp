@@ -21,6 +21,7 @@ StmtList Parser::parse_stmt_list(std::initializer_list<TokenType> stop_tokens) {
     while (!is_at_end() && !closes_open_block()) {
         const int start = current_;
         const int errors_before = error_events_;
+        if (fix_misspelled_closer()) break;
         StmtPtr s = parse_stmt();
         if (s) list.push_back(std::move(s));
         if (error_events_ != errors_before) synchronize(previous().line);
@@ -59,10 +60,8 @@ StmtPtr Parser::parse_stmt() {
 
     // Nao reconheceu - emite, consome 1 token e descarta o resto da linha.
     const Token t = peek();
-    report("E300",
-           std::string("instrução não reconhecida: '") + t.lexeme + "'",
-           t.line, t.col,
-           "instruções válidas: atribuição (<-), escreva, leia, se, enquanto, para.");
+    report("E300", std::string("instrução não reconhecida: '") + t.lexeme + "'", t.line, t.col,
+           unknown_statement_hint(t));
     advance();
     synchronize(t.line);
     return nullptr;

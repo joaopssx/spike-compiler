@@ -1,4 +1,5 @@
 #include "spike/parser.hpp"
+#include "spike/suggest.hpp"
 #include "parser/parser_internal.hpp"
 
 #include <string>
@@ -69,6 +70,9 @@ Program Parser::parse_program() {
     while (check(TokenType::PROCEDIMENTO) || check(TokenType::FUNCAO)) {
         const bool function = advance().type == TokenType::FUNCAO;
         prog.procedures.push_back(parse_subprogram(function));
+        if (!prog.procedures.back().name.empty()) {
+            subprogram_names_.push_back(prog.procedures.back().name);
+        }
     }
 
     // inicio: se faltar, pula ate um 'inicio' mais adiante ou continua como se
@@ -204,9 +208,10 @@ std::vector<VarDecl> Parser::parse_var_section() {
             advance();
         } else {
             const Token& bad = peek();
-            report("E104",
-                   std::string("tipo inválido '") + bad.lexeme + "'",
-                   bad.line, bad.col, kHintE104);
+            report("E104", std::string("tipo inválido '") + bad.lexeme + "'", bad.line, bad.col,
+                   hint_with_suggestion(bad.lexeme,
+                                        {"inteiro", "real", "caractere", "logico", "vetor"},
+                                        kHintE104));
             // Avanca 1 pra evitar loop infinito; type fica Invalid.
             if (!is_at_end()) advance();
         }
