@@ -53,3 +53,26 @@ if(SPIKE_TEST_C)
         ENV "NO_COLOR=1;SPIKE_CC=${SPIKE_TEST_C}"
     )
 endif()
+
+spike_add_cli_test(setup_check_without_compiler_exits_3
+    "-DARGS=setup|--check"
+    -DEXPECT_CODE=3
+    "-DEXPECT_STDERR=nenhum compilador C encontrado: SPIKE_CC aponta para 'spike-no-such-cc'"
+    ENV "NO_COLOR=1;SPIKE_CC=spike-no-such-cc"
+)
+
+spike_add_cli_test(setup_rejects_two_modes
+    "-DARGS=setup|--check|--remove"
+    -DEXPECT_CODE=2
+    "-DEXPECT_STDERR=use s.+ uma destas flags"
+    ENV "NO_COLOR=1"
+)
+
+if(SPIKE_TEST_C)
+    spike_add_cli_test(setup_check_with_compiler_exits_0
+        "-DARGS=setup|--check"
+        -DEXPECT_CODE=0
+        "-DEXPECT_STDERR=ok: o compilador C j.+ est.+ instalado: "
+        ENV "NO_COLOR=1;SPIKE_CC=${SPIKE_TEST_C}"
+    )
+endif()

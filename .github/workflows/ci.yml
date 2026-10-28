@@ -4,6 +4,12 @@ on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
+    inputs:
+      windows_setup:
+        description: Run the real "spike setup" download on Windows (about 64 MB)
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -136,3 +142,41 @@ jobs:
 
       - name: Error codes match docs/errors.md
         run: cmake -DSOURCE_DIR="$GITHUB_WORKSPACE" -P cmake/check_error_docs.cmake
+
+  # Downloads about 64 MB, so it only runs by hand: Actions > CI > Run workflow > windows_setup.
+  windows-setup:
+    name: windows-setup (manual)
+    if: github.event_name == 'workflow_dispatch' && inputs.windows_setup
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build spike
+        shell: bash
+        run: |
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+          cmake --build build --config Release --target spike -j
+
+      - name: spike setup
+        shell: pwsh
+        run: |
+          ./build/Release/spike.exe setup --force --yes
+          if ($LASTEXITCODE -ne 0) { throw "spike setup failed" }
+          ./build/Release/spike.exe setup --check
+          if ($LASTEXITCODE -ne 0) { throw "spike setup --check failed" }
+          Get-Content "$env:LOCALAPPDATA\Spike\toolchain.txt"
+
+      - name: Compile with the downloaded GCC
+        shell: pwsh
+        run: |
+          $out = ./build/Release/spike.exe examples/hello.por --run --verbose 2>&1 | Out-String
+          Write-Host $out
+          if ($LASTEXITCODE -ne 0) { throw "compiling hello.por failed" }
+          if ($out -notmatch "Spike\\toolchain") { throw "spike did not use the toolchain from spike setup" }
+
+      - name: spike setup --remove
+        shell: pwsh
+        run: |
+          ./build/Release/spike.exe setup --remove --yes
+          if ($LASTEXITCODE -ne 0) { throw "spike setup --remove failed" }
+          if (Test-Path "$env:LOCALAPPDATA\Spike\toolchain") { throw "toolchain folder still exists" }

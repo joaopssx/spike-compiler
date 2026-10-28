@@ -1,4 +1,5 @@
 #include "spike/cli.hpp"
+#include "cli/cli_setup.hpp"
 
 #include "spike/colors.hpp"
 
@@ -140,6 +141,10 @@ void parse_command(int argc, char* argv[], CliArgs& out) {
         if (argc == 3) out.explain_code = argv[2];
         return;
     }
+    if (eq(a1, "setup")) {
+        parse_setup_args(argc, argv, out);
+        return;
+    }
     if (eq(a1, "fetch")) {
         out.command = Command::FETCH;
         return;
@@ -264,6 +269,7 @@ void print_help() {
         << item("check <arq> ", "só confere o programa, sem gerar executável") << "\n"
         << item("tokens <arq>", "lista os tokens do arquivo (modo debug)") << "\n"
         << item("dev <arq>   ", "roda todas as fases e grava tokens, árvore, símbolos, tipos, C e tempos em <arq>.dev/") << "\n"
+        << item("setup       ", "instala um compilador C (Windows) ou mostra como instalar; --check, --force, --remove, --yes") << "\n"
         << item("fetch       ", "mostra o ambiente do Spike (cole a saída ao pedir ajuda)") << "\n"
         << item("--help      ", "mostra isso aqui") << "\n"
         << item("--version   ", "versão do compilador") << "\n"

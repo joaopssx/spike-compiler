@@ -20,6 +20,8 @@ struct Group {
 const std::vector<Group> kGroups = {
     {"file_reader", spike_tests::run_file_reader_tests},
     {"file_encoding", spike_tests::run_file_encoding_tests},
+    {"sha256", spike_tests::run_sha256_tests},
+    {"setup", spike_tests::run_setup_tests},
     {"token", spike_tests::run_token_tests},
     {"lexer_keyword", spike_tests::run_lexer_keyword_tests},
     {"lexer_number", spike_tests::run_lexer_number_tests},

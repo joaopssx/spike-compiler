@@ -6,6 +6,7 @@ All notable changes to Spike are recorded here. The format follows [Keep a Chang
 
 ### Added
 
+- `spike setup`: on Windows it downloads a portable GCC (w64devkit) into `%LOCALAPPDATA%\Spike`, checks its pinned SHA-256 before running anything from it (E905 deletes a file that does not match), and Spike finds it from then on. On Linux it prints the install command for the distribution, and on macOS `xcode-select --install`. `--check`, `--force`, `--remove` and `--yes` are available. New errors E905, E906 and E907.
 - `div` (integer division, `7 div 2` is `3`), `mod` (remainder, `7 mod 2` is `1`) and `^` (power, `2 ^ 10` is `1024`). `^` binds tighter than the unary minus and groups to the right, so `-2 ^ 2` is `-4` and `2 ^ 3 ^ 2` is `512`.
 - Runtime error R005 when a power has no real result, such as `0 ^ -1`.
 - Constants: a `const` section before `var`, with lines like `PI = 3.14159`. Spike computes their values while compiling, and changing a constant is an error (E740).

@@ -5,6 +5,8 @@ namespace spike_tests {
 
 void run_file_reader_tests();
 void run_file_encoding_tests();
+void run_sha256_tests();
+void run_setup_tests();
 void run_token_tests();
 void run_lexer_keyword_tests();
 void run_lexer_number_tests();

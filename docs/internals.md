@@ -70,6 +70,17 @@ MinGW's `gcc.exe` reads its command line in the ANSI code page, so a path with a
 
 Spike reads its own arguments with `GetCommandLineW` and `CommandLineToArgvW` (`src/platform/arguments.cpp`), because the narrow `argv` of `main` is also in the ANSI code page.
 
+## spike setup
+
+`spike setup` downloads one pinned file: the w64devkit release in `src/setup/toolchain_pins.hpp` (name, version, URL, size and SHA-256). Only Windows downloads, with WinHTTP over HTTPS, certificate checks on and redirects allowed only from HTTPS to HTTPS. The file lands as `.part` in `%LOCALAPPDATA%\Spike\toolchain\<version>\`, and only after its size and SHA-256 match the pins it is renamed and run as a 7-Zip self-extractor with `-y -o<folder>`. Then `gcc --version` must run, and the path of `gcc.exe` goes into `%LOCALAPPDATA%\Spike\toolchain.txt`, which `find_c_compiler` reads right after `SPIKE_CC`. Download, extraction and the `gcc` probe are injected (`InstallTools`), so the tests run the whole flow with fakes and never touch the network. Linux and macOS only print the install command.
+
+To move to a newer w64devkit:
+
+1. Open https://github.com/skeeto/w64devkit/releases/latest and pick the `w64devkit-x64-<version>.7z.exe` asset. The repository must be `skeeto/w64devkit`.
+2. Download it once and compute the hash yourself (`sha256sum`, or `Get-FileHash` on Windows). It must equal the `sha256:` digest GitHub shows for the asset, and the size must equal the asset size. If either differs, stop.
+3. Update all five values in `toolchain_pins.hpp` in one commit, and check that the archive still unpacks to `w64devkit/bin/gcc.exe` (the release Dockerfile packs `$PREFIX=/w64devkit`).
+4. Run the manual CI job (Actions, "CI", Run workflow, `windows_setup` checked), which runs the real `spike setup` on Windows.
+
 ## Code generation notes
 
 - `generate_c` takes a `CodegenOptions{source, emit_line_directives, c_file_name}`. `source` is the `.por` text; its lines (with `\r\n` already turned into `\n`) become `spike_source_lines` at the top of the C file, so a runtime error can show the line. That array is the only copy of the source in the C file.

@@ -1,5 +1,6 @@
 #include "spike/cc_driver.hpp"
 #include "spike/process.hpp"
+#include "spike/setup.hpp"
 
 #include <cctype>
 #include <filesystem>
@@ -54,6 +55,9 @@ std::optional<CompilerInfo> find_c_compiler(const std::string& bundled_dir) {
         const std::optional<std::string> path = find_executable(*forced);
         if (!path) return std::nullopt;
         return CompilerInfo{*path, compiler_kind(*path)};
+    }
+    if (const std::optional<std::string> installed = recorded_toolchain_gcc()) {
+        return CompilerInfo{*installed, compiler_kind(*installed)};
     }
     if (!bundled_dir.empty()) {
         for (const char* name : {"gcc", "clang", "cc"}) {
@@ -116,8 +120,8 @@ DriverError no_compiler_error() {
 std::string no_compiler_hint(HostSystem system) {
     switch (system) {
         case HostSystem::Windows:
-            return "instale o MinGW-w64 (por exemplo pelo MSYS2) e coloque a pasta bin dele no "
-                   "PATH, ou aponte SPIKE_CC para o gcc.exe.";
+            return "rode: spike setup (baixa um compilador C para o Spike, cerca de 64 MB), ou "
+                   "aponte SPIKE_CC para um gcc.exe que você já tenha.";
         case HostSystem::MacOS:
             return "instale as ferramentas de linha de comando da Apple: rode "
                    "'xcode-select --install' no Terminal e confirme a instalação.";

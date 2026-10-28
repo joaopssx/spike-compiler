@@ -47,6 +47,18 @@ set(SPIKE_PLATFORM_SOURCES
     src/platform/arguments.cpp
     include/spike/platform.hpp
 )
+
+set(SPIKE_SETUP_SOURCES
+    src/setup/os_release.cpp
+    src/setup/setup_paths.cpp
+    src/setup/setup_install.cpp
+    src/setup/setup_command.cpp
+    src/setup/winhttp_download.cpp
+    src/setup/toolchain_pins.hpp
+    src/util/sha256.cpp
+    include/spike/setup.hpp
+    include/spike/sha256.hpp
+)
 set(SPIKE_LEXER_SOURCES
     src/lexer/token.cpp
     src/lexer/lexer_core.cpp
@@ -78,6 +90,7 @@ set(SPIKE_DIAGNOSTICS_SOURCES
 )
 set(SPIKE_CLI_SOURCES
     src/cli/cli.cpp
+    src/cli/cli_setup.cpp
     src/cli/colors.cpp
     src/cli/console.cpp
     src/cli/explain.cpp
@@ -213,6 +226,7 @@ add_library(spike_core STATIC
     ${SPIKE_AST_SOURCES}
     ${SPIKE_IO_SOURCES}
     ${SPIKE_PLATFORM_SOURCES}
+    ${SPIKE_SETUP_SOURCES}
     ${SPIKE_LEXER_SOURCES}
     ${SPIKE_DIAGNOSTICS_SOURCES}
     ${SPIKE_CLI_SOURCES}
@@ -230,7 +244,7 @@ target_include_directories(spike_core PUBLIC include PRIVATE src)
 target_compile_definitions(spike_core PUBLIC SPIKE_VERSION="${PROJECT_VERSION}")
 target_link_libraries(spike_core PRIVATE spike_warnings)
 if(WIN32)
-    target_link_libraries(spike_core PUBLIC shell32)
+    target_link_libraries(spike_core PUBLIC shell32 winhttp)
 endif()
 
 # ---- CLI executable ----------------------------------------------------------
@@ -266,6 +280,8 @@ add_executable(spike_tests
     tests/driver/output_paths_test.cpp
     tests/file_reader/file_reader_test.cpp
     tests/file_reader/encoding_test.cpp
+    tests/util/sha256_test.cpp
+    tests/setup/setup_test.cpp
     tests/lexer/lexer_comments_test.cpp
     tests/lexer/lexer_errors_test.cpp
     tests/lexer/lexer_keywords_test.cpp

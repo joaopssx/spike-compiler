@@ -8,6 +8,7 @@
 #include "spike/lexer.hpp"
 #include "spike/parser.hpp"
 #include "spike/platform.hpp"
+#include "spike/setup.hpp"
 #include "spike/token.hpp"
 
 #include <algorithm>
@@ -148,6 +149,7 @@ int main(int argc, char** argv) {
         case spike::Command::COMPILE: return spike::run_compile(args);
         case spike::Command::CHECK:   return spike::run_check(args);
         case spike::Command::FETCH:   return spike::run_fetch(std::cout);
+        case spike::Command::SETUP:   return spike::run_setup(args);
         case spike::Command::DEV:     return spike::run_dev(args);
         case spike::Command::RANDOM:  return spike::run_random(std::cerr);
         case spike::Command::UNKNOWN:

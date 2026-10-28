@@ -2011,6 +2011,45 @@ spike jogo.por
 erro[E904]: não foi possível gravar 'jogo.exe'
 ```
 
+## E905 — download com SHA-256 errado
+
+**Mensagem:** `o arquivo baixado não confere com o SHA-256 esperado e foi apagado`
+
+**Quando acontece:** o `spike setup` baixou o compilador, mas a "impressão digital" (SHA-256) do arquivo não é a que está gravada no código do Spike. O arquivo pode ter chegado incompleto ou alterado no caminho. O Spike apaga o arquivo e não executa nada dele. A dica mostra o hash esperado e o recebido.
+
+**Como corrigir:** rode `spike setup` de novo. Se o erro se repetir, um proxy da rede ou um antivírus pode estar alterando o download: tente em outra rede ou peça ajuda a quem cuida dela.
+
+```
+spike setup --yes
+erro[E905]: o arquivo baixado não confere com o SHA-256 esperado e foi apagado
+```
+
+## E906 — falha ao baixar
+
+**Mensagem:** `não consegui baixar: <motivo>; verifique a conexão, proxy ou antivírus`
+
+**Quando acontece:** o `spike setup` não conseguiu baixar o compilador: sem internet, o endereço não foi encontrado, a conexão caiu, o servidor respondeu com erro ou o certificado HTTPS não é válido. Nada foi instalado.
+
+**Como corrigir:** confira a internet e rode `spike setup` de novo. Em redes de escola ou empresa, um proxy pode bloquear o download; tente em outra rede. O Spike nunca desliga a verificação do certificado.
+
+```
+spike setup --yes
+erro[E906]: não consegui baixar: o endereço do servidor não foi encontrado; verifique a conexão, proxy ou antivírus
+```
+
+## E907 — compilador baixado não funcionou
+
+**Mensagem:** `não consegui extrair o compilador: <motivo>` (ou `o gcc.exe não apareceu ... depois de extrair`, ou `o gcc baixado não rodou ('gcc --version' falhou)`)
+
+**Quando acontece:** o download deu certo e o arquivo conferiu, mas a extração falhou ou o `gcc.exe` extraído não rodou. Um antivírus que bloqueia programas recém-baixados é a causa mais comum.
+
+**Como corrigir:** libere a pasta `%LOCALAPPDATA%\Spike` no antivírus e rode `spike setup --force` para instalar de novo.
+
+```
+spike setup --force
+erro[E907]: o gcc baixado não rodou ('gcc --version' falhou)
+```
+
 ---
 
 # Avisos

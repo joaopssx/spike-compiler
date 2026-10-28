@@ -104,6 +104,8 @@ That installs Clang. Install CMake from [cmake.org](https://cmake.org/download/)
 
 To use Spike from PowerShell or `cmd`, add `C:\msys64\ucrt64\bin` to your `PATH`, before any other MinGW folder. Git for Windows ships its own `mingw64\bin`; if that one comes first, programs fail to start with error `0xc0000139`.
 
+To compile Portugol programs, Spike also needs a C compiler. On Windows, `spike setup` downloads a portable GCC (w64devkit, about 64 MB) into `%LOCALAPPDATA%\Spike`, checks its SHA-256 before using it, and Spike finds it from then on. On Linux and macOS, `spike setup` prints the command to install one. See [docs/getting-started.md](docs/getting-started.md).
+
 The compiler ends up in `build/spike` (`build\spike.exe` on Windows). Run it from there or copy it to a folder in your `PATH`.
 
 ## Usage

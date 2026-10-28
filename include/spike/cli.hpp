@@ -17,6 +17,7 @@ enum class Command {
     DEV,       // spike dev arquivo.por
     RANDOM,    // spike random [--basico|--desafio|--quiz]
     EXPLAIN,   // spike --explain [codigo]
+    SETUP,     // spike setup [--check|--force|--remove] [--yes]
     UNKNOWN,
 };
 
@@ -38,6 +39,12 @@ struct CliArgs {
 
     // Para RANDOM:
     std::string random_mode;       // "", "basico", "desafio", "quiz"
+
+    // Para SETUP:
+    bool setup_check  = false;
+    bool setup_force  = false;
+    bool setup_remove = false;
+    bool setup_yes    = false;
 
     // Para EXPLAIN (vazio = lista todos):
     std::string explain_code;

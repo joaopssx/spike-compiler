@@ -55,7 +55,8 @@ void test_empty_path_without_spike_cc_is_e902() {
     using spike::HostSystem;
     SPIKE_EXPECT(spike::no_compiler_hint(HostSystem::MacOS).find("xcode-select --install") !=
                  std::string::npos);
-    SPIKE_EXPECT(spike::no_compiler_hint(HostSystem::Windows).find("MinGW-w64") != std::string::npos);
+    SPIKE_EXPECT(spike::no_compiler_hint(HostSystem::Windows).find("rode: spike setup") !=
+                 std::string::npos);
     SPIKE_EXPECT(spike::no_compiler_hint(HostSystem::Linux).find("build-essential") !=
                  std::string::npos);
 }
