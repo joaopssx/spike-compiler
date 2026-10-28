@@ -2,9 +2,26 @@
 
 Cada erro do Spike tem um código. O código aparece no começo da mensagem (`erro[E400]`) e é o jeito mais rápido de achar a explicação aqui.
 
-- **E001 a E004**: o texto do programa tem um caractere ou trecho que o Spike não reconhece.
+- **E001 a E005**: o texto do programa tem um caractere ou trecho que o Spike não reconhece.
 - **E100 a E600**: as palavras estão certas, mas a estrutura do programa não.
 - **E700 em diante**: a estrutura está certa, mas o programa não faz sentido (por exemplo, usa uma variável que não existe).
+- **W001 a W009**: avisos. O programa compila, mas algo nele parece engano (veja a seção [Avisos](#avisos), no fim).
+
+Quando falta alguma coisa no fim de uma linha (o `entao` depois de `se x > 1`, o valor depois de `x <-`), a seta fica logo depois da última palavra dessa linha, e não no começo da linha seguinte.
+
+O Spike não para no primeiro erro. Os erros de digitação (E001 a E004) aparecem todos de uma vez, e só depois de corrigidos o Spike passa a ler a estrutura. Na estrutura, ele também continua depois de cada erro e mostra os outros que achar, sem inventar erros que são só consequência do primeiro. Quando um bloco (`se`, `enquanto`, `para`, `repita`, `escolha`, procedimento ou função) fica sem fechamento, a seta aponta para a palavra que abriu o bloco. Aparecem no máximo 20 erros; o resto vira uma linha `(mais N erros omitidos)`.
+
+No fim, o Spike resume o que achou (`falhou: 2 erros e 1 aviso`) e sugere o comando que mostra a explicação do primeiro erro sem sair do terminal: `spike --explain E400`. Sem código, `spike --explain` lista todos.
+
+## Formato deste arquivo
+
+Este arquivo é a fonte do `spike --explain`: na compilação do Spike, `cmake/embed_errors.cmake` lê cada entrada e guarda uma cópia dentro do executável. Por isso toda entrada segue o mesmo formato:
+
+- um título `## E400 — descrição curta` (código, travessão, descrição), um por código;
+- as partes `**Mensagem:**`, `**Quando acontece:**` e `**Como corrigir:**`, nesta ordem;
+- um bloco de código com um exemplo que provoca o erro (o primeiro bloco da entrada é o que o `--explain` mostra).
+
+Títulos sem código (`# Erros de execução`, `## Formato deste arquivo`) separam grupos e não são entradas. O teste `error_docs_consistency` confere que todo código entre aspas em `src/` e `runtime/` tem uma entrada aqui e que toda entrada é usada; um código novo entra neste arquivo no mesmo commit.
 
 ---
 
@@ -14,7 +31,7 @@ Cada erro do Spike tem um código. O código aparece no começo da mensagem (`er
 
 **Quando acontece:** o programa tem um símbolo que o Portugol não usa, como `@`, `#`, `$` ou `;`. Letras com acento fora de um texto entre aspas também dão este erro, porque nomes de variáveis só aceitam letras sem acento.
 
-**Como corrigir:** apague o símbolo ou troque pelo certo. Em nomes, escreva sem acento: `media` em vez de `média`.
+**Como corrigir:** apague o símbolo ou troque pelo certo. Em nomes, escreva sem acento: `media` em vez de `média`. Para um nome com acento aparece um erro só, na primeira letra acentuada, e a dica já mostra o nome escrito sem acento.
 
 ```
 algoritmo "exemplo"
@@ -67,6 +84,21 @@ fimalgoritmo
 algoritmo "exemplo"
 { este comentário nunca fecha
 inicio
+fimalgoritmo
+```
+
+## E005 — arquivo fora do UTF-8
+
+**Mensagem:** `o arquivo não está em UTF-8 válido`
+
+**Quando acontece:** o arquivo foi salvo em outra codificação, geralmente Windows-1252 ou ISO-8859-1 (o padrão de editores antigos no Windows). As letras com acento ficam gravadas de um jeito que o Spike não lê. A seta aponta para o primeiro byte inválido, que aparece como `?` na linha mostrada. Nenhum outro erro é mostrado enquanto este não for corrigido.
+
+**Como corrigir:** salve o arquivo como UTF-8. No Bloco de Notas, use "Salvar como" e escolha "UTF-8" em "Codificação"; no VS Code, clique na codificação na barra de baixo e escolha "Salvar com codificação" e depois "UTF-8".
+
+```
+algoritmo "exemplo"
+inicio
+  escreval("Olá")     // com o arquivo salvo em Windows-1252
 fimalgoritmo
 ```
 
@@ -181,7 +213,7 @@ fimalgoritmo
 
 **Mensagem:** `expressão esperada`
 
-**Quando acontece:** o Spike esperava um valor (número, texto, variável ou expressão entre parênteses) e achou outra coisa, como um operador sozinho ou o fim da linha. Hoje a seta aponta para o começo da linha seguinte quando a expressão falta no fim da linha.
+**Quando acontece:** o Spike esperava um valor (número, texto, variável ou expressão entre parênteses) e achou outra coisa, como um operador sozinho ou o fim da linha. Quando a expressão falta no fim da linha (`x <-` sem nada depois), a seta aponta para o fim dessa linha, e a linha seguinte é lida normalmente.
 
 **Como corrigir:** complete a expressão.
 
@@ -191,6 +223,23 @@ var
   x : inteiro
 inicio
   x <- * 2
+fimalgoritmo
+```
+
+## E202 — blocos ou parênteses aninhados demais
+
+**Mensagem:** `blocos ou parênteses aninhados demais`
+
+**Quando acontece:** o programa abre mais de 256 níveis, somando blocos (`se` dentro de `se`...) e parênteses ou operadores dentro de uma expressão. Nenhum programa escrito à mão chega perto disso; normalmente é um arquivo gerado ou corrompido. O Spike para de ler o arquivo nesse ponto.
+
+**Como corrigir:** separe a expressão em partes com variáveis auxiliares, ou divida o código em procedimentos.
+
+```
+algoritmo "exemplo"
+var
+  x : inteiro
+inicio
+  x <- ((((((((((((((((((((((((((( ... 1 ... )))))))))))))))))))))))))))
 fimalgoritmo
 ```
 
@@ -277,9 +326,18 @@ fimalgoritmo
 
 **Mensagem:** `'<-' ou ':=' esperado na atribuição`
 
-**Quando acontece:** uma atribuição sem `<-` ou `:=` depois do nome da variável. Na prática, o Spike só reconhece uma linha como atribuição quando o símbolo está lá, então este erro é raro: o mais comum é o E300.
+**Quando acontece:** uma posição de vetor (`v[1]`) sem `<-` ou `:=` depois. Com um nome simples sem o símbolo (`x 42`), o Spike não reconhece a linha como atribuição e mostra o E300.
 
-**Como corrigir:** use `x <- 42` ou `x := 42`.
+**Como corrigir:** use `v[1] <- 42` ou `v[1] := 42`.
+
+```
+algoritmo "exemplo"
+var
+  v : vetor[1..3] de inteiro
+inicio
+  v[1] 42
+fimalgoritmo
+```
 
 ## E306 — leia com algo que não é variável
 
@@ -697,7 +755,32 @@ fimalgoritmo
 
 # Erros de execução
 
-Estes erros acontecem quando o programa já compilou e está rodando. A mensagem começa com `erro de execução[R...]`, mostra a linha do `.por` onde aconteceu, e o programa termina com o código de saída 101.
+Estes erros acontecem quando o programa já compilou e está rodando. O programa escreve o erro na saída de erros (stderr) e termina com o código de saída 101. O formato é parecido com o dos erros de compilação: o código, a mensagem, o arquivo e a linha, a própria linha do `.por` e uma dica.
+
+```
+erro de execução[R001]: divisão por zero
+ --> soma.por:12
+     |
+  12 |   r <- a div b
+     |
+     = dica: verifique se o divisor pode valer 0 antes de dividir (use um 'se')
+```
+
+Quando o erro acontece dentro de um procedimento ou função, o Spike mostra, depois da linha do erro, por onde o programa passou para chegar ali. Cada linha diz qual subprograma estava rodando e em que linha ele foi chamado, do mais recente para o mais antigo. Aparecem no máximo 8; o resto vira `... e mais N`.
+
+```
+erro de execução[R001]: divisão por zero
+ --> media.por:4
+     |
+   4 |   retorne a div b
+     |
+  chamado de 'divide' na linha 8
+  chamado de 'media' na linha 12
+  chamado de 'relatorio' na linha 16
+     = dica: verifique se o divisor pode valer 0 antes de dividir (use um 'se')
+```
+
+Se a linha não existe no arquivo (por exemplo, um erro que não vem de nenhum comando), aparece só ` --> arquivo.por:linha`. As cores só são usadas quando a saída de erros é um terminal, e nunca quando a variável de ambiente `NO_COLOR` tem algum valor.
 
 ## R001 — divisão por zero
 
@@ -707,6 +790,19 @@ Estes erros acontecem quando o programa já compilou e está rodando. A mensagem
 
 **Como corrigir:** confira o divisor antes de dividir: `se b <> 0 entao ... fimse`.
 
+**Dica mostrada:** `verifique se o divisor pode valer 0 antes de dividir (use um 'se')`
+
+```
+algoritmo "exemplo"
+var
+  a, b : inteiro
+inicio
+  a <- 10
+  b <- 0
+  escreval(a div b)
+fimalgoritmo
+```
+
 ## R002 — índice fora do vetor
 
 **Mensagem:** `índice 11 fora do vetor 'notas' (válido: 1 a 5)` (numa matriz: `índice 5 fora da dimensão 2 de 'm' (válido: 1 a 4)`)
@@ -714,6 +810,20 @@ Estes erros acontecem quando o programa já compilou e está rodando. A mensagem
 **Quando acontece:** com o programa rodando, um índice calculado (por exemplo `notas[i]` com `i` valendo 11) fica fora dos limites da declaração. Numa matriz, cada índice é conferido com a sua própria dimensão, e a mensagem diz qual delas falhou.
 
 **Como corrigir:** confira os limites do `para` ou da conta que calcula o índice. Um erro comum é o laço ir até um a mais do que o tamanho do vetor.
+
+**Dica mostrada:** `o índice precisa estar entre os limites declarados; confira o laço ou a conta que calcula o índice`
+
+```
+algoritmo "exemplo"
+var
+  notas : vetor[1..5] de real
+  i : inteiro
+inicio
+  para i de 1 ate 6 faca
+    notas[i] <- 0
+  fimpara
+fimalgoritmo
+```
 
 ## R003 — entrada inválida
 
@@ -723,6 +833,19 @@ Estes erros acontecem quando o programa já compilou e está rodando. A mensagem
 
 **Como corrigir:** digite um valor do tipo certo, um por linha. Para `real`, valem `3.5` e `3,5`.
 
+**Dica mostrada:** `digite um valor do tipo que o 'leia' espera; em números reais vale ponto ou vírgula`
+
+```
+algoritmo "exemplo"
+var
+  idade : inteiro
+inicio
+  leia(idade)
+fimalgoritmo
+```
+
+Rodando e digitando `abc`, o programa para com R003.
+
 ## R004 — conversão impossível
 
 **Mensagem:** `número grande demais para virar inteiro` (ou `o valor não é um número e não pode virar inteiro`, ou `não foi possível converter 'abc' para inteiro`)
@@ -730,6 +853,8 @@ Estes erros acontecem quando o programa já compilou e está rodando. A mensagem
 **Quando acontece:** `arredonda`, `trunca`, `piso` ou `teto` recebeu um número real que não cabe num `inteiro` (o limite é perto de 9,2 × 10^18), ou um valor que nem é um número, como o resultado de uma conta inválida. Também acontece quando `paraInteiro` ou `paraReal` recebe um texto que não é um número.
 
 **Como corrigir:** confira a conta que gera o número; se ele precisa mesmo ser tão grande, deixe-o como `real`. Antes de converter um texto, teste com `ehNumero(texto)`.
+
+**Dica mostrada:** `confira se o número cabe em um inteiro ou se o texto tem só um número (use ehNumero antes de converter)`
 
 ```
 algoritmo "exemplo"
@@ -749,6 +874,18 @@ fimalgoritmo
 
 **Como corrigir:** confira a base e o expoente antes da conta. Base zero não pode ter expoente negativo, e base negativa só aceita expoente inteiro. Antes de `raiz` ou `log`, teste o valor com um `se`.
 
+**Dica mostrada:** `confira o valor antes da conta: raiz só de número sem sinal de menos, log só de número positivo, potência sem resultado infinito`
+
+```
+algoritmo "exemplo"
+var
+  x : real
+inicio
+  x <- -4
+  escreval(raiz(x))
+fimalgoritmo
+```
+
 ## R006 — passo zero no para
 
 **Mensagem:** `o passo do 'para' não pode ser zero`
@@ -756,6 +893,20 @@ fimalgoritmo
 **Quando acontece:** o `passo` de um `para` é uma variável ou conta que vale zero quando o laço começa. Com passo zero a variável nunca muda e o laço nunca terminaria. Quando o `passo 0` está escrito direto no programa, o Spike já avisa antes de compilar (E733).
 
 **Como corrigir:** garanta que o passo seja diferente de zero antes do `para`, por exemplo com `se p <> 0 entao ... fimse`.
+
+**Dica mostrada:** `use um passo positivo para contar para cima ou negativo para contar para baixo`
+
+```
+algoritmo "exemplo"
+var
+  i, p : inteiro
+inicio
+  p <- 0
+  para i de 1 ate 10 passo p faca
+    escreval(i)
+  fimpara
+fimalgoritmo
+```
 
 ## R007 — a entrada terminou
 
@@ -765,6 +916,20 @@ fimalgoritmo
 
 **Como corrigir:** coloque uma linha na entrada para cada valor que o programa lê.
 
+**Dica mostrada:** `o programa pediu mais valores do que a entrada tinha; confira quantas vezes o 'leia' é executado`
+
+```
+algoritmo "exemplo"
+var
+  a, b : inteiro
+inicio
+  leia(a)
+  leia(b)
+fimalgoritmo
+```
+
+Rodando com um arquivo de entrada que só tem uma linha, o segundo `leia` dá R007.
+
 ## R008 — memória insuficiente
 
 **Mensagem:** `memória insuficiente` (ou `recursão profunda demais (limite de 10000 chamadas), verifique a condição de parada`, ou `recursão profunda demais (a memória para chamadas acabou), verifique a condição de parada`)
@@ -773,6 +938,19 @@ fimalgoritmo
 
 **Como corrigir:** confira se o laço termina. Numa recursão, confira o caso de parada (por exemplo `se n <= 1 entao retorne 1`) e se cada chamada se aproxima dele.
 
+**Dica mostrada:** `toda recursão precisa de uma condição de parada que seja alcançada; confira o 'se' que encerra as chamadas`
+
+```
+algoritmo "exemplo"
+funcao conta(n: inteiro): inteiro
+inicio
+  retorne conta(n + 1)
+fimfuncao
+inicio
+  escreval(conta(1))
+fimalgoritmo
+```
+
 ## R009 — função terminou sem retornar valor
 
 **Mensagem:** `a função 'sinal' terminou sem retornar um valor`
@@ -780,6 +958,8 @@ fimalgoritmo
 **Quando acontece:** a função chegou ao `fimfuncao` sem passar por nenhum `retorne`. Costuma ser um `se` que só retorna num dos caminhos.
 
 **Como corrigir:** garanta um `retorne` em todos os caminhos, por exemplo com um `senao`, ou com um `retorne` antes do `fimfuncao`.
+
+**Dica mostrada:** `faça todos os caminhos da função chegarem a um 'retorne' com valor`
 
 ```
 algoritmo "exemplo"
@@ -802,6 +982,8 @@ fimalgoritmo
 
 **Como corrigir:** passe o menor número primeiro: `aleatorio(1, 10)`.
 
+**Dica mostrada:** `chame aleatorio(menor, maior), com o primeiro número menor ou igual ao segundo`
+
 ```
 algoritmo "exemplo"
 inicio
@@ -816,6 +998,8 @@ fimalgoritmo
 **Quando acontece:** uma função de texto recebeu um valor que não faz sentido: `copia` começando antes da primeira letra, `ord` de um texto vazio, ou `chr` com um código que não existe.
 
 **Como corrigir:** em `copia`, as posições começam em 1. Antes de `ord`, confira se o texto não está vazio (`tamanho(t) > 0`). Em `chr`, use um código entre 1 e 1114111.
+
+**Dica mostrada:** `posições em texto vão de 1 até tamanho(texto); em chr use um código de 1 a 1114111`
 
 ```
 algoritmo "exemplo"
@@ -1765,13 +1949,24 @@ Estes erros não são do seu programa: ou o Spike tem um defeito, ou falta algum
 
 **Como corrigir:** é um defeito do Spike. Abra uma issue em https://github.com/joaopssx/spike-compiler/issues com o arquivo `.por` que provoca o erro.
 
+```
+erro[E900]: erro interno do gerador: expressão sem tipo válido
+ --> programa.por:5:8
+     = dica: isso é um defeito do Spike, não do seu programa.
+```
+
 ## E901 — comando ainda não suportado pelo gerador
 
-**Mensagem:** `comando ainda não suportado pelo gerador: 'leia'`
+**Mensagem:** `comando ainda não suportado pelo gerador: '...'`
 
-**Quando acontece:** o programa usa um comando que o Spike já entende, mas ainda não sabe transformar em C. Enquanto a v0.2 não fica pronta, isso vale para `leia`, `se`, `enquanto`, `para` e `repita`.
+**Quando acontece:** o programa usa um comando que o Spike já entende, mas ainda não sabe transformar em C. Hoje todos os comandos da linguagem viram C; o código fica reservado para comandos novos que entrarem na análise antes do gerador.
 
 **Como corrigir:** por enquanto, não há como. O comando passa a funcionar numa versão próxima.
+
+```
+erro[E901]: comando ainda não suportado pelo gerador: '...'
+     = dica: esta versão do Spike ainda não transforma esse comando em C.
+```
 
 ## E902 — nenhum compilador C encontrado
 
@@ -1785,13 +1980,23 @@ Estes erros não são do seu programa: ou o Spike tem um defeito, ou falta algum
 - No Windows: instale o MinGW-w64 (por exemplo pelo MSYS2) e coloque a pasta `bin` dele no `PATH`, ou defina `SPIKE_CC` com o caminho do `gcc.exe`.
 - Se você definiu `SPIKE_CC`, confira o caminho ou apague a variável.
 
+```
+spike ola.por
+erro[E902]: nenhum compilador C encontrado (procurei em SPIKE_CC e no PATH)
+```
+
 ## E903 — o compilador C recusou o código gerado
 
-**Mensagem:** `o compilador C recusou o código gerado`
+**Mensagem:** `o compilador C recusou o código gerado` (ou `o compilador C recusou o código gerado para a linha 7 de soma.por`)
 
-**Quando acontece:** o C que o Spike gerou não compilou. Se o programa passou na análise do Spike, isso é sempre um defeito do Spike, nunca do seu programa. A mensagem mostra as 20 primeiras linhas do que o compilador C reclamou.
+**Quando acontece:** o C que o Spike gerou não compilou. Se o programa passou na análise do Spike, isso é sempre um defeito do Spike, nunca do seu programa. O C que vai para o compilador marca cada comando com a linha do `.por` de onde ele veio (`#line`), então o compilador C aponta para o seu arquivo. Quando isso acontece, a mensagem diz a linha e mostra o comando do `.por` que gerou o C recusado. Depois vêm as 20 primeiras linhas do que o compilador C reclamou.
 
 **Como corrigir:** rode de novo com `--c` para guardar o arquivo C e abra uma issue em https://github.com/joaopssx/spike-compiler/issues com o `.por` e o `.c`.
+
+```
+spike programa.por --c
+erro[E903]: o compilador C recusou o código gerado
+```
 
 ## E904 — não foi possível gravar um arquivo
 
@@ -1800,3 +2005,188 @@ Estes erros não são do seu programa: ou o Spike tem um defeito, ou falta algum
 **Quando acontece:** o Spike não conseguiu criar o arquivo C temporário, a pasta temporária ou o executável. Em geral é falta de permissão na pasta, disco cheio, ou o executável ainda aberto de uma execução anterior (no Windows, um programa rodando não pode ser sobrescrito).
 
 **Como corrigir:** feche o programa se ele ainda estiver rodando, confira se você pode escrever na pasta e se há espaço em disco.
+
+```
+spike jogo.por
+erro[E904]: não foi possível gravar 'jogo.exe'
+```
+
+---
+
+# Avisos
+
+Um aviso (`aviso[W001]`, em amarelo) aponta algo que provavelmente não é o que você quis, mas que não impede o programa de compilar. Os avisos só aparecem quando o programa não tem nenhum erro, e saem antes do `ok:`.
+
+- `--no-warnings` esconde os avisos.
+- `--warnings-as-errors` faz qualquer aviso parar a compilação, com código de saída 1.
+
+## W001 — variável nunca usada
+
+**Mensagem:** `a variável 'idade' foi declarada, mas nunca é usada`
+
+**Quando acontece:** a variável aparece no `var`, mas o programa nunca guarda nem lê um valor nela. Parâmetros de procedimentos e funções não entram nesta conta.
+
+**Como corrigir:** apague a declaração, ou use a variável onde ela era necessária.
+
+```
+algoritmo "exemplo"
+var
+  idade : inteiro
+inicio
+  escreval("oi")
+fimalgoritmo
+```
+
+## W002 — variável lida, mas sem valor
+
+**Mensagem:** `a variável 'total' é lida, mas nunca recebe valor`
+
+**Quando acontece:** o programa usa o valor da variável, mas em nenhum lugar guarda algo nela (com `<-`, `leia` ou um parâmetro `var`). Ela vai valer sempre o valor padrão: 0, `""` ou `falso`.
+
+**Como corrigir:** guarde um valor antes de usar, por exemplo `total <- 0` ou `leia(total)`.
+
+```
+algoritmo "exemplo"
+var
+  total : inteiro
+inicio
+  escreval(total)
+fimalgoritmo
+```
+
+## W003 — variável recebe valor, mas nunca é lida
+
+**Mensagem:** `a variável 'resposta' recebe valor, mas nunca é lida`
+
+**Quando acontece:** o programa guarda um valor na variável (com `<-` ou `leia`), mas nunca usa esse valor. A variável do `para` conta como lida, porque o próprio laço a usa.
+
+**Como corrigir:** mostre o valor com `escreva`, use-o numa conta, ou apague a variável.
+
+```
+algoritmo "exemplo"
+var
+  resposta : inteiro
+inicio
+  resposta <- 42
+fimalgoritmo
+```
+
+## W004 — variável do 'para' alterada dentro do laço
+
+**Mensagem:** `a variável 'i' do 'para' é alterada dentro do laço`
+
+**Quando acontece:** dentro do `para`, um `<-` ou `leia` muda a variável que o próprio `para` controla. Isso é permitido, mas muda quantas voltas o laço dá e quase sempre é engano.
+
+**Como corrigir:** use outra variável para a conta. Se o laço precisa pular valores, use `passo` ou troque o `para` por um `enquanto`.
+
+```
+algoritmo "exemplo"
+var
+  i : inteiro
+inicio
+  para i de 1 ate 10 faca
+    i <- i + 1
+  fimpara
+fimalgoritmo
+```
+
+## W005 — variável local com o nome de uma global
+
+**Mensagem:** `a variável local 'nome' tem o mesmo nome de uma variável global`
+
+**Quando acontece:** um procedimento ou função declara no seu `var` uma variável com o mesmo nome de uma variável (ou constante) global. Dentro do subprograma, o nome passa a ser a local, e a global fica escondida. Parâmetros com o nome de uma global, como `fatorial(n)`, não dão aviso.
+
+**Como corrigir:** se queria usar a global, apague a declaração local. Se queria uma variável nova, dê outro nome a ela.
+
+```
+algoritmo "exemplo"
+var
+  nome : caractere
+procedimento saudacao()
+var
+  nome : caractere
+inicio
+  nome <- "Ana"
+  escreval(nome)
+fimprocedimento
+inicio
+  saudacao()
+fimalgoritmo
+```
+
+## W006 — função pode terminar sem 'retorne'
+
+**Mensagem:** `a função 'sinal' pode terminar sem 'retorne'`
+
+**Quando acontece:** existe um caminho pela função que chega ao `fimfuncao` sem passar por um `retorne`. Se o programa seguir esse caminho, ele para com o erro de execução R009.
+
+**Como corrigir:** coloque um `retorne` no fim da função, ou um `senao` com `retorne` em cada `se` que decide o resultado.
+
+```
+algoritmo "exemplo"
+funcao sinal(n: inteiro): inteiro
+inicio
+  se n > 0 entao
+    retorne 1
+  fimse
+fimfuncao
+inicio
+  escreval(sinal(5))
+fimalgoritmo
+```
+
+## W007 — divisão por zero escrita no código
+
+**Mensagem:** `divisão por zero` (ou `divisão por zero no 'div'`, ou `resto ('mod') de uma divisão por zero`)
+
+**Quando acontece:** o divisor de um `/`, `div` ou `mod` é o número 0 escrito direto no programa. Quando essa conta rodar, o programa para com o erro de execução R001.
+
+**Como corrigir:** troque o 0 pelo valor certo.
+
+```
+algoritmo "exemplo"
+var
+  x : inteiro
+inicio
+  x <- 10
+  escreval(x div 0)
+fimalgoritmo
+```
+
+## W008 — condição sempre verdadeira ou sempre falsa
+
+**Mensagem:** `a condição do 'se' é sempre falsa` (ou do `'enquanto'`, ou do `'ate'`; ou `sempre verdadeira`)
+
+**Quando acontece:** a condição de um `se`, `enquanto` ou `repita ... ate` é o próprio `verdadeiro` ou `falso`. Um `se falso` nunca roda, um `enquanto falso` nunca entra no laço, um `repita ... ate verdadeiro` roda uma vez só e um `enquanto verdadeiro` nunca termina. O `enquanto verdadeiro` (e o `repita ... ate falso`) que tem um `interrompa` ou um `retorne` dentro não dá aviso, porque esse é o jeito comum de escrever um laço que sai pelo meio.
+
+**Como corrigir:** escreva a condição que você queria testar, ou tire o comando se ele não serve.
+
+```
+algoritmo "exemplo"
+inicio
+  se falso entao
+    escreval("nunca")
+  fimse
+fimalgoritmo
+```
+
+## W009 — código que nunca roda
+
+**Mensagem:** `este código nunca vai rodar`
+
+**Quando acontece:** há comandos logo depois de um `retorne` ou de um `interrompa`, no mesmo bloco. O `retorne` sai do subprograma e o `interrompa` sai do laço, então os comandos seguintes nunca são executados. O aviso aparece uma vez por bloco, no primeiro comando que não roda.
+
+**Como corrigir:** apague esses comandos, ou mova-os para antes do `retorne` ou do `interrompa`. Em geral o `interrompa` deveria estar dentro de um `se`.
+
+```
+algoritmo "exemplo"
+var
+  i : inteiro
+inicio
+  i <- 0
+  enquanto i < 10 faca
+    interrompa
+    i <- i + 1
+  fimenquanto
+fimalgoritmo
+```

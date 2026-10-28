@@ -5,6 +5,7 @@
 #include "spike/parser.hpp"
 #include "spike/semantic.hpp"
 #include "spike/symbol_table.hpp"
+#include "spike/warnings.hpp"
 
 #include <cstddef>
 #include <iostream>
@@ -75,6 +76,17 @@ inline std::unique_ptr<TypedProgram> analyze_typed(const std::string& src) {
     std::cerr.rdbuf(old);
     typed->diag_output = sink.str();
     return typed;
+}
+
+inline std::string warnings_of(const std::string& src) {
+    auto typed = analyze_typed(src);
+    spike::Diagnostics found("<test>", src);
+    spike::check_warnings(typed->program, *typed->analyzer, found);
+    std::ostringstream sink;
+    auto* old = std::cerr.rdbuf(sink.rdbuf());
+    found.print_all();
+    std::cerr.rdbuf(old);
+    return sink.str();
 }
 
 inline const char* kTypedVars =

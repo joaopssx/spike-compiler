@@ -30,7 +30,9 @@ void test_codegen_header_and_runtime() {
     SPIKE_EXPECT(c.rfind("/* Gerado pelo Spike " SPIKE_VERSION " a partir de ola.por */\n\n", 0) ==
                  0);
     SPIKE_EXPECT(count_of(c, "#ifndef SPIKE_RUNTIME_CORE_H") == 1);
-    SPIKE_EXPECT(contains(c, "int main(void) {\n    spike_init();\n    spike_flush();\n"
+    SPIKE_EXPECT(contains(c, "int main(void) {\n"
+                             "    spike_set_source(spike_source_name, spike_source_lines, 3);\n"
+                             "    spike_init();\n    spike_flush();\n"
                              "    spike_cleanup();\n    return 0;\n}\n"));
     SPIKE_EXPECT(c.find('\r') == std::string::npos);
 }

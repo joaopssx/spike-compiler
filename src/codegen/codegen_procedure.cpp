@@ -16,16 +16,15 @@ std::string subprogram_name(const ProcedureDecl& proc) {
 } // namespace
 
 std::string Generator::signature(const ProcedureDecl& proc) const {
-    std::string params;
+    std::string params = "int spike_line";
     for (const Param& param : proc.params) {
         const char* type = c_type(param.type);
-        if (!params.empty()) params += ", ";
-        params += std::string(type ? type : "int") + (param.by_ref ? "* " : " ") +
+        params += ", " + std::string(type ? type : "int") + (param.by_ref ? "* " : " ") +
                   c_name(param.name);
     }
     const char* result = proc.is_function() ? c_type(proc.return_type) : "void";
     return std::string("static ") + (result ? result : "int") + " " + subprogram_name(proc) +
-           "(" + (params.empty() ? "void" : params) + ")";
+           "(" + params + ")";
 }
 
 void Generator::emit_prototypes() {
@@ -66,11 +65,12 @@ void Generator::emit_procedure(const ProcedureDecl& proc) {
         }
     }
     current_ = &proc;
+    enter_scope(&proc);
     out_.line(signature(proc) + " {");
     out_.indent();
-    out_.line("spike_enter(" + std::to_string(proc.line) + ");");
+    out_.line("spike_enter(" + string_literal(proc.name) + ", spike_line);");
     for (const VarDecl& decl : proc.locals) emit_local(decl);
-    emit_block(proc.body);
+    emit_user_block(proc.body);
     if (proc.is_function()) {
         const int end_line = proc.end_line != 0 ? proc.end_line : proc.line;
         out_.line("spike_missing_return(" + std::to_string(end_line) + ", " +
@@ -84,6 +84,7 @@ void Generator::emit_procedure(const ProcedureDecl& proc) {
     out_.line("}");
     out_.blank();
     current_ = nullptr;
+    enter_scope(nullptr);
     var_types_ = saved_types;
     var_dims_ = saved_dims;
     ref_params_ = saved_refs;
@@ -137,11 +138,12 @@ std::string Generator::call(const std::string& name, const std::vector<ExprPtr>&
         return "";
     }
     const ProcedureDecl& proc = *it->second;
-    std::string text;
+    std::string text = std::to_string(line);
     for (std::size_t i = 0; i < args.size(); ++i) {
-        if (i > 0) text += ", ";
         const Param& param = proc.params[i];
-        text += param.by_ref ? reference(args[i]) : expr_as(args[i], param.type);
+        const Access after = arg_access(proc, args, i + 1);
+        text += ", " + (param.by_ref ? ordered_reference(args[i], after)
+                                     : expr_as(args[i], param.type, after));
     }
     return subprogram_name(proc) + "(" + text + ")";
 }
@@ -160,7 +162,9 @@ std::string Generator::builtin_call(const std::string& name, const std::vector<E
     std::string text;
     for (std::size_t i = 0; i < args.size(); ++i) {
         if (i > 0) text += ", ";
-        text += expr_as(args[i], sig->params[i]);
+        Access after;
+        for (std::size_t j = i + 1; j < args.size(); ++j) after = after | access(args[j]);
+        text += expr_as(args[i], sig->params[i], after);
     }
     if (sig->takes_line) text += (args.empty() ? "" : ", ") + std::to_string(line);
     return sig->c_name + "(" + text + ")";
@@ -169,7 +173,7 @@ std::string Generator::builtin_call(const std::string& name, const std::vector<E
 void Generator::emit_call(const CallStmt& stmt) {
     const std::string text = call(stmt.name, stmt.args, stmt.line, stmt.col);
     if (failed()) return;
-    out_.line(text + ";");
+    emit_line(text + ";");
 }
 
 void Generator::emit_return(const ReturnStmt& stmt) {
@@ -188,6 +192,7 @@ void Generator::emit_return(const ReturnStmt& stmt) {
     if (failed() || !type) return;
     out_.line("{");
     out_.indent();
+    emit_lines(take_pending());
     out_.line(std::string(type) + " spike_result = " + value + ";");
     out_.line("spike_leave();");
     out_.line("return spike_result;");

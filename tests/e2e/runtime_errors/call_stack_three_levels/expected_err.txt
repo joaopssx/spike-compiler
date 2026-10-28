@@ -1,0 +1,9 @@
+erro de execução[R001]: divisão por zero
+ --> program.por:4
+     |
+   4 |   retorne a div b
+     |
+  chamado de 'divide' na linha 8
+  chamado de 'media' na linha 12
+  chamado de 'relatorio' na linha 16
+     = dica: verifique se o divisor pode valer 0 antes de dividir (use um 'se')

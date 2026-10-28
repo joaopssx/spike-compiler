@@ -11,10 +11,10 @@ StmtPtr Parser::parse_se() {
     ExprPtr cond = parse_expr();
 
     if (!match(TokenType::ENTAO)) {
-        const Token& t = peek();
-        diags_.error("E400", "'entao' esperado após condição do 'se'",
-                     t.line, t.col,
-                     "sintaxe: se <condicao> entao ... fimse.");
+        const SourcePos t = expected_pos();
+        report("E400", "'entao' esperado após condição do 'se'",
+               t.line, t.col,
+               "sintaxe: se <condicao> entao ... fimse.");
     }
 
     StmtList then_branch = parse_stmt_list(
@@ -26,10 +26,9 @@ StmtPtr Parser::parse_se() {
     }
 
     if (!match(TokenType::FIM_SE)) {
-        const Token& t = peek();
-        diags_.error("E401",
-                     "'fimse' não encontrado — todo 'se' precisa de um 'fimse'",
-                     t.line, t.col, "feche o bloco com 'fimse'.");
+        report("E401",
+               "'fimse' não encontrado — todo 'se' precisa de um 'fimse'",
+               se_tok.line, se_tok.col, "feche o bloco com 'fimse'.");
     }
 
     SeStmt s;
@@ -47,18 +46,17 @@ StmtPtr Parser::parse_enquanto() {
     ExprPtr cond = parse_expr();
 
     if (!match(TokenType::FACA)) {
-        const Token& t = peek();
-        diags_.error("E500", "'faca' esperado após condição do 'enquanto'",
-                     t.line, t.col,
-                     "sintaxe: enquanto <condicao> faca ... fimenquanto.");
+        const SourcePos t = expected_pos();
+        report("E500", "'faca' esperado após condição do 'enquanto'",
+               t.line, t.col,
+               "sintaxe: enquanto <condicao> faca ... fimenquanto.");
     }
 
     StmtList body = parse_stmt_list(TokenType::FIM_ENQUANTO);
 
     if (!match(TokenType::FIM_ENQUANTO)) {
-        const Token& t = peek();
-        diags_.error("E501", "'fimenquanto' não encontrado",
-                     t.line, t.col, "feche o 'enquanto' com 'fimenquanto'.");
+        report("E501", "'fimenquanto' não encontrado",
+               enq_tok.line, enq_tok.col, "feche o 'enquanto' com 'fimenquanto'.");
     }
 
     EnquantoStmt s;
@@ -72,28 +70,29 @@ StmtPtr Parser::parse_enquanto() {
 StmtPtr Parser::parse_para() {
     const Token para_tok = previous();  // PARA consumido pelo dispatcher
 
-    if (!check(TokenType::IDENTIFIER)) {
-        const Token& t = peek();
-        diags_.error("E502", "nome de variável esperado após 'para'",
-                     t.line, t.col,
-                     "sintaxe: para <variavel> de <inicio> ate <fim> faca.");
-        return nullptr;
+    Token name_tok = peek();
+    name_tok.lexeme.clear();
+    if (check(TokenType::IDENTIFIER)) {
+        name_tok = advance();
+    } else {
+        report("E502", "nome de variável esperado após 'para'",
+               name_tok.line, name_tok.col,
+               "sintaxe: para <variavel> de <inicio> ate <fim> faca.");
     }
-    const Token name_tok = advance();
 
     if (!match(TokenType::DE)) {
-        const Token& t = peek();
-        diags_.error("E503",
-                     "'de' esperado: sintaxe é 'para i de 1 ate 10 faca'",
-                     t.line, t.col, "");
+        const SourcePos t = expected_pos();
+        report("E503",
+               "'de' esperado: sintaxe é 'para i de 1 ate 10 faca'",
+               t.line, t.col, "");
     }
 
     ExprPtr from = parse_expr();
 
     if (!match(TokenType::ATE)) {
-        const Token& t = peek();
-        diags_.error("E504", "'ate' esperado após valor inicial do 'para'",
-                     t.line, t.col, "");
+        const SourcePos t = expected_pos();
+        report("E504", "'ate' esperado após valor inicial do 'para'",
+               t.line, t.col, "");
     }
 
     ExprPtr to = parse_expr();
@@ -104,17 +103,16 @@ StmtPtr Parser::parse_para() {
     }
 
     if (!match(TokenType::FACA)) {
-        const Token& t = peek();
-        diags_.error("E505", "'faca' esperado após 'ate [valor]'",
-                     t.line, t.col, "");
+        const SourcePos t = expected_pos();
+        report("E505", "'faca' esperado após 'ate [valor]'",
+               t.line, t.col, "");
     }
 
     StmtList body = parse_stmt_list(TokenType::FIM_PARA);
 
     if (!match(TokenType::FIM_PARA)) {
-        const Token& t = peek();
-        diags_.error("E506", "'fimpara' não encontrado",
-                     t.line, t.col, "feche o 'para' com 'fimpara'.");
+        report("E506", "'fimpara' não encontrado",
+               para_tok.line, para_tok.col, "feche o 'para' com 'fimpara'.");
     }
 
     ParaStmt s;
@@ -138,16 +136,16 @@ StmtPtr Parser::parse_repita() {
     // diferenciar "ate que" como token composto.
     StmtList body = parse_stmt_list({TokenType::ATE, TokenType::ATE_QUE});
 
-    if (!(match(TokenType::ATE) || match(TokenType::ATE_QUE))) {
-        const Token& t = peek();
-        diags_.error("E600", "'ate' esperado para fechar 'repita'",
-                     t.line, t.col,
-                     "sintaxe: repita ... ate <condicao>. "
-                     "O corpo executa pelo menos uma vez e para quando a condição for verdadeira.");
-        // Continua mesmo assim - parse_expr abaixo cria stub se necessario.
+    ExprPtr cond;
+    if (match(TokenType::ATE) || match(TokenType::ATE_QUE)) {
+        cond = parse_expr();
+    } else {
+        report("E600", "'ate' esperado para fechar 'repita'",
+               rep_tok.line, rep_tok.col,
+               "sintaxe: repita ... ate <condicao>. "
+               "O corpo executa pelo menos uma vez e para quando a condição for verdadeira.");
+        cond = make_expr(ErrorExpr{rep_tok.line, rep_tok.col});
     }
-
-    ExprPtr cond = parse_expr();
 
     RepitaStmt s;
     s.body = std::move(body);

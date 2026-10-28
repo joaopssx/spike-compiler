@@ -23,9 +23,9 @@ ExprPtr Parser::parse_name_reference(const Token& name) {
         index.indices.push_back(parse_expr());
     } while (match(TokenType::COMMA));
     if (!match(TokenType::RBRACKET)) {
-        const Token& t = peek();
-        diags_.error("E825", "']' esperado depois do índice de '" + name.lexeme + "'", t.line,
-                     t.col, "feche o índice com ']': " + name.lexeme + "[i].");
+        const SourcePos t = expected_pos();
+        report("E825", "']' esperado depois do índice de '" + name.lexeme + "'", t.line,
+               t.col, "feche o índice com ']': " + name.lexeme + "[i].");
     }
     return make_expr(std::move(index));
 }
@@ -40,7 +40,7 @@ bool Parser::parse_array_bound(ArrayBound& bound) {
         try {
             bound.value = std::stoll(t.lexeme);
         } catch (const std::out_of_range&) {
-            diags_.error("E821", "limite do vetor grande demais", t.line, t.col, kHintVetor);
+            report("E821", "limite do vetor grande demais", t.line, t.col, kHintVetor);
             return false;
         }
         if (bound.negative) bound.value = -bound.value;
@@ -52,50 +52,51 @@ bool Parser::parse_array_bound(ArrayBound& bound) {
         advance();
         return true;
     }
-    diags_.error("E821", "limite do vetor esperado (um número inteiro ou uma constante)",
-                 t.line, t.col, kHintVetor);
+    const SourcePos pos = expected_pos();
+    report("E821", "limite do vetor esperado (um número inteiro ou uma constante)",
+           pos.line, pos.col, kHintVetor);
     return false;
 }
 
 bool Parser::parse_array_type(std::vector<ArrayDim>& dims) {
     if (!match(TokenType::LBRACKET)) {
-        const Token& t = peek();
-        diags_.error("E820", "'[' esperado depois de 'vetor'", t.line, t.col, kHintVetor);
+        const SourcePos t = expected_pos();
+        report("E820", "'[' esperado depois de 'vetor'", t.line, t.col, kHintVetor);
         return false;
     }
     do {
         if (dims.size() == kMaxDimensions) {
             const Token& t = previous();
-            diags_.error("E826", "um vetor pode ter no máximo 3 dimensões", t.line, t.col,
-                         "use até três pares de limites: vetor[1..2, 1..3, 1..4].");
+            report("E826", "um vetor pode ter no máximo 3 dimensões", t.line, t.col,
+                   "use até três pares de limites: vetor[1..2, 1..3, 1..4].");
             return false;
         }
         ArrayDim dim;
         if (!parse_array_bound(dim.low)) return false;
         if (!match(TokenType::DOTDOT)) {
-            const Token& t = peek();
-            diags_.error("E822", "'..' esperado entre os limites do vetor", t.line, t.col,
-                         kHintVetor);
+            const SourcePos t = expected_pos();
+            report("E822", "'..' esperado entre os limites do vetor", t.line, t.col,
+                   kHintVetor);
             return false;
         }
         if (!parse_array_bound(dim.high)) return false;
         dims.push_back(dim);
     } while (match(TokenType::COMMA));
     if (check(TokenType::NUMBER) || check(TokenType::IDENTIFIER) || check(TokenType::MINUS)) {
-        const Token& t = peek();
-        diags_.error("E827", "',' esperado entre as dimensões do vetor", t.line, t.col,
-                     "separe as dimensões com vírgula: vetor[1..3, 1..4].");
+        const SourcePos t = expected_pos();
+        report("E827", "',' esperado entre as dimensões do vetor", t.line, t.col,
+               "separe as dimensões com vírgula: vetor[1..3, 1..4].");
         return false;
     }
     if (!match(TokenType::RBRACKET)) {
-        const Token& t = peek();
-        diags_.error("E823", "']' esperado depois dos limites do vetor", t.line, t.col,
-                     kHintVetor);
+        const SourcePos t = expected_pos();
+        report("E823", "']' esperado depois dos limites do vetor", t.line, t.col,
+               kHintVetor);
         return false;
     }
     if (!match(TokenType::DE)) {
-        const Token& t = peek();
-        diags_.error("E824", "'de' esperado depois de ']'", t.line, t.col, kHintVetor);
+        const SourcePos t = expected_pos();
+        report("E824", "'de' esperado depois de ']'", t.line, t.col, kHintVetor);
         return false;
     }
     return true;

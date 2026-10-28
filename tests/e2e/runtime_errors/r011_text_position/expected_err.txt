@@ -1,0 +1,6 @@
+erro de execução[R011]: copia: a posição inicial precisa ser 1 ou mais, mas é 0
+ --> program.por:6
+     |
+   6 |   escreval(copia(t, 0, 2))
+     |
+     = dica: posições em texto vão de 1 até tamanho(texto); em chr use um código de 1 a 1114111

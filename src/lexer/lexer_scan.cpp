@@ -1,4 +1,5 @@
 #include "spike/lexer.hpp"
+#include "diagnostics/utf8.hpp"
 #include "lexer/lexer_hints.hpp"
 
 #include <cctype>
@@ -24,12 +25,30 @@ using namespace lexer_hints;
 
 Token Lexer::scan_identifier_or_keyword() {
     const int start = current_;
-    while (!is_at_end() && is_alphanumeric(peek())) {
-        advance();
+    int accent_col = 0;
+    std::string accent;
+    while (!is_at_end()) {
+        if (is_alphanumeric(peek())) {
+            advance();
+            continue;
+        }
+        const std::size_t letter = latin_letter_length();
+        if (letter == 0) break;
+        if (accent.empty()) {
+            accent = source_.substr(static_cast<std::size_t>(current_), letter);
+            accent_col = col_;
+        }
+        for (std::size_t i = 0; i < letter; ++i) advance();
     }
     const std::string lexeme = source_.substr(
         static_cast<std::size_t>(start),
         static_cast<std::size_t>(current_ - start));
+    if (!accent.empty()) {
+        diags_.error("E001", "caractere desconhecido '" + accent + "'", token_start_line_,
+                     accent_col,
+                     "nomes de variáveis não podem ter acento, use '" +
+                         utf8::strip_accents(lexeme) + "' em vez de '" + lexeme + "'.");
+    }
 
     const TokenType type = keyword_type(to_lower_ascii(lexeme));
     return make_token(type, lexeme);

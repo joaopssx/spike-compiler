@@ -86,6 +86,10 @@ private:
         return Failure{"'" + node.name + "(...)' não tem valor fixo", {node.line, node.col}};
     }
 
+    std::variant<ConstValue, Failure> visit(const ErrorExpr& node) {
+        return Failure{"expressão incompleta", {node.line, node.col}};
+    }
+
     std::variant<ConstValue, Failure> visit(const UnaryExpr& node) {
         auto operand = eval(*node.operand);
         if (std::holds_alternative<Failure>(operand)) return operand;

@@ -1,9 +1,18 @@
 #include "spike_runtime.h"
 
+static const char* const source_lines[] = {"inicio", "  media(a, 0)", "  r <- a div b"};
+
 int main(int argc, char** argv) {
     const char* mode = argc > 1 ? argv[1] : "";
     spike_init();
-    if (strcmp(mode, "int") == 0) {
+    if (strcmp(mode, "source") == 0) {
+        spike_set_source("soma.por", source_lines, 3);
+        spike_enter("media", 2);
+        spike_write_int(spike_div_int(1, 0, 3));
+    } else if (strcmp(mode, "sourcefar") == 0) {
+        spike_set_source("soma.por", source_lines, 3);
+        spike_write_int(spike_div_int(1, 0, 9));
+    } else if (strcmp(mode, "int") == 0) {
         spike_write_int(spike_read_int(5, "x"));
     } else if (strcmp(mode, "real") == 0) {
         spike_write_real(spike_read_real(5, "x"));
@@ -18,7 +27,7 @@ int main(int argc, char** argv) {
     } else if (strcmp(mode, "index2") == 0) {
         spike_write_int((spike_int)spike_index_dim(5, 1, 4, 14, "m", 2));
     } else if (strcmp(mode, "depth") == 0) {
-        for (;;) spike_enter(21);
+        for (;;) spike_enter("conta", 21);
     } else if (strcmp(mode, "noreturn") == 0) {
         spike_missing_return(22, "sinal");
     } else if (strcmp(mode, "sqrtneg") == 0) {

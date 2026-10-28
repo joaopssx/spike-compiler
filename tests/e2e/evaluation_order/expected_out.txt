@@ -1,0 +1,11 @@
+5
+103
+-1
+2 0 2
+enquanto 1
+contador 2
+repita 0
+repita 1
+contador 2
+sim
+7

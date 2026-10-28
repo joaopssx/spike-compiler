@@ -69,16 +69,7 @@ static inline void spike_cleanup(void)
 #endif
 }
 
-static inline void spike_fail(int code, int line, const char *message)
-{
-    spike_flush();
-    fprintf(stderr, "erro de execução[R%03d]: %s\n", code, message);
-    if (line > 0)
-        fprintf(stderr, "  --> linha %d\n", line);
-    fflush(stderr);
-    spike_cleanup();
-    exit(SPIKE_EXIT_RUNTIME_ERROR);
-}
+static inline void spike_fail(int code, int line, const char *message);
 
 static inline void spike_init(void)
 {

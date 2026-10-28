@@ -10,30 +10,29 @@ namespace spike {
 // --- Statements (atribuicao, escreva/escreval, leia) -----------------------
 
 StmtList Parser::parse_stmt_list(TokenType stop_at) {
-    StmtList list;
-    while (!is_at_end() && !check(stop_at)) {
-        StmtPtr s = parse_stmt();
-        if (s) list.push_back(std::move(s));
-        // Se parse_stmt() retornou nullptr, ele ja consumiu o token problematico.
-    }
-    return list;
+    return parse_stmt_list({stop_at});
 }
 
+// Para no fechamento deste bloco ou de qualquer bloco aberto em volta: assim um
+// 'fimse' esquecido nao engole o 'fimenquanto' de fora.
 StmtList Parser::parse_stmt_list(std::initializer_list<TokenType> stop_tokens) {
+    block_stops_.emplace_back(stop_tokens);
     StmtList list;
-    while (!is_at_end()) {
-        bool should_stop = false;
-        for (TokenType s : stop_tokens) {
-            if (check(s)) { should_stop = true; break; }
-        }
-        if (should_stop) break;
+    while (!is_at_end() && !closes_open_block()) {
+        const int start = current_;
+        const int errors_before = error_events_;
         StmtPtr s = parse_stmt();
         if (s) list.push_back(std::move(s));
+        if (error_events_ != errors_before) synchronize(previous().line);
+        if (current_ == start) advance();
     }
+    block_stops_.pop_back();
     return list;
 }
 
 StmtPtr Parser::parse_stmt() {
+    const NestingGuard guard(*this);
+    if (abandoned_) return nullptr;
     // Atribuicao: IDENTIFIER seguido de <- ou :=.
     if (check(TokenType::IDENTIFIER) &&
         (peek_next().type == TokenType::ARROW || peek_next().type == TokenType::ASSIGN ||
@@ -58,13 +57,14 @@ StmtPtr Parser::parse_stmt() {
         return make_stmt(BreakStmt{keyword.line, keyword.col});
     }
 
-    // Nao reconheceu - emite e consome 1 token pra garantir progresso.
-    const Token& t = peek();
-    diags_.error("E300",
-                 std::string("instrução não reconhecida: '") + t.lexeme + "'",
-                 t.line, t.col,
-                 "instruções válidas: atribuição (<-), escreva, leia, se, enquanto, para.");
+    // Nao reconheceu - emite, consome 1 token e descarta o resto da linha.
+    const Token t = peek();
+    report("E300",
+           std::string("instrução não reconhecida: '") + t.lexeme + "'",
+           t.line, t.col,
+           "instruções válidas: atribuição (<-), escreva, leia, se, enquanto, para.");
     advance();
+    synchronize(t.line);
     return nullptr;
 }
 
@@ -75,14 +75,15 @@ StmtPtr Parser::parse_assign() {
     ExprPtr target = parse_name_reference(name_tok);
 
     if (!(match(TokenType::ARROW) || match(TokenType::ASSIGN))) {
-        const Token& t = peek();
-        diags_.error("E305", "'<-' ou ':=' esperado na atribuição",
-                     t.line, t.col,
-                     "use 'x <- 42' ou 'x := 42' pra atribuir.");
+        const SourcePos t = expected_pos();
+        report("E305", "'<-' ou ':=' esperado na atribuição",
+               t.line, t.col,
+               "use 'x <- 42' ou 'x := 42' pra atribuir.");
         return nullptr;
     }
 
-    ExprPtr value = parse_expr();
+    const bool value_on_next_line = is_at_end() || peek().line > previous().line;
+    ExprPtr value = value_on_next_line ? missing_expr() : parse_expr();
 
     AssignStmt s;
     s.target = std::move(target);
@@ -98,11 +99,11 @@ StmtPtr Parser::parse_escreva(bool newline) {
     const char* op_name = newline ? "escreval" : "escreva";
 
     if (!match(TokenType::LPAREN)) {
-        const Token& t = peek();
-        diags_.error("E301",
-                     std::string("'(' esperado após ") + op_name,
-                     t.line, t.col,
-                     "use parênteses: escreva(\"texto\", variavel).");
+        const SourcePos t = expected_pos();
+        report("E301",
+               std::string("'(' esperado após ") + op_name,
+               t.line, t.col,
+               "use parênteses: escreva(\"texto\", variavel).");
         return nullptr;
     }
 
@@ -115,11 +116,11 @@ StmtPtr Parser::parse_escreva(bool newline) {
     }
 
     if (!match(TokenType::RPAREN)) {
-        const Token& t = peek();
-        diags_.error("E302",
-                     std::string("')' esperado no final do ") + op_name,
-                     t.line, t.col,
-                     "feche a chamada com ')'.");
+        const SourcePos t = expected_pos();
+        report("E302",
+               std::string("')' esperado no final do ") + op_name,
+               t.line, t.col,
+               "feche a chamada com ')'.");
     }
 
     EscrevaStmt s;
@@ -135,10 +136,10 @@ StmtPtr Parser::parse_leia() {
     const Token op_tok = previous();
 
     if (!match(TokenType::LPAREN)) {
-        const Token& t = peek();
-        diags_.error("E303", "'(' esperado após leia",
-                     t.line, t.col,
-                     "use parênteses: leia(x, y).");
+        const SourcePos t = expected_pos();
+        report("E303", "'(' esperado após leia",
+               t.line, t.col,
+               "use parênteses: leia(x, y).");
         return nullptr;
     }
 
@@ -146,8 +147,8 @@ StmtPtr Parser::parse_leia() {
     if (!check(TokenType::RPAREN)) {
         while (true) {
             if (!check(TokenType::IDENTIFIER)) {
-                const Token& t = peek();
-                diags_.error("E306", "nome de variável esperado em leia",
+                const SourcePos t = expected_pos();
+                report("E306", "nome de variável esperado em leia",
                              t.line, t.col,
                              "leia só aceita nomes de variáveis: leia(x, y).");
                 // Consome pra evitar travar e sai.
@@ -161,10 +162,10 @@ StmtPtr Parser::parse_leia() {
     }
 
     if (!match(TokenType::RPAREN)) {
-        const Token& t = peek();
-        diags_.error("E304", "')' esperado no final do leia",
-                     t.line, t.col,
-                     "feche a chamada com ')'.");
+        const SourcePos t = expected_pos();
+        report("E304", "')' esperado no final do leia",
+               t.line, t.col,
+               "feche a chamada com ')'.");
     }
 
     LeiaStmt s;

@@ -1,13 +1,11 @@
+#include "codegen/c_compile_support.hpp"
 #include "codegen/codegen_support.hpp"
 #include "support/registry.hpp"
 #include "support/test_support.hpp"
 
 #include "spike/file_reader.hpp"
 
-#include <cstdlib>
-#include <fstream>
 #include <iostream>
-#include <iterator>
 #include <string>
 
 namespace {
@@ -16,39 +14,9 @@ using spike_tests::generate_from_source;
 
 #ifdef SPIKE_TEST_C_COMPILER
 
-int run_shell(std::string command) {
-#ifdef _WIN32
-    command = "\"" + command + "\"";
-#endif
-    return std::system(command.c_str());
-}
-
-std::string read_all(const std::string& path) {
-    std::ifstream file(path, std::ios::binary);
-    std::string text((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
-    std::string without_cr;
-    for (char c : text) {
-        if (c != '\r') without_cr += c;
-    }
-    return without_cr;
-}
-
-bool compile_c(const std::string& c_source, const std::string& base) {
-    {
-        std::ofstream file(base + ".c", std::ios::binary);
-        file << c_source;
-    }
-    const std::string compile = std::string("\"") + SPIKE_TEST_C_COMPILER +
-                                "\" -std=c99 -Wall -Wextra -pedantic -Werror \"" + base +
-                                ".c\" -o \"" + base + ".exe\" -lm";
-    const int status = run_shell(compile);
-    if (status != 0) std::cerr << "  compile command failed: " << compile << "\n";
-    return status == 0;
-}
-
-int run_to_file(const std::string& base) {
-    return run_shell("\"" + base + ".exe\" > \"" + base + ".out\"");
-}
+using spike_tests::compile_c;
+using spike_tests::read_all;
+using spike_tests::run_to_file;
 
 void test_generated_c_compiles_without_warnings() {
     const auto gen = generate_from_source(

@@ -1,0 +1,6 @@
+erro de execução[R010]: aleatorio(9, 2): o primeiro número precisa ser menor ou igual ao segundo
+ --> program.por:5
+     |
+   5 |   n <- aleatorio(9, 2)
+     |
+     = dica: chame aleatorio(menor, maior), com o primeiro número menor ou igual ao segundo

@@ -74,6 +74,28 @@ void test_failing_compiler_is_e903() {
     SPIKE_EXPECT(result.compiler_output.find("fake error line 25") != std::string::npos);
 }
 
+void test_compiler_error_line_from_line_directives() {
+    const std::string output = "C:/tmp/soma.c: In function 'main':\n"
+                               "soma.por:3:9: error: expected expression before ';' token\n";
+    SPIKE_EXPECT(spike::compiler_error_line(output, "soma.por") == 3);
+    SPIKE_EXPECT(spike::compiler_error_line("minhasoma.por:3:1: erro\n", "soma.por") == 0);
+    SPIKE_EXPECT(spike::compiler_error_line("fake error line 1\n", "soma.por") == 0);
+
+    spike::DriverError error = spike::compiler_failed_error(output);
+    spike::point_to_source(error, output, "soma.por",
+                           "algoritmo \"s\"\r\ninicio\r\n  r <- a div b\r\nfimalgoritmo\r\n");
+    SPIKE_EXPECT(error.message ==
+                 "o compilador C recusou o código gerado para a linha 3 de soma.por");
+    SPIKE_EXPECT(error.location == "soma.por:3");
+    SPIKE_EXPECT(error.source_line == 3);
+    SPIKE_EXPECT(error.source_text == "  r <- a div b");
+
+    spike::DriverError unknown = spike::compiler_failed_error("fake error line 1\n");
+    spike::point_to_source(unknown, "fake error line 1\n", "soma.por", "inicio\n");
+    SPIKE_EXPECT(unknown.location.empty());
+    SPIKE_EXPECT(unknown.message == "o compilador C recusou o código gerado");
+}
+
 void test_bundled_compiler_is_found_first() {
     EnvGuard guard("SPIKE_CC");
     unset_env("SPIKE_CC");
@@ -159,6 +181,7 @@ void run_cc_driver_tests() {
     test_spike_cc_pointing_nowhere_is_e902();
     test_empty_path_without_spike_cc_is_e902();
     test_failing_compiler_is_e903();
+    test_compiler_error_line_from_line_directives();
     test_bundled_compiler_is_found_first();
     test_write_failed_error();
     test_real_compiler_found_on_path();

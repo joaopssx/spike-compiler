@@ -6,11 +6,15 @@
 #include "spike/token.hpp"
 
 #include <initializer_list>
+#include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace spike
 {
+
+    SourcePos error_after(const Token &token);
 
     class Parser
     {
@@ -31,6 +35,32 @@ namespace spike
         std::vector<Token> tokens_;
         int current_;
         Diagnostics diags_;
+
+        // Recuperacao de erros (parser_recovery.cpp)
+        std::vector<std::vector<TokenType>> block_stops_;
+        std::set<std::pair<int, int>> error_positions_;
+        int error_events_ = 0;
+        int nesting_ = 0;
+        bool abandoned_ = false;
+
+        struct NestingGuard {
+            explicit NestingGuard(Parser &parser);
+            ~NestingGuard();
+            NestingGuard(const NestingGuard &) = delete;
+            NestingGuard &operator=(const NestingGuard &) = delete;
+            Parser &parser;
+        };
+
+        void report(const std::string &code, const std::string &message, int line, int col,
+                    const std::string &hint = "");
+        void synchronize(int error_line);
+        bool closes_open_block() const;
+        bool is_block_word(TokenType t) const;
+        bool starts_statement();
+        bool looks_like_statement();
+        bool has_token_ahead(TokenType t) const;
+        SourcePos expected_pos();
+        ExprPtr missing_expr();
 
         // Navegacao
         Token &peek();

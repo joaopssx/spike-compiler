@@ -16,11 +16,13 @@ using TypeMap = std::unordered_map<const Expr*, TypeKind>;
 class CWriter {
 public:
     void line(const std::string& text);
+    void directive(const std::string& text);
     void blank();
     void raw(const std::string& text);
     void indent();
     void dedent();
     const std::string& str() const;
+    int next_line() const;
 
 private:
     std::string out_;
@@ -39,10 +41,17 @@ std::string comment_safe(const std::string& text);
 const char* c_type(TypeKind type);
 const char* default_value(TypeKind type);
 
+struct Access {
+    bool reads = false;
+    bool changes = false;
+};
+
+Access operator|(Access a, Access b);
+
 class Generator {
 public:
     Generator(const Program& program, const TypeMap& types, const ConstantMap& constants,
-              std::string source_name);
+              std::string source_name, CodegenOptions options);
     CodegenResult run();
 
 private:
@@ -50,19 +59,45 @@ private:
     const TypeMap& types_;
     const ConstantMap& constants_;
     std::string source_name_;
+    CodegenOptions options_;
+    bool in_source_lines_ = false;
     std::unordered_map<std::string, TypeKind> var_types_;
     std::unordered_map<std::string, std::vector<ArrayBounds>> var_dims_;
     std::unordered_map<std::string, const ProcedureDecl*> procedures_;
     const ProcedureDecl* current_ = nullptr;
     std::unordered_set<std::string> ref_params_;
+    std::unordered_set<std::string> with_effects_;
+    std::unordered_set<std::string> locals_;
+    std::unordered_set<std::string> locals_by_ref_;
+    std::vector<std::string> pending_;
+    Access later_;
     CWriter out_;
     CodegenResult result_;
     int loop_count_ = 0;
 
     bool failed() const;
+    void collect_effects();
+    bool has_effects(const ProcedureDecl& proc) const;
+    void enter_scope(const ProcedureDecl* proc);
+    bool may_change(const std::string& name) const;
+    Access access(const ExprPtr& value) const;
+    Access ref_access(const ExprPtr& arg) const;
+    Access arg_access(const ProcedureDecl& proc, const std::vector<ExprPtr>& args,
+                      std::size_t from) const;
+    bool must_come_first(const Access& part, const Access& after) const;
+    std::string temporary(const std::string& type, const std::string& value);
+    std::string logical(const BinaryExpr& node);
+    std::vector<std::string> take_pending();
+    void emit_lines(const std::vector<std::string>& lines);
+    void emit_line(const std::string& text);
     void fail(const char* code, const std::string& message, int line, int col);
 
     void emit_header();
+    void emit_source_lines();
+    void emit_source_setup();
+    void mark_source_line(int line);
+    void mark_generated_code();
+    void emit_user_block(const StmtList& stmts);
     void emit_constants();
     void emit_globals();
     void emit_main();
@@ -102,7 +137,8 @@ private:
     long long element_count(const std::string& name) const;
     std::string element(const IndexExpr& node);
     std::string lvalue(const ExprPtr& target, std::string& name);
-    std::string expr_as(const ExprPtr& expr, TypeKind wanted);
+    std::string expr_as(const ExprPtr& expr, TypeKind wanted, const Access& after = Access{});
+    std::string ordered_reference(const ExprPtr& arg, const Access& after);
     std::string binary(const BinaryExpr& node, TypeKind result);
     std::string unary(const UnaryExpr& node);
 };

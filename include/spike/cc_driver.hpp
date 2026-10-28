@@ -16,6 +16,9 @@ struct DriverError {
     std::string message;
     std::string hint;
     std::string details;
+    std::string location;
+    int source_line = 0;
+    std::string source_text;
 };
 
 struct CompileRequest {
@@ -38,6 +41,9 @@ CompileResult compile_c(const CompilerInfo& compiler, const CompileRequest& requ
 
 DriverError no_compiler_error();
 DriverError compiler_failed_error(const std::string& compiler_output);
+int compiler_error_line(const std::string& compiler_output, const std::string& source_name);
+void point_to_source(DriverError& error, const std::string& compiler_output,
+                     const std::string& source_name, const std::string& source);
 DriverError write_failed_error(const std::string& path, const std::string& reason);
 
 } // namespace spike

@@ -43,6 +43,8 @@ private:
     bool is_digit(char c) const;
     bool is_alpha(char c) const;
     bool is_alphanumeric(char c) const;
+    std::size_t latin_letter_length() const;
+    bool check_utf8();
 
     // Criacao de tokens
     Token make_token(TokenType type, const std::string& lexeme) const;

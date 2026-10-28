@@ -1,0 +1,6 @@
+erro de execução[R003]: esperava um número inteiro, mas recebeu 'abc'
+ --> program.por:6
+     |
+   6 |   leia(n)
+     |
+     = dica: digite um valor do tipo que o 'leia' espera; em números reais vale ponto ou vírgula

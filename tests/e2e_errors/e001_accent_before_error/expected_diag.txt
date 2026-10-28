@@ -1,0 +1,3 @@
+erro[E001]: caractere desconhecido '@'
+   3 |   escreval("Olá, ação é") @
+     |                           ^

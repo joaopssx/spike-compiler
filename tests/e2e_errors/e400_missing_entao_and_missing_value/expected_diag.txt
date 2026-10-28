@@ -1,0 +1,6 @@
+erro[E400]: 'entao' esperado após condição do 'se'
+   6 |   se b > 3
+     |           ^
+erro[E201]: expressão esperada
+   9 |   x <-
+     |       ^

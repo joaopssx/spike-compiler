@@ -1,7 +1,9 @@
 #include "spike/cli.hpp"
 #include "spike/colors.hpp"
+#include "spike/commands.hpp"
 #include "spike/compile_pipeline.hpp"
 #include "spike/console.hpp"
+#include "spike/explain.hpp"
 #include "spike/file_reader.hpp"
 #include "spike/lexer.hpp"
 #include "spike/parser.hpp"
@@ -92,11 +94,11 @@ int run_tokens(const spike::CliArgs& args) {
         if (args.flag_verbose) {
             std::ostringstream idx;
             idx << "#" << std::setw(3) << std::setfill('0') << (printed + 1);
-            std::cout << spike::gray(idx.str()) << " ";
+            std::cout << spike::gray(idx.str(), spike::Stream::Out) << " ";
         }
 
-        std::cout << spike::gray(pad_right(position, pos_width)) << " "
-                  << spike::cyan(type_str) << " "
+        std::cout << spike::gray(pad_right(position, pos_width), spike::Stream::Out) << " "
+                  << spike::cyan(type_str, spike::Stream::Out) << " "
                   << "\"" << t.lexeme << "\"\n";
         ++printed;
     }
@@ -105,22 +107,17 @@ int run_tokens(const spike::CliArgs& args) {
     std::ostringstream summary;
     summary << "— " << printed << " tokens encontrados em " << lines
             << (lines == 1 ? " linha" : " linhas");
-    std::cout << spike::gray(summary.str()) << std::endl;
+    std::cout << spike::gray(summary.str(), spike::Stream::Out) << std::endl;
 
     // Smoke test do parser - so pra confirmar que ele aceita/rejeita.
     spike::Parser parser(lo->tokens, args.input_file, lo->source);
     parser.parse();
     if (parser.had_error()) {
-        std::cout << spike::red("parse: erros encontrados.") << std::endl;
+        std::cout << spike::red("parse: erros encontrados.", spike::Stream::Out) << std::endl;
         parser.diagnostics().print_all();
     } else {
-        std::cout << spike::green("parse: OK") << std::endl;
+        std::cout << spike::green("parse: OK", spike::Stream::Out) << std::endl;
     }
-    return 0;
-}
-
-int run_stub(const std::string& label) {
-    std::cerr << spike::yellow("'" + label + "' ainda não implementado.") << std::endl;
     return 0;
 }
 
@@ -130,6 +127,7 @@ int main(int argc, char** argv) {
     spike::init_console();
 
     spike::CliArgs args = spike::parse_args(argc, argv);
+    spike::set_color_mode(args.color);
 
     if (args.parse_error) {
         std::cerr << spike::red("erro: " + args.parse_error_msg) << std::endl;
@@ -140,16 +138,14 @@ int main(int argc, char** argv) {
     switch (args.command) {
         case spike::Command::HELP:    spike::print_help();    return 0;
         case spike::Command::VERSION: spike::print_version(); return 0;
+        case spike::Command::EXPLAIN:
+            return spike::run_explain(args.explain_code, std::cout, std::cerr);
         case spike::Command::TOKENS:  return run_tokens(args);
         case spike::Command::COMPILE: return spike::run_compile(args);
         case spike::Command::CHECK:   return spike::run_check(args);
-        case spike::Command::FETCH:   return run_stub("fetch");
-        case spike::Command::DEV:     return run_stub("dev");
-        case spike::Command::RANDOM: {
-            std::string label = "random";
-            if (!args.random_mode.empty()) label += " --" + args.random_mode;
-            return run_stub(label);
-        }
+        case spike::Command::FETCH:   return spike::run_fetch(std::cout);
+        case spike::Command::DEV:     return spike::run_dev(args);
+        case spike::Command::RANDOM:  return spike::run_random(std::cerr);
         case spike::Command::UNKNOWN:
             // ja tratado pelo bloco parse_error acima; mantido por completude.
             spike::print_help();

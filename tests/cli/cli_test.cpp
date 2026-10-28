@@ -39,8 +39,18 @@ void test_cli_version_flag() {
 
 void test_cli_subcommands_no_args() {
     SPIKE_EXPECT(parse({"spike", "fetch"}).command == spike::Command::FETCH);
-    SPIKE_EXPECT(parse({"spike", "dev"}).command   == spike::Command::DEV);
     SPIKE_EXPECT(parse({"spike", "random"}).command == spike::Command::RANDOM);
+}
+
+void test_cli_dev_needs_exactly_one_file() {
+    auto missing = parse({"spike", "dev"});
+    SPIKE_EXPECT(missing.command == spike::Command::DEV);
+    SPIKE_EXPECT(missing.parse_error);
+    auto ok = parse({"spike", "dev", "calc.por"});
+    SPIKE_EXPECT(ok.command == spike::Command::DEV);
+    SPIKE_EXPECT(!ok.parse_error);
+    SPIKE_EXPECT(ok.input_file == "calc.por");
+    SPIKE_EXPECT(parse({"spike", "dev", "a.por", "b.por"}).parse_error);
 }
 
 void test_cli_tokens_needs_file() {
@@ -102,6 +112,17 @@ void test_cli_compile_flags_in_any_order() {
     SPIKE_EXPECT(a.flag_run);
 }
 
+void test_cli_compile_warning_flags() {
+    auto plain = parse({"spike", "calc.por"});
+    SPIKE_EXPECT(!plain.flag_no_warnings);
+    SPIKE_EXPECT(!plain.flag_warnings_as_errors);
+
+    auto a = parse({"spike", "calc.por", "--no-warnings", "--warnings-as-errors"});
+    SPIKE_EXPECT(a.parse_error == false);
+    SPIKE_EXPECT(a.flag_no_warnings);
+    SPIKE_EXPECT(a.flag_warnings_as_errors);
+}
+
 void test_cli_compile_dash_o_missing_value() {
     auto a = parse({"spike", "calc.por", "-o"});
     SPIKE_EXPECT(a.parse_error == true);
@@ -145,6 +166,7 @@ void run_cli_tests() {
     test_cli_help_flag();
     test_cli_version_flag();
     test_cli_subcommands_no_args();
+    test_cli_dev_needs_exactly_one_file();
     test_cli_tokens_needs_file();
     test_cli_tokens_accepts_verbose();
     test_cli_tokens_rejects_unknown_flag();
@@ -152,6 +174,7 @@ void run_cli_tests() {
     test_cli_compile_case_insensitive_extension();
     test_cli_compile_with_all_flags();
     test_cli_compile_flags_in_any_order();
+    test_cli_compile_warning_flags();
     test_cli_compile_dash_o_missing_value();
     test_cli_compile_dash_o_eats_flag_is_error();
     test_cli_compile_unknown_flag_is_error();

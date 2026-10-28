@@ -64,7 +64,7 @@ void test_symbol_flags_for_para() {
     auto r = analyze_source(program_with("  i, fim : inteiro\n",
                                          "  para i de 1 ate fim faca\n  fimpara\n"));
     SPIKE_EXPECT(r.symbols.lookup("i")->assigned);
-    SPIKE_EXPECT(!r.symbols.lookup("i")->used);
+    SPIKE_EXPECT(r.symbols.lookup("i")->used);
     SPIKE_EXPECT(r.symbols.lookup("fim")->used);
 }
 

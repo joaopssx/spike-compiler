@@ -93,6 +93,8 @@ public:
                 } else if constexpr (std::is_same_v<Node, CallExpr>) {
                     line(depth, "Call " + node.name + position(node.line, node.col));
                     for (const ExprPtr& arg : node.args) expr(arg, depth + 1);
+                } else if constexpr (std::is_same_v<Node, ErrorExpr>) {
+                    line(depth, "Error" + position(node.line, node.col));
                 } else if constexpr (std::is_same_v<Node, BinaryExpr>) {
                     line(depth, std::string("Binary ") + to_string(node.op) +
                                     position(node.line, node.col));

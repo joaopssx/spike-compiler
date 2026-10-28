@@ -32,4 +32,5 @@ function(spike_add_e2e_cases folder prefix)
 endfunction()
 
 spike_add_e2e_cases(tests/e2e e2e_)
+spike_add_e2e_cases(tests/e2e/runtime_errors e2e_runtime_)
 spike_add_e2e_cases(tests/e2e_errors e2e_error_)

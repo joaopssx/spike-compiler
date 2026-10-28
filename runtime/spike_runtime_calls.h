@@ -10,6 +10,7 @@
 #endif
 
 #define SPIKE_MAX_CALL_DEPTH 10000
+#define SPIKE_SAVED_CALLS 64
 
 #ifndef SPIKE_R_OUT_OF_MEMORY
 #define SPIKE_R_OUT_OF_MEMORY 8
@@ -21,7 +22,14 @@
 
 static inline void spike_fail(int code, int line, const char* message);
 
+typedef struct spike_call {
+    const char* name;
+    int line;
+    int depth;
+} spike_call;
+
 static int spike_call_depth = 0;
+static spike_call spike_calls[SPIKE_SAVED_CALLS];
 static uintptr_t spike_stack_start = 0;
 static uintptr_t spike_stack_budget = 0;
 
@@ -39,16 +47,23 @@ static inline uintptr_t spike_stack_size(uintptr_t here) {
     return (uintptr_t)8 * 1024 * 1024;
 }
 
-static inline void spike_enter(int line) {
+/* Slots are reused every 64 levels; depth tells whether a slot still holds that level. */
+static inline void spike_enter(const char* name, int line) {
     char marker;
     uintptr_t here = (uintptr_t)&marker;
     uintptr_t used;
+    spike_call* slot;
     if (spike_stack_start == 0) {
         spike_stack_start = here;
         spike_stack_budget = spike_stack_size(here) / 4 * 3;
     }
     used = spike_stack_start > here ? spike_stack_start - here : here - spike_stack_start;
-    if (++spike_call_depth > SPIKE_MAX_CALL_DEPTH)
+    ++spike_call_depth;
+    slot = &spike_calls[(spike_call_depth - 1) % SPIKE_SAVED_CALLS];
+    slot->name = name;
+    slot->line = line;
+    slot->depth = spike_call_depth;
+    if (spike_call_depth > SPIKE_MAX_CALL_DEPTH)
         spike_fail(SPIKE_R_OUT_OF_MEMORY, line,
                    "recursão profunda demais (limite de 10000 chamadas), verifique a condição "
                    "de parada");

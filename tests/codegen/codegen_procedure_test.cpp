@@ -28,13 +28,13 @@ void test_prototypes_come_before_definitions() {
                                    "fimprocedimento\n",
                                    "  saudar(\"Ana\", 2)\n  linha()\n");
     expect(c, "spike_int v_v[3];\n\n"
-              "static void p_saudar(spike_str v_nome, spike_int v_vezes);\n"
-              "static void p_linha(void);\n\n"
-              "static void p_saudar(spike_str v_nome, spike_int v_vezes) {\n"
-              "    spike_enter(5);\n    spike_leave();\n}\n\n"
-              "static void p_linha(void) {\n    spike_enter(8);\n    spike_leave();\n}\n\n"
+              "static void p_saudar(int spike_line, spike_str v_nome, spike_int v_vezes);\n"
+              "static void p_linha(int spike_line);\n\n"
+              "static void p_saudar(int spike_line, spike_str v_nome, spike_int v_vezes) {\n"
+              "    spike_enter(\"saudar\", spike_line);\n    spike_leave();\n}\n\n"
+              "static void p_linha(int spike_line) {\n    spike_enter(\"Linha\", spike_line);\n    spike_leave();\n}\n\n"
               "int main(void) {\n");
-    expect(c, "    p_saudar(\"Ana\", 2LL);\n    p_linha();\n");
+    expect(c, "    p_saudar(12, \"Ana\", 2LL);\n    p_linha(13);\n");
 }
 
 void test_locals_start_with_default_values() {
@@ -43,8 +43,8 @@ void test_locals_start_with_default_values() {
                                    "  nomes : vetor[1..2] de caractere\ninicio\n  i <- 1\n"
                                    "fimprocedimento\n",
                                    "  p(a)\n");
-    expect(c, "static void p_p(spike_real v_x) {\n"
-              "    spike_enter(5);\n"
+    expect(c, "static void p_p(int spike_line, spike_real v_x) {\n"
+              "    spike_enter(\"p\", spike_line);\n"
               "    spike_int v_i = 0LL;\n"
               "    spike_str v_t = \"\";\n"
               "    spike_bool v_ok = 0;\n"
@@ -54,7 +54,7 @@ void test_locals_start_with_default_values() {
               "    v_i = 1LL;\n"
               "    spike_leave();\n"
               "}\n");
-    expect(c, "    p_p(((spike_real)v_a));\n");
+    expect(c, "    p_p(16, ((spike_real)v_a));\n");
 }
 
 void test_local_shadows_global_array() {
@@ -74,7 +74,7 @@ void test_recursive_call() {
     const std::string c = generate("procedimento conta(n: inteiro)\ninicio\n  se n > 0 entao\n"
                                    "    conta(n - 1)\n  fimse\nfimprocedimento\n",
                                    "  conta(3)\n");
-    expect(c, "    if (v_n > 0LL) {\n        p_conta(spike_sub_int(v_n, 1LL));\n    }\n");
+    expect(c, "    if (v_n > 0LL) {\n        p_conta(8, spike_sub_int(v_n, 1LL));\n    }\n");
 }
 
 } // namespace

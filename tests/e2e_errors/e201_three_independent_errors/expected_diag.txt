@@ -1,0 +1,9 @@
+erro[E201]: expressão esperada
+   5 |   x <- )
+     |        ^
+erro[E301]: '(' esperado após escreval
+   6 |   escreval 1
+     |            ^
+erro[E306]: nome de variável esperado em leia
+   7 |   leia(5)
+     |        ^

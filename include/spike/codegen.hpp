@@ -18,10 +18,17 @@ struct CodegenResult {
     int error_col = 0;
 };
 
+struct CodegenOptions {
+    std::string source;
+    bool emit_line_directives = false;
+    std::string c_file_name = "programa.c";
+};
+
 CodegenResult generate_c(const Program& program,
                          const std::unordered_map<const Expr*, TypeKind>& expr_types,
                          const ConstantMap& constants,
-                         const std::string& source_name = "programa.por");
+                         const std::string& source_name = "programa.por",
+                         const CodegenOptions& options = {});
 
 } // namespace spike
 

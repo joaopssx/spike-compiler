@@ -79,6 +79,10 @@ spike_add_runtime_io_test(end_of_input int "" 101
     "-DEXPECT_STDERR=R007\\]: a entrada acabou antes de leia\\(\\) conseguir ler 'x'.*linha 5")
 spike_add_runtime_io_test(div_by_zero div "" 101
     "-DEXPECT_STDERR=R001\\]: divis.+o por zero.*linha 7")
+spike_add_runtime_io_test(error_shows_source source "" 101
+    "-DEXPECT_STDERR=^erro de execu.+o\\[R001\\]: divis.+o por zero\n --> soma.por:3\n     [|]\n   3 [|]   r <- a div b\n     [|]\n  chamado de 'media' na linha 2\n     = dica: verifique se o divisor")
+spike_add_runtime_io_test(error_line_outside_source sourcefar "" 101
+    "-DEXPECT_STDERR=--> soma.por:9\n     = dica:")
 spike_add_runtime_io_test(div_real_by_zero divreal "" 101 "-DEXPECT_STDERR=R001.*linha 9")
 spike_add_runtime_io_test(pow_infinite pow "" 101
     "-DEXPECT_STDERR=R005\\]: resultado inv.+lido na pot.+ncia.*linha 11")

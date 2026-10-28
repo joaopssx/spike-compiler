@@ -16,7 +16,8 @@ struct GeneratedC {
 };
 
 inline GeneratedC generate_from_source(const std::string& src,
-                                       const std::string& name = "teste.por") {
+                                       const std::string& name = "teste.por",
+                                       bool line_directives = false) {
     GeneratedC out;
     spike::Lexer lex(src, name);
     spike::Parser parser(lex.tokenize(), name, src);
@@ -25,8 +26,11 @@ inline GeneratedC generate_from_source(const std::string& src,
     analyzer.analyze();
     out.front_end_ok = !lex.had_error() && !parser.had_error() && !analyzer.had_error();
     if (out.front_end_ok) {
-        out.result =
-            spike::generate_c(program, analyzer.expr_types(), analyzer.constants(), name);
+        spike::CodegenOptions options;
+        options.source = src;
+        options.emit_line_directives = line_directives;
+        out.result = spike::generate_c(program, analyzer.expr_types(), analyzer.constants(), name,
+                                       options);
     }
     return out;
 }

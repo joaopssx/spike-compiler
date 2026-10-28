@@ -60,12 +60,20 @@ TypeKind Generator::type_of(const Expr& expr) {
     return type;
 }
 
-std::string Generator::expr_as(const ExprPtr& value, TypeKind wanted) {
+std::string Generator::expr_as(const ExprPtr& value, TypeKind wanted, const Access& after) {
     if (!value) {
         fail("E900", "erro interno do gerador: expressão vazia", 0, 0);
         return "";
     }
-    const std::string text = expr(value);
+    const Access outer = later_;
+    const Access later = outer | after;
+    const bool first = must_come_first(access(value), later);
+    later_ = first ? Access{} : later;
+    std::string text = expr(value);
+    later_ = outer;
+    if (failed()) return "";
+    const char* own_type = c_type(type_of(*value));
+    if (first && own_type) text = temporary(own_type, text);
     if (wanted == TypeKind::Real && type_of(*value) == TypeKind::Integer) {
         return "((spike_real)" + text + ")";
     }
@@ -94,6 +102,9 @@ std::string Generator::expr(const ExprPtr& value) {
                 return element(node);
             } else if constexpr (std::is_same_v<Node, CallExpr>) {
                 return call(node.name, node.args, node.line, node.col);
+            } else if constexpr (std::is_same_v<Node, ErrorExpr>) {
+                fail("E900", "erro interno do gerador: expressão incompleta", node.line, node.col);
+                return "";
             } else if constexpr (std::is_same_v<Node, BinaryExpr>) {
                 return binary(node, type);
             } else {
@@ -111,11 +122,12 @@ std::string Generator::binary(const BinaryExpr& node, TypeKind result) {
     const TypeKind left_type = type_of(*node.left);
     const TypeKind right_type = type_of(*node.right);
     if (failed()) return "";
+    if (node.op == BinaryOp::And || node.op == BinaryOp::Or) return logical(node);
     const bool text = left_type == TypeKind::String && right_type == TypeKind::String;
     const bool to_real =
         left_type != right_type || node.op == BinaryOp::Div || node.op == BinaryOp::Pow;
     const TypeKind operand = to_real ? TypeKind::Real : left_type;
-    const std::string a = expr_as(node.left, operand);
+    const std::string a = expr_as(node.left, operand, access(node.right));
     const std::string b = expr_as(node.right, operand);
 
     if (node.op == BinaryOp::Add && text) return "spike_str_concat(" + a + ", " + b + ")";

@@ -3,48 +3,25 @@
 
 #include <string>
 
-#ifdef _WIN32
-#  ifndef NOMINMAX
-#    define NOMINMAX
-#  endif
-#  ifndef WIN32_LEAN_AND_MEAN
-#    define WIN32_LEAN_AND_MEAN
-#  endif
-#  include <windows.h>
-   // wingdi.h e cia. despejam macros com nomes triviais que quebram codigo
-   // C++ normal (ex: ERROR vira #define ERROR 0, conflitando com qualquer
-   // enum value chamado ERROR). Como colors.hpp e um header interno e fica
-   // no topo de tudo, limpamos aqui mesmo.
-#  ifdef ERROR
-#    undef ERROR
-#  endif
-#  ifdef OPTIONAL
-#    undef OPTIONAL
-#  endif
-#  ifdef IN
-#    undef IN
-#  endif
-#  ifdef OUT
-#    undef OUT
-#  endif
-#endif
-
 namespace spike {
 
-// Ativa o suporte a sequencias ANSI no console do Windows (VT100 mode).
-// Em outros sistemas e no-op. Header-only -> marcado inline pra evitar
-// multiplas definicoes quando incluido em mais de uma TU.
-inline void init_colors() {
-#ifdef _WIN32
-    HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
-    if (h != INVALID_HANDLE_VALUE) {
-        DWORD mode = 0;
-        if (GetConsoleMode(h, &mode)) {
-            SetConsoleMode(h, mode | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
-        }
-    }
-#endif
-}
+enum class ColorMode { Auto, Always, Never };
+
+enum class Stream { Out, Err };
+
+// Turns on ANSI sequences in the Windows console (VT100 mode) for stdout and
+// stderr. No-op elsewhere.
+void init_colors();
+
+void set_color_mode(ColorMode mode);
+ColorMode color_mode();
+
+// Auto: only when the stream is a terminal and NO_COLOR is unset; FORCE_COLOR
+// turns colors on even without a terminal. NO_COLOR wins over FORCE_COLOR.
+bool should_color(ColorMode mode, bool is_terminal, const char* no_color,
+                  const char* force_color);
+
+bool enabled(Stream stream);
 
 namespace Color {
     constexpr const char* RESET   = "\033[0m";
@@ -59,13 +36,16 @@ namespace Color {
     constexpr const char* GRAY    = "\033[38;5;240m";
 } // namespace Color
 
-inline std::string red(const std::string& s)     { return std::string(Color::RED)     + s + Color::RESET; }
-inline std::string green(const std::string& s)   { return std::string(Color::GREEN)   + s + Color::RESET; }
-inline std::string yellow(const std::string& s)  { return std::string(Color::YELLOW)  + s + Color::RESET; }
-inline std::string cyan(const std::string& s)    { return std::string(Color::CYAN)    + s + Color::RESET; }
-inline std::string bold(const std::string& s)    { return std::string(Color::BOLD)    + s + Color::RESET; }
-inline std::string caramel(const std::string& s) { return std::string(Color::CARAMEL) + s + Color::RESET; }
-inline std::string gray(const std::string& s)    { return std::string(Color::GRAY)    + s + Color::RESET; }
+std::string paint(const char* code, const std::string& s, Stream to);
+
+// The stream argument says where the text will be written: colors depend on it.
+inline std::string red(const std::string& s, Stream to = Stream::Err)     { return paint(Color::RED, s, to); }
+inline std::string green(const std::string& s, Stream to = Stream::Err)   { return paint(Color::GREEN, s, to); }
+inline std::string yellow(const std::string& s, Stream to = Stream::Err)  { return paint(Color::YELLOW, s, to); }
+inline std::string cyan(const std::string& s, Stream to = Stream::Err)    { return paint(Color::CYAN, s, to); }
+inline std::string bold(const std::string& s, Stream to = Stream::Err)    { return paint(Color::BOLD, s, to); }
+inline std::string caramel(const std::string& s, Stream to = Stream::Err) { return paint(Color::CARAMEL, s, to); }
+inline std::string gray(const std::string& s, Stream to = Stream::Err)    { return paint(Color::GRAY, s, to); }
 
 } // namespace spike
 

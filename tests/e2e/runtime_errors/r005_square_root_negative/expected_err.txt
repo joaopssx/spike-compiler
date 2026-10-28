@@ -1,0 +1,6 @@
+erro de execução[R005]: raiz de número negativo
+ --> program.por:6
+     |
+   6 |   escreval(raiz(x))
+     |
+     = dica: confira o valor antes da conta: raiz só de número sem sinal de menos, log só de número positivo, potência sem resultado infinito

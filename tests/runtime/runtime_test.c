@@ -91,14 +91,39 @@ static void test_index(void) {
 }
 
 static void test_call_depth(void) {
-    spike_enter(1);
-    spike_enter(1);
+    spike_enter("f", 1);
+    spike_enter("f", 1);
     CHECK(spike_call_depth == 2);
     spike_leave();
     spike_leave();
     spike_leave();
     CHECK(spike_call_depth == 0);
     CHECK(spike_stack_budget > 0);
+}
+
+static void test_saved_calls(void) {
+    int i;
+    for (i = 0; i < 70; ++i) spike_enter(i == 69 ? "fundo" : "f", i + 1);
+    CHECK(spike_call_depth == 70);
+    CHECK(spike_calls[69 % SPIKE_SAVED_CALLS].depth == 70);
+    CHECK(strcmp(spike_calls[69 % SPIKE_SAVED_CALLS].name, "fundo") == 0);
+    CHECK(spike_calls[69 % SPIKE_SAVED_CALLS].line == 70);
+    CHECK(spike_calls[2].depth == 67);
+    for (i = 0; i < 70; ++i) spike_leave();
+    CHECK(spike_call_depth == 0);
+}
+
+static void test_error_colors_and_hints(void) {
+    int code;
+    CHECK(spike_color_wanted(NULL, 1));
+    CHECK(spike_color_wanted("", 1));
+    CHECK(!spike_color_wanted("1", 1));
+    CHECK(!spike_color_wanted(NULL, 0));
+    for (code = SPIKE_R_DIV_ZERO; code <= SPIKE_R_TEXT_RANGE; ++code) {
+        CHECK(spike_hint(code) != NULL);
+    }
+    CHECK(spike_hint(0) == NULL);
+    CHECK(strstr(spike_hint(SPIKE_R_DIV_ZERO), "dividir") != NULL);
 }
 
 static void test_math(void) {
@@ -190,6 +215,8 @@ int main(void) {
     test_arithmetic();
     test_index();
     test_call_depth();
+    test_saved_calls();
+    test_error_colors_and_hints();
     test_math();
     test_random();
     test_power();

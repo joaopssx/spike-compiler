@@ -41,11 +41,11 @@ ProcedureDecl Parser::parse_subprogram(bool function) {
     proc.col = keyword.col;
     if (function) proc.return_type = TypeKind::Invalid;
     if (!check(TokenType::IDENTIFIER)) {
-        const Token& t = peek();
-        diags_.error("E830",
-                     function ? "nome da função esperado depois de 'funcao'"
+        const SourcePos t = expected_pos();
+        report("E830",
+               function ? "nome da função esperado depois de 'funcao'"
                               : "nome do procedimento esperado depois de 'procedimento'",
-                     t.line, t.col, params_hint(function));
+               t.line, t.col, params_hint(function));
         skip_line(keyword.line);
     } else {
         const Token name = advance();
@@ -59,9 +59,9 @@ ProcedureDecl Parser::parse_subprogram(bool function) {
 
     if (match(TokenType::VAR)) proc.locals = parse_var_section();
     if (!match(TokenType::INICIO)) {
-        const Token& t = peek();
-        diags_.error("E102", "inicio esperado", t.line, t.col,
-                     function ? "depois do cabeçalho e do var da função, abra o corpo com 'inicio'."
+        const SourcePos t = expected_pos();
+        report("E102", "inicio esperado", t.line, t.col,
+               function ? "depois do cabeçalho e do var da função, abra o corpo com 'inicio'."
                               : "depois do cabeçalho e do var do procedimento, abra o corpo com "
                                 "'inicio'.");
     }
@@ -73,42 +73,43 @@ ProcedureDecl Parser::parse_subprogram(bool function) {
         return proc;
     }
 
-    const Token& t = peek();
+    const bool wrong_end = check(TokenType::FIM_PROCEDIMENTO) || check(TokenType::FIM_FUNCAO);
+    const Token& t = wrong_end ? peek() : keyword;
     const std::string name = !proc.name.empty() ? "'" + proc.name + "'"
                              : function         ? std::string("a função")
                                                 : std::string("o procedimento");
     if (function) {
-        diags_.error("E836", "'fimfuncao' esperado para fechar " + name, t.line, t.col,
-                     "toda função termina com 'fimfuncao', antes do 'inicio' do programa.");
+        report("E836", "'fimfuncao' esperado para fechar " + name, t.line, t.col,
+               "toda função termina com 'fimfuncao', antes do 'inicio' do programa.");
     } else {
-        diags_.error("E832", "'fimprocedimento' esperado para fechar " + name, t.line, t.col,
-                     "todo procedimento termina com 'fimprocedimento', antes do 'inicio' do "
-                     "programa.");
+        report("E832", "'fimprocedimento' esperado para fechar " + name, t.line, t.col,
+               "todo procedimento termina com 'fimprocedimento', antes do 'inicio' do "
+               "programa.");
     }
-    if (check(TokenType::FIM_PROCEDIMENTO) || check(TokenType::FIM_FUNCAO)) advance();
+    if (wrong_end) advance();
     return proc;
 }
 
 bool Parser::parse_return_type(ProcedureDecl& proc) {
     const std::string hint = "formato: funcao " + proc.name + "(a: inteiro): inteiro.";
     if (!match(TokenType::COLON)) {
-        const Token& t = peek();
-        diags_.error("E835",
-                     "':' e o tipo de retorno esperados depois dos parâmetros da função '" +
+        const SourcePos t = expected_pos();
+        report("E835",
+               "':' e o tipo de retorno esperados depois dos parâmetros da função '" +
                          proc.name + "'",
-                     t.line, t.col, hint);
+               t.line, t.col, hint);
         return false;
     }
     if (check(TokenType::VETOR)) {
-        const Token& t = peek();
-        diags_.error("E835", "uma função ainda não pode devolver um vetor", t.line, t.col,
-                     "devolva um valor simples, ou guarde o resultado num vetor global.");
+        const SourcePos t = expected_pos();
+        report("E835", "uma função ainda não pode devolver um vetor", t.line, t.col,
+               "devolva um valor simples, ou guarde o resultado num vetor global.");
         return false;
     }
     if (!is_type_keyword(peek().type)) {
-        const Token& t = peek();
-        diags_.error("E835", "tipo de retorno da função '" + proc.name + "' esperado", t.line,
-                     t.col, kHintTypes);
+        const SourcePos t = expected_pos();
+        report("E835", "tipo de retorno da função '" + proc.name + "' esperado", t.line,
+               t.col, kHintTypes);
         return false;
     }
     proc.return_type = type_kind_for(advance().type);
@@ -118,9 +119,9 @@ bool Parser::parse_return_type(ProcedureDecl& proc) {
 bool Parser::parse_params(std::vector<Param>& params, const std::string& owner, bool function) {
     const std::string hint = params_hint(function);
     if (!match(TokenType::LPAREN)) {
-        const Token& t = peek();
-        diags_.error("E831", "'(' esperado depois do nome " + owner_text(function, owner), t.line,
-                     t.col, hint);
+        const SourcePos t = expected_pos();
+        report("E831", "'(' esperado depois do nome " + owner_text(function, owner), t.line,
+               t.col, hint);
         return false;
     }
     if (match(TokenType::RPAREN)) return true;
@@ -129,23 +130,23 @@ bool Parser::parse_params(std::vector<Param>& params, const std::string& owner, 
         std::vector<Token> names;
         do {
             if (!check(TokenType::IDENTIFIER)) {
-                const Token& t = peek();
-                diags_.error("E831", "nome do parâmetro esperado", t.line, t.col, hint);
+                const SourcePos t = expected_pos();
+                report("E831", "nome do parâmetro esperado", t.line, t.col, hint);
                 return false;
             }
             names.push_back(advance());
         } while (match(TokenType::COMMA));
         if (!match(TokenType::COLON)) {
-            const Token& t = peek();
-            diags_.error("E831", "':' esperado depois do parâmetro '" + names.back().lexeme + "'",
+            const SourcePos t = expected_pos();
+            report("E831", "':' esperado depois do parâmetro '" + names.back().lexeme + "'",
                          t.line, t.col, hint);
             return false;
         }
         std::vector<ArrayDim> dims;
         if (match(TokenType::VETOR) && !parse_array_type(dims)) return false;
         if (!is_type_keyword(peek().type)) {
-            const Token& t = peek();
-            diags_.error("E831", "tipo do parâmetro '" + names.back().lexeme + "' esperado",
+            const SourcePos t = expected_pos();
+            report("E831", "tipo do parâmetro '" + names.back().lexeme + "' esperado",
                          t.line, t.col, kHintTypes);
             return false;
         }
@@ -155,9 +156,9 @@ bool Parser::parse_params(std::vector<Param>& params, const std::string& owner, 
         }
         if (match(TokenType::COMMA)) continue;
         if (match(TokenType::RPAREN)) return true;
-        const Token& t = peek();
-        diags_.error("E831", "')' esperado no fim dos parâmetros " + owner_text(function, owner),
-                     t.line, t.col, hint);
+        const SourcePos t = expected_pos();
+        report("E831", "')' esperado no fim dos parâmetros " + owner_text(function, owner),
+               t.line, t.col, hint);
         return false;
     }
 }
@@ -170,8 +171,8 @@ std::vector<ExprPtr> Parser::parse_call_args(const Token& name) {
         } while (match(TokenType::COMMA));
     }
     if (!match(TokenType::RPAREN)) {
-        const Token& t = peek();
-        diags_.error("E834", "')' esperado no fim da chamada de '" + name.lexeme + "'", t.line,
+        const SourcePos t = expected_pos();
+        report("E834", "')' esperado no fim da chamada de '" + name.lexeme + "'", t.line,
                      t.col, "feche a chamada com ')': " + name.lexeme + "(a, b).");
     }
     return args;
@@ -212,11 +213,11 @@ StmtPtr Parser::parse_retorne() {
 StmtPtr Parser::reject_late_procedure() {
     const Token keyword = previous();
     const bool function = keyword.type == TokenType::FUNCAO;
-    diags_.error("E833",
-                 function ? "função declarada depois do 'inicio' do programa"
+    report("E833",
+           function ? "função declarada depois do 'inicio' do programa"
                           : "procedimento declarado depois do 'inicio' do programa",
-                 keyword.line, keyword.col,
-                 "declare procedimentos e funções entre o var e o 'inicio' do programa.");
+           keyword.line, keyword.col,
+           "declare procedimentos e funções entre o var e o 'inicio' do programa.");
     const TokenType end = function ? TokenType::FIM_FUNCAO : TokenType::FIM_PROCEDIMENTO;
     while (!is_at_end() && !check(TokenType::FIM_ALGORITMO) && !match(end)) advance();
     return nullptr;

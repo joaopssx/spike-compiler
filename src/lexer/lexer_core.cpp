@@ -1,4 +1,5 @@
 #include "spike/lexer.hpp"
+#include "diagnostics/utf8.hpp"
 #include "lexer/lexer_hints.hpp"
 
 #include <cctype>
@@ -40,7 +41,7 @@ char Lexer::peek_next() const {
 char Lexer::advance() {
     const char c = source_[static_cast<std::size_t>(current_)];
     ++current_;
-    ++col_;
+    if (!utf8::is_continuation(c)) ++col_;
     return c;
 }
 
@@ -70,6 +71,7 @@ Token Lexer::make_token(TokenType type, const std::string& lexeme) const {
     t.lexeme = lexeme;
     t.line = token_start_line_;
     t.col = token_start_col_;
+    t.length = col_ - token_start_col_;
     return t;
 }
 
@@ -95,7 +97,10 @@ bool Lexer::scan_one_token(Token& out) {
         return false;
     }
 
-    if (is_alpha(c))  { out = scan_identifier_or_keyword(); return true; }
+    if (is_alpha(c) || latin_letter_length() > 0) {
+        out = scan_identifier_or_keyword();
+        return true;
+    }
     if (is_digit(c))  { out = scan_number();                 return true; }
     if (c == '"')     { out = scan_string();                 return true; }
 
@@ -164,16 +169,43 @@ bool Lexer::scan_one_token(Token& out) {
         return true;
     }
 
+    const std::size_t start = static_cast<std::size_t>(current_);
     advance();
-    add_error("E001",
-              std::string("caractere desconhecido '") + c + "'",
-              kE001Hint);
-    out = make_token(TokenType::UNKNOWN, std::string(1, c));
+    while (!is_at_end() && utf8::is_continuation(peek())) advance();
+    const std::string text = source_.substr(start, static_cast<std::size_t>(current_) - start);
+    add_error("E001", "caractere desconhecido '" + text + "'", kE001Hint);
+    out = make_token(TokenType::UNKNOWN, text);
     return true;
+}
+
+std::size_t Lexer::latin_letter_length() const {
+    const std::size_t pos = static_cast<std::size_t>(current_);
+    if (is_at_end() || static_cast<unsigned char>(source_[pos]) < 0x80) return 0;
+    const std::size_t length = utf8::sequence_length(source_, pos);
+    if (length == 0 || !utf8::is_latin_letter(utf8::decode(source_, pos, length))) return 0;
+    return length;
+}
+
+bool Lexer::check_utf8() {
+    const std::size_t bad = utf8::first_invalid(source_);
+    if (bad == std::string::npos) return true;
+    int line = 1;
+    int col = 1;
+    for (std::size_t i = 0; i < bad; ++i) {
+        if (source_[i] == '\n') {
+            ++line;
+            col = 1;
+        } else if (!utf8::is_continuation(source_[i])) {
+            ++col;
+        }
+    }
+    diags_.error("E005", "o arquivo não está em UTF-8 válido", line, col, kE005Hint);
+    return false;
 }
 
 std::vector<Token> Lexer::tokenize() {
     std::vector<Token> tokens;
+    if (!check_utf8()) current_ = static_cast<int>(source_.size());
     while (!is_at_end()) {
         Token t;
         if (scan_one_token(t)) tokens.push_back(t);

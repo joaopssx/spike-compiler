@@ -1,7 +1,9 @@
 #include "spike/diagnostics.hpp"
 
+#include "diagnostics/source_view.hpp"
 #include "spike/colors.hpp"
 
+#include <algorithm>
 #include <iomanip>
 #include <iostream>
 #include <sstream>
@@ -55,6 +57,11 @@ Diagnostics::Diagnostics(const std::string& filename,
 
 void Diagnostics::error(const std::string& code, const std::string& message,
                         int line, int col, const std::string& hint) {
+    if (stored_errors_ >= kMaxErrors) {
+        ++omitted_errors_;
+        return;
+    }
+    ++stored_errors_;
     Diagnostic d;
     d.level = Diagnostic::Level::ERROR;
     d.code = code;
@@ -86,11 +93,7 @@ bool Diagnostics::has_errors() const {
 }
 
 int Diagnostics::error_count() const {
-    int n = 0;
-    for (const auto& d : diags_) {
-        if (d.level == Diagnostic::Level::ERROR) ++n;
-    }
-    return n;
+    return stored_errors_ + omitted_errors_;
 }
 
 int Diagnostics::warning_count() const {
@@ -99,6 +102,18 @@ int Diagnostics::warning_count() const {
         if (d.level == Diagnostic::Level::WARNING) ++n;
     }
     return n;
+}
+
+std::string Diagnostics::first_error_code() const {
+    const Diagnostic* first = nullptr;
+    for (const auto& d : diags_) {
+        if (d.level != Diagnostic::Level::ERROR) continue;
+        if (first == nullptr || d.line < first->line ||
+            (d.line == first->line && d.col < first->col)) {
+            first = &d;
+        }
+    }
+    return first == nullptr ? "" : first->code;
 }
 
 std::string Diagnostics::get_line(int line_number) const {
@@ -136,19 +151,23 @@ void Diagnostics::print_one(const Diagnostic& d) const {
     const std::string blank_gutter = blank_line_number() + " " + bar;
     std::cerr << blank_gutter << "\n";
 
+    const std::size_t caret_cell = source_view::caret_cell(d.source_line, d.col);
+    const source_view::Window window = source_view::window_for(d.source_line, caret_cell);
+
     // Linha anterior (contexto) se existir
     if (d.line > 1) {
         const std::string prev = get_line(d.line - 1);
         std::cerr << gray(pad_line_number(d.line - 1)) << " " << bar << " "
-                  << prev << "\n";
+                  << source_view::render(prev, window) << "\n";
     }
 
     // Linha do erro
     std::cerr << gray(pad_line_number(d.line)) << " " << bar << " "
-              << d.source_line << "\n";
+              << source_view::render(d.source_line, window) << "\n";
 
     // Linha do caret - sem numero de linha
-    const std::string caret = make_caret(d.col);
+    const int caret_col = static_cast<int>(source_view::caret_offset(caret_cell, window)) + 1;
+    const std::string caret = make_caret(caret_col);
     const std::string caret_colored = is_error ? red(caret) : yellow(caret);
     std::cerr << blank_gutter << " " << caret_colored << "\n";
 
@@ -156,7 +175,7 @@ void Diagnostics::print_one(const Diagnostic& d) const {
     if (static_cast<std::size_t>(d.line) < source_lines_.size()) {
         const std::string next = get_line(d.line + 1);
         std::cerr << gray(pad_line_number(d.line + 1)) << " " << bar << " "
-                  << next << "\n";
+                  << source_view::render(next, window) << "\n";
     }
 
     std::cerr << blank_gutter << "\n";
@@ -171,8 +190,18 @@ void Diagnostics::print_one(const Diagnostic& d) const {
 }
 
 void Diagnostics::print_all() const {
-    for (const auto& d : diags_) {
-        print_one(d);
+    std::vector<const Diagnostic*> ordered;
+    ordered.reserve(diags_.size());
+    for (const auto& d : diags_) ordered.push_back(&d);
+    std::stable_sort(ordered.begin(), ordered.end(), [](const Diagnostic* a, const Diagnostic* b) {
+        return a->line != b->line ? a->line < b->line : a->col < b->col;
+    });
+    for (const Diagnostic* d : ordered) {
+        print_one(*d);
+    }
+    if (omitted_errors_ > 0) {
+        std::cerr << "(mais " << omitted_errors_
+                  << (omitted_errors_ == 1 ? " erro omitido)" : " erros omitidos)") << "\n\n";
     }
 }
 

@@ -12,6 +12,7 @@ inline constexpr const char* kE003Hint =
     "Números decimais precisam ter dígito após o ponto: use 3.0 em vez de 3.";
 inline constexpr const char* kE004Hint =
     "Feche o comentário com } antes do fim do arquivo.";
+inline constexpr const char* kE005Hint = "salve o arquivo como UTF-8.";
 
 } // namespace spike::lexer_hints
 

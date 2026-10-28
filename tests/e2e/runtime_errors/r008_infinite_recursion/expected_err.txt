@@ -1,0 +1,15 @@
+erro de execução[R008]: recursão profunda demais (limite de 10000 chamadas), verifique a condição de parada
+ --> program.por:4
+     |
+   4 |   desce(n + 1)
+     |
+  chamado de 'desce' na linha 4
+  chamado de 'desce' na linha 4
+  chamado de 'desce' na linha 4
+  chamado de 'desce' na linha 4
+  chamado de 'desce' na linha 4
+  chamado de 'desce' na linha 4
+  chamado de 'desce' na linha 4
+  chamado de 'desce' na linha 4
+  ... e mais 9993
+     = dica: toda recursão precisa de uma condição de parada que seja alcançada; confira o 'se' que encerra as chamadas

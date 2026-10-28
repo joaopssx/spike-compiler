@@ -1,0 +1,4 @@
+erro[E005]: o arquivo não está em UTF-8 válido
+   3 |   escreval("Ol?")
+     |               ^
+     = dica: salve o arquivo como UTF-8.

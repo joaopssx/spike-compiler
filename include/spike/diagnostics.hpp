@@ -21,6 +21,9 @@ struct Diagnostic {
 
 class Diagnostics {
 public:
+    // Errors after this many are only counted, then summarized by print_all().
+    static constexpr int kMaxErrors = 20;
+
     explicit Diagnostics(const std::string& filename,
                          const std::string& full_source);
 
@@ -36,10 +39,15 @@ public:
     int error_count() const;
     int warning_count() const;
 
+    // Code of the error with the earliest position, or "" when there is none.
+    std::string first_error_code() const;
+
 private:
     std::string filename_;
     std::vector<std::string> source_lines_;
     std::vector<Diagnostic> diags_;
+    int stored_errors_ = 0;
+    int omitted_errors_ = 0;
 
     void print_one(const Diagnostic& d) const;
     std::string get_line(int line_number) const;

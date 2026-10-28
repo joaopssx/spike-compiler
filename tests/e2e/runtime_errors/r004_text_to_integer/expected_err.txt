@@ -1,0 +1,6 @@
+erro de execução[R004]: não foi possível converter 'doze' para inteiro
+ --> program.por:7
+     |
+   7 |   n <- paraInteiro("doze")
+     |
+     = dica: confira se o número cabe em um inteiro ou se o texto tem só um número (use ehNumero antes de converter)

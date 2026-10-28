@@ -78,6 +78,25 @@ void test_diag_no_hint_omits_dica_line() {
     SPIKE_EXPECT(sink.str().find("dica:") == std::string::npos);
 }
 
+void test_diag_prints_in_line_order() {
+    spike::Diagnostics d("a.por", "um\ndois\ntres\nquatro\n");
+    d.warning("W001", "quarta linha", 4, 1);
+    d.error("E001", "segunda linha", 2, 5);
+    d.warning("W003", "segunda linha antes", 2, 1);
+    d.error("E002", "primeira linha", 1, 1);
+    std::ostringstream sink;
+    auto* old = std::cerr.rdbuf(sink.rdbuf());
+    d.print_all();
+    std::cerr.rdbuf(old);
+    const std::string out = sink.str();
+    const std::size_t first = out.find("[E002]");
+    const std::size_t second = out.find("[W003]");
+    const std::size_t third = out.find("[E001]");
+    const std::size_t fourth = out.find("[W001]");
+    SPIKE_EXPECT(fourth != std::string::npos);
+    SPIKE_EXPECT(first < second && second < third && third < fourth);
+}
+
 } // namespace
 
 namespace spike_tests {
@@ -89,6 +108,7 @@ void run_diagnostics_tests() {
     test_diag_handles_out_of_range_line();
     test_diag_print_contains_key_pieces();
     test_diag_no_hint_omits_dica_line();
+    test_diag_prints_in_line_order();
 }
 
 } // namespace spike_tests

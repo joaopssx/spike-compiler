@@ -58,7 +58,8 @@ void SemanticAnalyzer::check_para_bound(const ExprPtr& bound, const char* part) 
 void SemanticAnalyzer::check_para(const ParaStmt& stmt) {
     const int line = stmt.var_pos.line != 0 ? stmt.var_pos.line : stmt.line;
     const int col = stmt.var_pos.line != 0 ? stmt.var_pos.col : stmt.col;
-    const Symbol* counter = mark_assigned(stmt.var_name, line, col);
+    Symbol* counter = mark_assigned(stmt.var_name, line, col);
+    if (counter) counter->used = true;
     if (counter && !counter->dims.empty()) {
         diags_.error("E731", "a variável do 'para' não pode ser um vetor", line, col,
                      "use uma variável inteira simples para contar as voltas.");

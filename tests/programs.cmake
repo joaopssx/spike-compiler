@@ -86,3 +86,28 @@ foreach(program IN LISTS SPIKE_INVALID_PROGRAMS)
         PASS_REGULAR_EXPRESSION "\\[${expected_code}\\]"
     )
 endforeach()
+
+file(GLOB SPIKE_WARNING_PROGRAMS CONFIGURE_DEPENDS
+    "${CMAKE_SOURCE_DIR}/tests/programs/warnings/*.por"
+)
+
+foreach(program IN LISTS SPIKE_WARNING_PROGRAMS)
+    get_filename_component(program_name "${program}" NAME_WE)
+    string(REGEX MATCH "^[wW][0-9][0-9][0-9]" expected_code "${program_name}")
+    if(NOT expected_code)
+        message(FATAL_ERROR
+            "warning program '${program_name}.por' must start with a warning code, e.g. w001_")
+    endif()
+    string(TOUPPER "${expected_code}" expected_code)
+    set(test_name "check_warning_${program_name}")
+    add_test(NAME "${test_name}"
+        COMMAND ${CMAKE_COMMAND}
+            -DPROGRAM=$<TARGET_FILE:spike>
+            "-DARGS=check|${program}"
+            -DWORK_DIR=${CMAKE_BINARY_DIR}
+            -DNAME=${test_name}
+            -DEXPECT_CODE=0
+            "-DEXPECT_STDERR=aviso.${expected_code}..*nenhum erro encontrado"
+            -P "${CMAKE_SOURCE_DIR}/tests/runtime/expect_run.cmake"
+    )
+endforeach()

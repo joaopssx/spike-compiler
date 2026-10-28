@@ -2,6 +2,7 @@
 #include "spike/runtime_text.hpp"
 #include "spike/symbol_table.hpp"
 
+#include <algorithm>
 #include <string>
 #include <utility>
 
@@ -11,6 +12,11 @@ namespace codegen_detail {
 
 void CWriter::line(const std::string& text) {
     out_.append(static_cast<std::size_t>(depth_) * 4, ' ');
+    out_ += text;
+    out_ += '\n';
+}
+
+void CWriter::directive(const std::string& text) {
     out_ += text;
     out_ += '\n';
 }
@@ -35,12 +41,17 @@ const std::string& CWriter::str() const {
     return out_;
 }
 
+int CWriter::next_line() const {
+    return static_cast<int>(std::count(out_.begin(), out_.end(), '\n')) + 1;
+}
+
 Generator::Generator(const Program& program, const TypeMap& types, const ConstantMap& constants,
-                     std::string source_name)
+                     std::string source_name, CodegenOptions options)
     : program_(program),
       types_(types),
       constants_(constants),
-      source_name_(std::move(source_name)) {
+      source_name_(std::move(source_name)),
+      options_(std::move(options)) {
     for (const VarDecl& decl : program_.globals) {
         var_types_.emplace(symbol_key(decl.name), decl.type);
     }
@@ -48,6 +59,7 @@ Generator::Generator(const Program& program, const TypeMap& types, const Constan
     for (const ProcedureDecl& proc : program_.procedures) {
         procedures_.emplace(symbol_key(proc.name), &proc);
     }
+    collect_effects();
 }
 
 CodegenResult Generator::run() {
@@ -82,6 +94,7 @@ void Generator::emit_header() {
     out_.line("/* Gerado pelo Spike " SPIKE_VERSION " a partir de " +
               comment_safe(source_name_) + " */");
     out_.blank();
+    emit_source_lines();
     std::string runtime(runtime_source(), runtime_source_size());
     out_.raw(runtime);
     if (!runtime.empty() && runtime.back() != '\n') out_.blank();
@@ -127,6 +140,7 @@ void Generator::emit_globals() {
 void Generator::emit_main() {
     out_.line("int main(void) {");
     out_.indent();
+    emit_source_setup();
     out_.line("spike_init();");
     for (const VarDecl& decl : program_.globals) {
         if (!decl.dims.empty() && decl.type == TypeKind::String) {
@@ -134,7 +148,7 @@ void Generator::emit_main() {
                       std::to_string(element_count(decl.name)) + ");");
         }
     }
-    emit_block(program_.body);
+    emit_user_block(program_.body);
     out_.line("spike_flush();");
     out_.line("spike_cleanup();");
     out_.line("return 0;");
@@ -146,8 +160,9 @@ void Generator::emit_main() {
 
 CodegenResult generate_c(const Program& program,
                          const std::unordered_map<const Expr*, TypeKind>& expr_types,
-                         const ConstantMap& constants, const std::string& source_name) {
-    codegen_detail::Generator generator(program, expr_types, constants, source_name);
+                         const ConstantMap& constants, const std::string& source_name,
+                         const CodegenOptions& options) {
+    codegen_detail::Generator generator(program, expr_types, constants, source_name, options);
     return generator.run();
 }
 

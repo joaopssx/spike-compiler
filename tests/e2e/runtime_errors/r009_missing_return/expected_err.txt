@@ -1,0 +1,7 @@
+erro de execução[R009]: a função 'sinal' terminou sem retornar um valor
+ --> program.por:7
+     |
+   7 | fimfuncao
+     |
+  chamado de 'sinal' na linha 9
+     = dica: faça todos os caminhos da função chegarem a um 'retorne' com valor

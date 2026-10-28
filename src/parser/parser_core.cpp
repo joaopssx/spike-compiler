@@ -79,8 +79,9 @@ Token Parser::expect(TokenType t, const std::string& error_msg,
     if (check(t)) return advance();
     Token& cur = peek();
     // Fallback generico - call sites com codigos catalogados usam
-    // diags_.error() diretamente.
-    diags_.error("Exxx", error_msg, cur.line, cur.col, hint);
+    // report() diretamente.
+    const SourcePos pos = expected_pos();
+    report("Exxx", error_msg, pos.line, pos.col, hint);
     return cur;
 }
 

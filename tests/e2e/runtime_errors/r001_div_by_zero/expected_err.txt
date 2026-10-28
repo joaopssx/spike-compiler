@@ -1,0 +1,6 @@
+erro de execução[R001]: divisão por zero
+ --> program.por:8
+     |
+   8 |   r <- a div b
+     |
+     = dica: verifique se o divisor pode valer 0 antes de dividir (use um 'se')

@@ -43,14 +43,20 @@ std::string Generator::element(const IndexExpr& node) {
     }
     const std::vector<ArrayBounds>& dims = it->second;
     const std::string tail = std::to_string(node.line) + ", " + string_literal(node.name);
+    std::vector<std::string> positions;
+    for (std::size_t i = 0; i < dims.size(); ++i) {
+        Access after;
+        for (std::size_t j = i + 1; j < dims.size(); ++j) after = after | access(node.indices[j]);
+        positions.push_back(expr_as(node.indices[i], TypeKind::Integer, after));
+    }
     if (dims.size() == 1) {
-        return c_name(node.name) + "[spike_index(" + expr(node.indices[0]) + ", " +
+        return c_name(node.name) + "[spike_index(" + positions[0] + ", " +
                integer_literal(dims[0].low) + ", " + integer_literal(dims[0].high) + ", " + tail +
                ")]";
     }
     std::string offset;
     for (std::size_t i = 0; i < dims.size(); ++i) {
-        const std::string position = "spike_index_dim(" + expr(node.indices[i]) + ", " +
+        const std::string position = "spike_index_dim(" + positions[i] + ", " +
                                      integer_literal(dims[i].low) + ", " +
                                      integer_literal(dims[i].high) + ", " + tail + ", " +
                                      std::to_string(i + 1) + ")";

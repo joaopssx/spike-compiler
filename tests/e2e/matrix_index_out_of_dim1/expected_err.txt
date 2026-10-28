@@ -1,2 +1,2 @@
 erro de execução[R002]: índice 0 fora da dimensão 1 de 'm' (válido: 1 a 3)
-  --> linha 9
+ --> program.por:9

@@ -74,7 +74,9 @@ SourcePos stmt_pos(const Stmt& stmt) {
 void Generator::emit_block(const StmtList& stmts) {
     for (const StmtPtr& stmt : stmts) {
         if (failed()) return;
-        if (stmt) emit_stmt(*stmt);
+        if (!stmt) continue;
+        mark_source_line(stmt_pos(*stmt).line);
+        emit_stmt(*stmt);
     }
 }
 
@@ -131,7 +133,9 @@ void Generator::emit_stmt(const Stmt& stmt) {
 
 void Generator::emit_assign(const AssignStmt& stmt) {
     std::string name;
+    later_ = access(stmt.value);
     const std::string target = lvalue(stmt.target, name);
+    later_ = Access{};
     if (failed()) return;
     const auto it = var_types_.find(symbol_key(name));
     if (it == var_types_.end()) {
@@ -141,7 +145,7 @@ void Generator::emit_assign(const AssignStmt& stmt) {
     }
     const std::string value = expr_as(stmt.value, it->second);
     if (failed()) return;
-    out_.line(target + " = " + value + ";");
+    emit_line(target + " = " + value + ";");
 }
 
 void Generator::emit_leia(const LeiaStmt& stmt) {
@@ -158,7 +162,7 @@ void Generator::emit_leia(const LeiaStmt& stmt) {
                  stmt.line, stmt.col);
             return;
         }
-        out_.line(destination + " = " + reader + "(" + std::to_string(line) + ", " +
+        emit_line(destination + " = " + reader + "(" + std::to_string(line) + ", " +
                   string_literal(name) + ");");
     }
 }
@@ -169,7 +173,7 @@ void Generator::emit_escreva(const EscrevaStmt& stmt) {
         const std::string value = expr(arg);
         const char* writer = write_function(type_of(*arg));
         if (failed()) return;
-        out_.line(std::string(writer) + "(" + value + ");");
+        emit_line(std::string(writer) + "(" + value + ");");
     }
     if (stmt.newline) out_.line("spike_write_newline();");
 }

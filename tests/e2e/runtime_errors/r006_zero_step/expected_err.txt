@@ -1,0 +1,6 @@
+erro de execução[R006]: o passo do 'para' não pode ser zero
+ --> program.por:6
+     |
+   6 |   para i de 1 ate 3 passo p faca
+     |
+     = dica: use um passo positivo para contar para cima ou negativo para contar para baixo

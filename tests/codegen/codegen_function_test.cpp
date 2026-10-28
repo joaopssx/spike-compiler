@@ -32,9 +32,9 @@ const char* kFatorial = "funcao fatorial(n: inteiro): inteiro\n"
 
 void test_function_definition() {
     const std::string c = generate(kFatorial, "  a <- fatorial(5)\n");
-    expect(c, "static spike_int f_fatorial(spike_int v_n);\n\n"
-              "static spike_int f_fatorial(spike_int v_n) {\n"
-              "    spike_enter(5);\n"
+    expect(c, "static spike_int f_fatorial(int spike_line, spike_int v_n);\n\n"
+              "static spike_int f_fatorial(int spike_line, spike_int v_n) {\n"
+              "    spike_enter(\"fatorial\", spike_line);\n"
               "    if (v_n <= 1LL) {\n"
               "        {\n"
               "            spike_int spike_result = 1LL;\n"
@@ -43,28 +43,28 @@ void test_function_definition() {
               "        }\n"
               "    }\n"
               "    {\n"
-              "        spike_int spike_result = spike_mul_int(v_n, f_fatorial(spike_sub_int(v_n, "
-              "1LL)));\n"
+              "        spike_int spike_result = spike_mul_int(v_n, f_fatorial(10, "
+              "spike_sub_int(v_n, 1LL)));\n"
               "        spike_leave();\n"
               "        return spike_result;\n"
               "    }\n"
               "    spike_missing_return(11, \"fatorial\");\n"
               "    return 0LL;\n"
               "}\n");
-    expect(c, "    v_a = f_fatorial(5LL);\n");
+    expect(c, "    v_a = f_fatorial(13, 5LL);\n");
 }
 
 void test_return_converts_integer_to_real() {
     const std::string c = generate("funcao Metade(x: real): real\ninicio\n  retorne a\nfimfuncao\n",
                                    "  r <- metade(a) + metade(2.5)\n");
-    expect(c, "static spike_real f_metade(spike_real v_x) {\n");
+    expect(c, "static spike_real f_metade(int spike_line, spike_real v_x) {\n");
     expect(c, "        spike_real spike_result = ((spike_real)v_a);\n");
     expect(c, "    spike_missing_return(8, \"Metade\");\n    return 0.0;\n");
-    expect(c, "(f_metade(((spike_real)v_a)) + f_metade(2.5))");
+    expect(c, "(f_metade(10, ((spike_real)v_a)) + f_metade(10, 2.5))");
 }
 
 void test_function_called_as_statement() {
-    expect(generate(kFatorial, "  fatorial(3)\n"), "    f_fatorial(3LL);\n");
+    expect(generate(kFatorial, "  fatorial(3)\n"), "    f_fatorial(13, 3LL);\n");
 }
 
 void test_text_and_logical_functions() {
@@ -72,17 +72,17 @@ void test_text_and_logical_functions() {
         generate("funcao nome(): caractere\ninicio\n  retorne \"Ana\"\nfimfuncao\n"
                  "funcao ok(): logico\ninicio\n  retorne a > 0\nfimfuncao\n",
                  "  se ok() entao\n    escreval(nome())\n  fimse\n");
-    expect(c, "static spike_str f_nome(void);\nstatic spike_bool f_ok(void);\n");
+    expect(c, "static spike_str f_nome(int spike_line);\nstatic spike_bool f_ok(int spike_line);\n");
     expect(c, "    spike_missing_return(8, \"nome\");\n    return \"\";\n");
-    expect(c, "    if (f_ok()) {\n        spike_write_str(f_nome());\n");
+    expect(c, "    if (f_ok(14)) {\n        spike_write_str(f_nome(15));\n");
 }
 
 void test_procedure_retorne_leaves_early() {
     const std::string c = generate("procedimento p()\ninicio\n  se a > 0 entao\n    retorne\n"
                                    "  fimse\n  escreval(a)\nfimprocedimento\n",
                                    "  p()\n");
-    expect(c, "static void p_p(void) {\n"
-              "    spike_enter(5);\n"
+    expect(c, "static void p_p(int spike_line) {\n"
+              "    spike_enter(\"p\", spike_line);\n"
               "    if (v_a > 0LL) {\n"
               "        spike_leave();\n"
               "        return;\n"

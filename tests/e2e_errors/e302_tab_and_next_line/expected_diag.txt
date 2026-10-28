@@ -1,0 +1,3 @@
+erro[E302]: ')' esperado no final do escreval
+   3 |     escreval("ação"
+     |                    ^

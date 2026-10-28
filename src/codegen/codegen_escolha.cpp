@@ -39,6 +39,7 @@ void Generator::emit_escolha(const EscolhaStmt& stmt) {
         selector = "spike_sel_" + std::to_string(next_loop_id());
         out_.line("{");
         out_.indent();
+        emit_lines(take_pending());
         out_.line(std::string(c_type(type)) + " " + selector + " = " + selector_text + ";");
     }
 

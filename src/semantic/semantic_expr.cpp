@@ -59,6 +59,8 @@ TypeKind SemanticAnalyzer::check_expr(const ExprPtr& expr) {
                 return check_index(node);
             } else if constexpr (std::is_same_v<Node, CallExpr>) {
                 return check_call_expr(node);
+            } else if constexpr (std::is_same_v<Node, ErrorExpr>) {
+                return TypeKind::Invalid;
             } else if constexpr (std::is_same_v<Node, BinaryExpr>) {
                 const TypeKind left = check_expr(node.left);
                 const TypeKind right = check_expr(node.right);

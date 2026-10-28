@@ -73,6 +73,12 @@ struct UnaryExpr {
     int line = 0, col = 0;
 };
 
+// Placeholder for a missing expression (E201). Only exists in programs with
+// parser errors, so the semantic analyzer and the C generator never run on it.
+struct ErrorExpr {
+    int line = 0, col = 0;
+};
+
 // Envelope: um Expr e uma das possibilidades acima.
 struct Expr {
     std::variant<
@@ -83,7 +89,8 @@ struct Expr {
         BinaryExpr,
         UnaryExpr,
         IndexExpr,
-        CallExpr
+        CallExpr,
+        ErrorExpr
     > node;
 };
 

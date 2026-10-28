@@ -1,2 +1,2 @@
 erro de execução[R008]: recursão profunda demais (limite de 10000 chamadas), verifique a condição de parada
-  --> linha 2
+ --> program.por:4

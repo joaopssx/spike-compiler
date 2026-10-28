@@ -47,12 +47,34 @@ set(SPIKE_LEXER_SOURCES
     src/lexer/lexer_scan.cpp
     src/lexer/lexer_hints.hpp
 )
+set(SPIKE_ERROR_CATALOG_CPP "${CMAKE_BINARY_DIR}/generated/error_catalog.cpp")
+add_custom_command(
+    OUTPUT "${SPIKE_ERROR_CATALOG_CPP}"
+    COMMAND ${CMAKE_COMMAND}
+        "-DINPUT=${CMAKE_SOURCE_DIR}/docs/errors.md"
+        "-DOUTPUT=${SPIKE_ERROR_CATALOG_CPP}"
+        -P "${CMAKE_SOURCE_DIR}/cmake/embed_errors.cmake"
+    DEPENDS
+        "${CMAKE_SOURCE_DIR}/docs/errors.md"
+        "${CMAKE_SOURCE_DIR}/cmake/embed_errors.cmake"
+    COMMENT "Embedding the error catalog"
+    VERBATIM
+)
 set(SPIKE_DIAGNOSTICS_SOURCES
     src/diagnostics/diagnostics.cpp
+    src/diagnostics/source_view.cpp
+    src/diagnostics/source_view.hpp
+    src/diagnostics/utf8.cpp
+    src/diagnostics/utf8.hpp
+    src/diagnostics/error_catalog.cpp
+    src/diagnostics/summary.cpp
+    "${SPIKE_ERROR_CATALOG_CPP}"
 )
 set(SPIKE_CLI_SOURCES
     src/cli/cli.cpp
+    src/cli/colors.cpp
     src/cli/console.cpp
+    src/cli/explain.cpp
 )
 set(SPIKE_PARSER_SOURCES
     src/parser/parser_core.cpp
@@ -63,6 +85,7 @@ set(SPIKE_PARSER_SOURCES
     src/parser/parser_array.cpp
     src/parser/parser_procedure.cpp
     src/parser/parser_expr.cpp
+    src/parser/parser_recovery.cpp
 )
 
 set(SPIKE_BUILTINS_SOURCES
@@ -85,6 +108,9 @@ set(SPIKE_SEMANTIC_SOURCES
     src/semantic/semantic_builtin.cpp
     src/semantic/const_eval.cpp
     src/semantic/semantic_internal.hpp
+    src/semantic/warnings.cpp
+    src/semantic/warnings_flow.cpp
+    src/semantic/warnings_internal.hpp
 )
 set(SPIKE_PROCESS_SOURCES
     src/process/executable_search.cpp
@@ -101,6 +127,13 @@ set(SPIKE_DRIVER_SOURCES
     src/driver/pipeline_report.cpp
     src/driver/pipeline_internal.hpp
 )
+set(SPIKE_COMMANDS_SOURCES
+    src/commands/dev.cpp
+    src/commands/dev_dump.cpp
+    src/commands/dev_dump.hpp
+    src/commands/fetch.cpp
+    src/commands/random.cpp
+)
 set(SPIKE_CODEGEN_SOURCES
     src/codegen/codegen_core.cpp
     src/codegen/codegen_expr.cpp
@@ -110,18 +143,21 @@ set(SPIKE_CODEGEN_SOURCES
     src/codegen/codegen_array.cpp
     src/codegen/codegen_procedure.cpp
     src/codegen/codegen_names.cpp
+    src/codegen/codegen_lines.cpp
+    src/codegen/codegen_order.cpp
     src/codegen/codegen_internal.hpp
 )
 set(SPIKE_RUNTIME_TEXT_CPP "${CMAKE_BINARY_DIR}/generated/runtime_text.cpp")
 add_custom_command(
     OUTPUT "${SPIKE_RUNTIME_TEXT_CPP}"
     COMMAND ${CMAKE_COMMAND}
-        "-DINPUTS=${CMAKE_SOURCE_DIR}/runtime/spike_runtime_core.h|${CMAKE_SOURCE_DIR}/runtime/spike_runtime_calls.h|${CMAKE_SOURCE_DIR}/runtime/spike_runtime_math.h|${CMAKE_SOURCE_DIR}/runtime/spike_runtime_io.h|${CMAKE_SOURCE_DIR}/runtime/spike_runtime_text.h"
+        "-DINPUTS=${CMAKE_SOURCE_DIR}/runtime/spike_runtime_core.h|${CMAKE_SOURCE_DIR}/runtime/spike_runtime_calls.h|${CMAKE_SOURCE_DIR}/runtime/spike_runtime_errors.h|${CMAKE_SOURCE_DIR}/runtime/spike_runtime_math.h|${CMAKE_SOURCE_DIR}/runtime/spike_runtime_io.h|${CMAKE_SOURCE_DIR}/runtime/spike_runtime_text.h"
         "-DOUTPUT=${SPIKE_RUNTIME_TEXT_CPP}"
         -P "${CMAKE_SOURCE_DIR}/cmake/embed_runtime.cmake"
     DEPENDS
         "${CMAKE_SOURCE_DIR}/runtime/spike_runtime_core.h"
         "${CMAKE_SOURCE_DIR}/runtime/spike_runtime_calls.h"
+        "${CMAKE_SOURCE_DIR}/runtime/spike_runtime_errors.h"
         "${CMAKE_SOURCE_DIR}/runtime/spike_runtime_math.h"
         "${CMAKE_SOURCE_DIR}/runtime/spike_runtime_io.h"
         "${CMAKE_SOURCE_DIR}/runtime/spike_runtime_text.h"
@@ -134,6 +170,7 @@ set(SPIKE_RUNTIME_SOURCES
     runtime/spike_runtime.h
     runtime/spike_runtime_core.h
     runtime/spike_runtime_calls.h
+    runtime/spike_runtime_errors.h
     runtime/spike_runtime_math.h
     runtime/spike_runtime_io.h
     runtime/spike_runtime_text.h
@@ -148,17 +185,22 @@ set(SPIKE_PUBLIC_HEADERS
     include/spike/compile_pipeline.hpp
     include/spike/const_value.hpp
     include/spike/colors.hpp
+    include/spike/commands.hpp
     include/spike/console.hpp
     include/spike/diagnostics.hpp
+    include/spike/error_catalog.hpp
+    include/spike/explain.hpp
     include/spike/file_reader.hpp
     include/spike/lexer.hpp
     include/spike/parser.hpp
     include/spike/process.hpp
     include/spike/runtime_text.hpp
     include/spike/semantic.hpp
+    include/spike/summary.hpp
     include/spike/symbol_table.hpp
     include/spike/temp_dir.hpp
     include/spike/token.hpp
+    include/spike/warnings.hpp
 )
 
 add_library(spike_core STATIC
@@ -174,6 +216,7 @@ add_library(spike_core STATIC
     ${SPIKE_CODEGEN_SOURCES}
     ${SPIKE_PROCESS_SOURCES}
     ${SPIKE_DRIVER_SOURCES}
+    ${SPIKE_COMMANDS_SOURCES}
     ${SPIKE_PUBLIC_HEADERS}
 )
 target_include_directories(spike_core PUBLIC include PRIVATE src)
@@ -195,14 +238,21 @@ add_executable(spike_tests
     tests/ast/ast_enums_test.cpp
     tests/ast/ast_printer_test.cpp
     tests/cli/cli_test.cpp
+    tests/commands/commands_test.cpp
     tests/cli/console_test.cpp
+    tests/cli/colors_test.cpp
+    tests/cli/explain_test.cpp
     tests/codegen/codegen_compile_test.cpp
+    tests/codegen/codegen_line_test.cpp
     tests/codegen/codegen_control_test.cpp
     tests/codegen/codegen_expr_test.cpp
     tests/codegen/codegen_input_test.cpp
     tests/codegen/codegen_output_test.cpp
     tests/codegen/codegen_program_test.cpp
     tests/diagnostics/diagnostics_test.cpp
+    tests/diagnostics/positions_test.cpp
+    tests/diagnostics/source_view_test.cpp
+    tests/diagnostics/summary_test.cpp
     tests/driver/output_paths_test.cpp
     tests/file_reader/file_reader_test.cpp
     tests/lexer/lexer_comments_test.cpp
@@ -211,6 +261,7 @@ add_executable(spike_tests
     tests/lexer/lexer_numbers_test.cpp
     tests/lexer/lexer_operators_test.cpp
     tests/lexer/lexer_strings_test.cpp
+    tests/lexer/lexer_utf8_test.cpp
     tests/parser/expr_literals_test.cpp
     tests/parser/expr_operators_test.cpp
     tests/parser/expr_power_test.cpp
@@ -237,7 +288,9 @@ add_executable(spike_tests
     tests/builtins/builtins_test.cpp
     tests/semantic/semantic_builtin_test.cpp
     tests/codegen/codegen_builtin_test.cpp
+    tests/codegen/codegen_order_test.cpp
     tests/parser/name_positions_test.cpp
+    tests/parser/recovery_test.cpp
     tests/parser/program_test.cpp
     tests/parser/stmt_basic_test.cpp
     tests/parser/stmt_if_test.cpp
@@ -250,6 +303,8 @@ add_executable(spike_tests
     tests/semantic/semantic_operators_test.cpp
     tests/semantic/semantic_programs_test.cpp
     tests/semantic/symbol_table_test.cpp
+    tests/semantic/warnings_test.cpp
+    tests/semantic/warnings_flow_test.cpp
     tests/runtime/runtime_text_test.cpp
     tests/token/token_test.cpp
 )
@@ -277,8 +332,15 @@ add_test(NAME check_file_sizes
     COMMAND ${CMAKE_COMMAND} -DSOURCE_DIR=${CMAKE_SOURCE_DIR}
         -P ${CMAKE_SOURCE_DIR}/cmake/check_file_sizes.cmake)
 
+add_test(NAME error_docs_consistency
+    COMMAND ${CMAKE_COMMAND} "-DSOURCE_DIR=${CMAKE_SOURCE_DIR}"
+        -P "${CMAKE_SOURCE_DIR}/cmake/check_error_docs.cmake"
+)
+
 include(tests/programs.cmake)
+include(tests/diagnostics.cmake)
 include(tests/runtime.cmake)
 include(tests/process.cmake)
 include(tests/compile.cmake)
+include(tests/commands.cmake)
 include(tests/e2e.cmake)

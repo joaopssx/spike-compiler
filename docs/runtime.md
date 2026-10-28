@@ -1,10 +1,10 @@
 # The C runtime
 
-Every program Spike generates is a single C file. Its first part is the runtime, a header-only C99 library with the helpers the generated code calls. It lives in four files: `runtime/spike_runtime_core.h` (types, errors, memory, texts, arithmetic, `para` helpers), `runtime/spike_runtime_calls.h` (call counting for procedures and functions), `runtime/spike_runtime_math.h` (the math built-ins), `runtime/spike_runtime_io.h` (writing, reading, parsing) and `runtime/spike_runtime_text.h` (the text built-ins, after `io` because they reuse its formatting and parsing). `runtime/spike_runtime.h` includes them in that order, for the C tests; the later files rely on `core` being included first. Everything in it is `static inline`, so the C compiler drops what a program does not use and the result is still one standalone executable.
+Every program Spike generates is a single C file. It starts with the lines of the `.por` (`spike_source_name` and `spike_source_lines`, used by error messages), followed by the runtime, a header-only C99 library with the helpers the generated code calls. It lives in six files: `runtime/spike_runtime_core.h` (types, memory, texts, arithmetic, `para` helpers), `runtime/spike_runtime_calls.h` (call counting and the call stack for procedures and functions), `runtime/spike_runtime_errors.h` (how a runtime error is printed), `runtime/spike_runtime_math.h` (the math built-ins), `runtime/spike_runtime_io.h` (writing, reading, parsing) and `runtime/spike_runtime_text.h` (the text built-ins, after `io` because they reuse its formatting and parsing). `runtime/spike_runtime.h` includes them in that order, for the C tests; the later files rely on `core` being included first, and `errors` also on `calls`. Everything in it is `static inline`, so the C compiler drops what a program does not use and the result is still one standalone executable.
 
 ## Rules
 
-- C99 and the standard library only. On Windows it also includes `windows.h`, to switch the console to UTF-8 so accented letters print and read correctly and to measure the stack. On Linux and macOS it includes `sys/resource.h` for the stack size. The driver links Windows executables with a 16 MB stack (`-Wl,--stack,16777216`).
+- C99 and the standard library only. On Windows it also includes `windows.h`, to switch the console to UTF-8 so accented letters print and read correctly and to measure the stack. On Linux and macOS it includes `sys/resource.h` for the stack size and `unistd.h` for `isatty`; on Windows, `io.h` for `_isatty`. The driver links Windows executables with a 16 MB stack (`-Wl,--stack,16777216`).
 - Every name starts with `spike_` or `SPIKE_`. Student variables get a different prefix from the code generator, so the two never collide.
 - It compiles without warnings with `-Wall -Wextra -Wpedantic` on GCC and Clang.
 - It never calls `setlocale`, so the decimal separator is always a point.
@@ -27,7 +27,10 @@ Texts are immutable. Literals are plain C strings. Texts built while the program
 | `spike_init()` | Switches the Windows console to UTF-8 and registers `spike_cleanup` to run at exit. The generated `main` calls it first. |
 | `spike_cleanup()` | Frees runtime-owned texts and restores the console code page. Safe to call twice. |
 | `spike_flush()` | Flushes stdout. Called before reading input and before exiting. |
-| `spike_fail(code, line, message)` | Prints `erro de execução[Rxxx]: message` and `  --> linha N` to stderr, cleans up and exits with 101. A line of 0 omits the second line. |
+| `spike_fail(code, line, message)` | Flushes stdout, prints the error to stderr (see "How an error is printed"), cleans up and exits with 101. Declared in `core`, defined in `errors`. |
+| `spike_set_source(name, lines, count)` | Tells the runtime the `.por` file name and its lines. The generated `main` calls it first, with the `spike_source_name` and `spike_source_lines` the generator writes at the top of the C file. |
+| `spike_color_wanted(no_color, is_terminal)` | 1 when stderr is a terminal and `NO_COLOR` is unset or empty. `spike_stderr_color()` calls it with `getenv("NO_COLOR")` and `isatty(2)` (`_isatty(2)` on Windows, which also needs the console to accept ANSI colors). |
+| `spike_hint(code)` | The hint printed for each R code, or NULL. |
 | `spike_str_copy(s)` | Runtime-owned copy of `s`. |
 | `spike_str_concat(a, b)` | `a` followed by `b`, runtime-owned. |
 | `spike_str_eq(a, b)` | 1 if the texts are equal. |
@@ -42,7 +45,7 @@ Texts are immutable. Literals are plain C strings. Texts built while the program
 | `spike_fill_str(items, count)` | Sets every element of a `caractere` vector to `""`. The generated `main` calls it for each such vector before anything else, since C would leave them as null pointers. |
 | `spike_check_step(step, line)` | R006 if the step of a `para` is 0. Generated only when the step is not a literal. |
 | `spike_for_advance(&counter, step)` | Adds the step to a `para` counter and returns 1, or returns 0 without changing it when the sum would overflow. The generated loop `break`s on 0, so a `para` near the `inteiro` limits never loops forever. |
-| `spike_enter(line)` | First line of every generated procedure and function. Counts the call: more than 10000 calls in progress is R008. On the first call it also measures the stack (`getrlimit` on Linux and macOS, `VirtualQuery` on Windows) and allows recursion to use 3/4 of it; going past that is R008 too, so deep recursion stops with a message instead of crashing. `line` is the line of the procedure or function header. |
+| `spike_enter(name, line)` | First line of every generated procedure and function. Counts the call: more than 10000 calls in progress is R008. On the first call it also measures the stack (`getrlimit` on Linux and macOS, `VirtualQuery` on Windows) and allows recursion to use 3/4 of it; going past that is R008 too, so deep recursion stops with a message instead of crashing. `name` is the subprogram as written in the `.por` and `line` is the line of the call: every generated subprogram takes it as a first parameter, `int spike_line`. The last 64 levels are kept in `spike_calls` (a ring indexed by depth; each slot remembers its depth, so a slot reused by a deeper call is never shown for the wrong level). |
 | `spike_leave()` | Undoes one `spike_enter`. Generated before every exit: each `retorne` and the end of a procedure. |
 | `spike_missing_return(line, name)` | R009: the function `name` reached `fimfuncao` without `retorne`. Generated at the end of every function, followed by a `return` of the type's default value so the C compiler sees every path return. |
 | `spike_abs_int(x)` | `abs` of an `inteiro`. `abs` of the smallest `inteiro` wraps to itself instead of being undefined in C. `abs` of a `real` calls `fabs` directly. |
@@ -74,6 +77,23 @@ Texts are immutable. Literals are plain C strings. Texts built while the program
 
 Every read function takes the `.por` line of the `leia` and the variable name as written, so error messages can point at both: R003 shows what was typed (cut at 40 bytes, never in the middle of a UTF-8 character), R007 names the variable. Reading flushes stdout first, so a prompt written with `escreva` shows up before the program waits. The first read skips a UTF-8 byte order mark if the input starts with one.
 
+## How an error is printed
+
+```
+erro de execução[R001]: divisão por zero
+ --> soma.por:12
+     |
+  12 |   r <- a div b
+     |
+  chamado de 'media' na linha 20
+     = dica: verifique se o divisor pode valer 0 antes de dividir (use um 'se')
+```
+
+- The source line is shown only when `line` is between 1 and the number of lines given to `spike_set_source`; otherwise only ` --> soma.por:12` (or ` --> soma.por` when the line is 0).
+- Without `spike_set_source` (the C tests), the location is the old `  --> linha N`.
+- The call lines come from `spike_calls`, most recent first, at most 8, then `  ... e mais N` with the levels not shown.
+- Colors (red header, cyan location, gray gutter, green hint) only when `spike_stderr_color()` says so. A program that ends without error writes nothing to stderr.
+
 ## Runtime errors
 
 | Code | Meaning |
@@ -94,11 +114,11 @@ A program that stops on a runtime error always exits with code 101.
 
 ## How it gets into the compiler
 
-`cmake/embed_runtime.cmake` runs at build time (`cmake -P`). It reads `spike_runtime_core.h`, `spike_runtime_calls.h`, `spike_runtime_math.h`, `spike_runtime_io.h` and `spike_runtime_text.h`, joins them in that order, turns `\r\n` into `\n`, and writes `build/generated/runtime_text.cpp` with the file as a byte array. A byte array avoids the length limit some compilers put on string literals. `spike_core` compiles that file, and `include/spike/runtime_text.hpp` exposes it as `runtime_source()` and `runtime_source_size()`. The generated file is rebuilt whenever the header or the script changes, and it is never committed.
+`cmake/embed_runtime.cmake` runs at build time (`cmake -P`). It reads `spike_runtime_core.h`, `spike_runtime_calls.h`, `spike_runtime_errors.h`, `spike_runtime_math.h`, `spike_runtime_io.h` and `spike_runtime_text.h`, joins them in that order, turns `\r\n` into `\n`, and writes `build/generated/runtime_text.cpp` with the file as a byte array. A byte array avoids the length limit some compilers put on string literals. `spike_core` compiles that file, and `include/spike/runtime_text.hpp` exposes it as `runtime_source()` and `runtime_source_size()`. The generated file is rebuilt whenever the header or the script changes, and it is never committed.
 
 ## Tests
 
-- `runtime_c_unit` compiles `tests/runtime/runtime_test.c` as C99 and checks formatting, texts, arithmetic and parsing.
-- `runtime_io_*` run `tests/runtime/runtime_io_program.c` with real input through `tests/runtime/expect_run.cmake`, which checks the exit code, stdout and stderr. They cover reading every type, invalid input (R003), end of input (R007), division by zero (R001), the call limit (R008), a function without `retorne` (R009), the math errors (R004, R005, R010) and `SPIKE_SEED`.
+- `runtime_c_unit` compiles `tests/runtime/runtime_test.c` as C99 and checks formatting, texts, arithmetic, parsing, the saved call slots, `NO_COLOR` and the hints.
+- `runtime_io_*` run `tests/runtime/runtime_io_program.c` with real input through `tests/runtime/expect_run.cmake`, which checks the exit code, stdout and stderr. They cover the error format with the source line, the call stack and a line outside the file (`error_shows_source`, `error_line_outside_source`), reading every type, invalid input (R003), end of input (R007), division by zero (R001), the call limit (R008), a function without `retorne` (R009), the math errors (R004, R005, R010) and `SPIKE_SEED`.
 - `runtime_c_strings` compiles `tests/runtime/runtime_strings_test.c` and checks the text functions with accents, empty text, a 4-byte emoji and broken UTF-8.
 - The C tests are skipped when CMake finds no C compiler.

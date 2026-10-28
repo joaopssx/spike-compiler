@@ -60,6 +60,12 @@ void Generator::emit_body(const StmtList& stmts) {
 void Generator::emit_se(const SeStmt& stmt) {
     const std::string test = condition(stmt.condition);
     if (failed()) return;
+    const std::vector<std::string> before = take_pending();
+    if (!before.empty()) {
+        out_.line("{");
+        out_.indent();
+        emit_lines(before);
+    }
     out_.line("if (" + test + ") {");
     emit_body(stmt.then_branch);
     if (!stmt.else_branch.empty()) {
@@ -67,22 +73,48 @@ void Generator::emit_se(const SeStmt& stmt) {
         emit_body(stmt.else_branch);
     }
     out_.line("}");
+    if (!before.empty()) {
+        out_.dedent();
+        out_.line("}");
+    }
 }
 
 void Generator::emit_enquanto(const EnquantoStmt& stmt) {
     const std::string test = condition(stmt.condition);
     if (failed()) return;
-    out_.line("while (" + test + ") {");
-    emit_body(stmt.body);
+    const std::vector<std::string> before = take_pending();
+    if (before.empty()) {
+        out_.line("while (" + test + ") {");
+        emit_body(stmt.body);
+        out_.line("}");
+        return;
+    }
+    out_.line("while (1) {");
+    out_.indent();
+    emit_lines(before);
+    out_.line("if (!(" + test + ")) break;");
+    emit_block(stmt.body);
+    out_.dedent();
     out_.line("}");
 }
 
 void Generator::emit_repita(const RepitaStmt& stmt) {
-    out_.line("do {");
-    emit_body(stmt.body);
     const std::string test = condition(stmt.condition);
     if (failed()) return;
-    out_.line("} while (!(" + test + "));");
+    const std::vector<std::string> before = take_pending();
+    if (before.empty()) {
+        out_.line("do {");
+        emit_body(stmt.body);
+        out_.line("} while (!(" + test + "));");
+        return;
+    }
+    out_.line("while (1) {");
+    out_.indent();
+    emit_block(stmt.body);
+    emit_lines(before);
+    out_.line("if (" + test + ") break;");
+    out_.dedent();
+    out_.line("}");
 }
 
 void Generator::emit_para(const ParaStmt& stmt) {
@@ -91,27 +123,34 @@ void Generator::emit_para(const ParaStmt& stmt) {
     double ignored = 0.0;
     const bool step_known = !stmt.step || constant_int(stmt.step, step_value);
     const bool end_known = constant_int(stmt.to, ignored);
-    const bool needs_block = !step_known || !end_known;
-    const std::string id = needs_block ? std::to_string(next_loop_id()) : "";
+    const bool needs_limits = !step_known || !end_known;
+    const std::string id = needs_limits ? std::to_string(next_loop_id()) : "";
 
     std::string end_text = expr_as(stmt.to, TypeKind::Integer);
+    const std::vector<std::string> end_before = take_pending();
     std::string step_text = stmt.step ? expr_as(stmt.step, TypeKind::Integer) : "1LL";
+    const std::vector<std::string> step_before = take_pending();
     const std::string start_text = expr_as(stmt.from, TypeKind::Integer);
+    const std::vector<std::string> start_before = take_pending();
     if (failed()) return;
+    const bool needs_block = needs_limits || !start_before.empty();
 
     if (needs_block) {
         out_.line("{");
         out_.indent();
     }
     if (!end_known) {
+        emit_lines(end_before);
         out_.line("spike_int spike_to_" + id + " = " + end_text + ";");
         end_text = "spike_to_" + id;
     }
     if (!step_known) {
+        emit_lines(step_before);
         out_.line("spike_int spike_step_" + id + " = " + step_text + ";");
         step_text = "spike_step_" + id;
         out_.line("spike_check_step(" + step_text + ", " + std::to_string(stmt.line) + ");");
     }
+    emit_lines(start_before);
     out_.line(counter + " = " + start_text + ";");
 
     std::string test;

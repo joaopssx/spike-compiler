@@ -2,6 +2,7 @@
 
 #include <string>
 #include <utility>
+#include <variant>
 
 namespace spike {
 
@@ -28,17 +29,24 @@ BinaryOp binary_op_for(TokenType t) {
     }
 }
 
+// Depois de um operando que faltou, o operador seguinte nao e lido: evita um
+// segundo E201 no mesmo trecho.
+bool is_error(const ExprPtr& expr) {
+    return expr && std::holds_alternative<ErrorExpr>(expr->node);
+}
+
 } // namespace
 
 // --- Expressoes -------------------------------------------------------------
 
 ExprPtr Parser::parse_expr() {
+    const NestingGuard guard(*this);
     return parse_or();
 }
 
 ExprPtr Parser::parse_or() {
     ExprPtr left = parse_and();
-    while (check(TokenType::OU)) {
+    while (!is_error(left) && check(TokenType::OU)) {
         Token op = advance();
         ExprPtr right = parse_and();
         left = make_expr(BinaryExpr{
@@ -50,7 +58,7 @@ ExprPtr Parser::parse_or() {
 
 ExprPtr Parser::parse_and() {
     ExprPtr left = parse_not();
-    while (check(TokenType::E)) {
+    while (!is_error(left) && check(TokenType::E)) {
         Token op = advance();
         ExprPtr right = parse_not();
         left = make_expr(BinaryExpr{
@@ -61,6 +69,7 @@ ExprPtr Parser::parse_and() {
 }
 
 ExprPtr Parser::parse_not() {
+    const NestingGuard guard(*this);
     if (check(TokenType::NAO)) {
         Token op = advance();
         ExprPtr operand = parse_not();  // recursivo: "nao nao x" funciona
@@ -72,9 +81,10 @@ ExprPtr Parser::parse_not() {
 
 ExprPtr Parser::parse_comparison() {
     ExprPtr left = parse_term();
-    while (check(TokenType::EQUAL)      || check(TokenType::NOT_EQUAL) ||
-           check(TokenType::LESS)       || check(TokenType::GREATER)   ||
-           check(TokenType::LESS_EQ)    || check(TokenType::GREATER_EQ)) {
+    while (!is_error(left) &&
+           (check(TokenType::EQUAL)      || check(TokenType::NOT_EQUAL) ||
+            check(TokenType::LESS)       || check(TokenType::GREATER)   ||
+            check(TokenType::LESS_EQ)    || check(TokenType::GREATER_EQ))) {
         Token op = advance();
         ExprPtr right = parse_term();
         left = make_expr(BinaryExpr{
@@ -86,7 +96,7 @@ ExprPtr Parser::parse_comparison() {
 
 ExprPtr Parser::parse_term() {
     ExprPtr left = parse_factor();
-    while (check(TokenType::PLUS) || check(TokenType::MINUS)) {
+    while (!is_error(left) && (check(TokenType::PLUS) || check(TokenType::MINUS))) {
         Token op = advance();
         ExprPtr right = parse_factor();
         left = make_expr(BinaryExpr{
@@ -98,8 +108,8 @@ ExprPtr Parser::parse_term() {
 
 ExprPtr Parser::parse_factor() {
     ExprPtr left = parse_unary();
-    while (check(TokenType::STAR) || check(TokenType::SLASH) || check(TokenType::DIV) ||
-           check(TokenType::MOD)) {
+    while (!is_error(left) && (check(TokenType::STAR) || check(TokenType::SLASH) ||
+                               check(TokenType::DIV) || check(TokenType::MOD))) {
         Token op = advance();
         ExprPtr right = parse_unary();
         left = make_expr(BinaryExpr{
@@ -110,6 +120,7 @@ ExprPtr Parser::parse_factor() {
 }
 
 ExprPtr Parser::parse_unary() {
+    const NestingGuard guard(*this);
     if (check(TokenType::MINUS)) {
         Token op = advance();
         ExprPtr operand = parse_unary();  // recursivo: "--x" funciona
@@ -121,7 +132,7 @@ ExprPtr Parser::parse_unary() {
 
 ExprPtr Parser::parse_power() {
     ExprPtr base = parse_primary();
-    if (!check(TokenType::CARET)) return base;
+    if (is_error(base) || !check(TokenType::CARET)) return base;
     Token op = advance();
     ExprPtr exponent = parse_unary();
     return make_expr(BinaryExpr{
@@ -159,21 +170,17 @@ ExprPtr Parser::parse_primary() {
         advance();
         ExprPtr inner = parse_expr();
         if (!match(TokenType::RPAREN)) {
-            const Token& cur = peek();
-            diags_.error("E200", "')' esperado",
+            const SourcePos cur = expected_pos();
+            report("E200", "')' esperado",
                          cur.line, cur.col,
                          "feche o parêntese antes de continuar a expressão.");
         }
         return inner;
     }
 
-    // Token inesperado. Emite E201 e CONSOME 1 token (a menos que seja EOF)
-    // pra evitar loop infinito em chamadores que iteram esperando progresso.
-    diags_.error("E201", "expressão esperada",
-                 tok.line, tok.col,
-                 "uma expressão pode ser número, string, variável, ou (expressão).");
-    if (!is_at_end()) advance();
-    return make_expr(NumberExpr{0.0, true, tok.line, tok.col});
+    // Token inesperado: nao consome. Quem garante progresso e a sincronizacao
+    // do comando (parse_stmt_list).
+    return missing_expr();
 }
 
 } // namespace spike

@@ -1,2 +1,2 @@
 erro de execução[R010]: aleatorio(10, 1): o primeiro número precisa ser menor ou igual ao segundo
-  --> linha 7
+ --> program.por:7

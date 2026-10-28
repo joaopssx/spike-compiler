@@ -350,6 +350,27 @@ fimfuncao
 - `funcao`, `fimfuncao` and `retorne` are reserved words.
 - In the generated C, a function becomes `static spike_int f_fatorial(spike_int v_n)`, with the prototypes of every procedure and function first. Each `retorne` stores its value in a temporary, `spike_result`, then leaves.
 
+### Order of evaluation
+
+```
+q <- divide(17, 5, resto) + resto
+```
+
+- An expression is evaluated from left to right, the way it is read. Above, `divide` runs first and changes `resto`, so the `resto` on the right is already the new value. In `resto + divide(17, 5, resto)` the `resto` on the left is read before the call and keeps the old value.
+- The same holds for every place with more than one value: both sides of an operator, the arguments of a call (`f(a, g(a))` reads `a` before calling `g`), the indexes of a matrix, and an assignment, where the index of the target comes before the value (`v[i] <- avanca(i)` uses the `i` from before the call).
+- `e` and `ou` still stop early: in `x > 0 e f(x) > 0`, `f` is not called when `x > 0` is false.
+- The order matters only when a function called in the expression has an effect: it changes a global variable or a parameter by reference, reads with `leia` or writes with `escreva` (directly or through a subprogram it calls). `le() - le()` subtracts the second value read from the first.
+- In C the order of the arguments of a call is not defined, so in the generated C Spike stores the parts that must come first in temporaries before the line that uses them:
+
+```c
+{
+    spike_int spike_tmp_1 = f_divide(17LL, 5LL, &v_resto);
+    v_q = spike_add_int(spike_tmp_1, v_resto);
+}
+```
+
+- A temporary appears only where the order could change the result. `fib(n - 1) + fib(n - 2)` and `maximo(maximo(a, b), c)` stay on one line, since those functions change nothing outside themselves. A condition of `enquanto` or `repita` that needs temporaries becomes `while (1)` with the temporaries and an `if (...) break;`, so it is evaluated again on every turn. When the right side of `e` or `ou` needs them, the test goes into a `spike_bool` temporary and the right side runs inside an `if`.
+
 ### Recursion limit
 
 - Every call to a function or procedure is counted while it runs. More than 10000 calls in progress at the same time stops the program with R008: `recursão profunda demais (limite de 10000 chamadas), verifique a condição de parada`. In practice this is a recursion that never reaches its stopping case.
@@ -475,7 +496,7 @@ Spike comes with ready-made functions. They are called like any function, `raiz(
 
 ## Runtime errors
 
-A compiled program stops at the first runtime error. It prints a message in Portuguese with the line of the `.por` file where the error happened, and exits with code 101.
+A compiled program stops at the first runtime error. It prints a message in Portuguese to stderr, in the same shape as a compile error: the code, the file and line, the line of the `.por` itself and a hint. When the error happens inside procedures or functions, up to 8 lines `chamado de 'nome' na linha N` follow, most recent first, then `... e mais N` for the rest. The program exits with code 101. The format and every hint are in `errors.md`.
 
 | Code | When |
 | --- | --- |

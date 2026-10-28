@@ -27,7 +27,8 @@ spike_add_expect_test(compile_hello
     -DPROGRAM=$<TARGET_FILE:spike>
     "-DARGS=${CMAKE_SOURCE_DIR}/examples/hello.por|-o|${SPIKE_E2E_DIR}/hello_test"
     -DEXPECT_CODE=0
-    "-DEXPECT_STDOUT=ok:.*gerado.*hello_test"
+    "-DEXPECT_STDOUT=^$"
+    "-DEXPECT_STDERR=ok:.*gerado.*hello_test"
     "-DEXPECT_FILE=${SPIKE_E2E_DIR}/hello_test${SPIKE_EXE_SUFFIX}"
 )
 set_tests_properties(compile_hello PROPERTIES FIXTURES_SETUP hello_executable)
@@ -57,7 +58,8 @@ spike_add_expect_test(compile_and_run_hello
     -DPROGRAM=$<TARGET_FILE:spike>
     "-DARGS=${CMAKE_SOURCE_DIR}/examples/hello.por|--run|-o|${SPIKE_E2E_DIR}/hello_run"
     -DEXPECT_CODE=0
-    "-DEXPECT_STDOUT=ok:.*gerado.*Ol.+, mundo!$"
+    "-DEXPECT_STDOUT=^Ol.+, mundo!$"
+    "-DEXPECT_STDERR=ok:.*gerado"
 )
 
 spike_add_expect_test(compile_creates_output_folder
@@ -78,12 +80,54 @@ spike_add_expect_test(run_exit_code_is_forwarded
     -DPROGRAM=$<TARGET_FILE:spike>
     "-DARGS=${CMAKE_SOURCE_DIR}/tests/e2e/integer_division_by_zero/program.por|--run|-o|${SPIKE_E2E_DIR}/divide"
     -DEXPECT_CODE=101
-    "-DEXPECT_STDERR=R001.*linha 8"
+    "-DEXPECT_STDERR=R001.*program.por:8"
 )
 
 spike_add_expect_test(compile_reports_semantic_errors
     -DPROGRAM=$<TARGET_FILE:spike>
     "-DARGS=${CMAKE_SOURCE_DIR}/tests/programs/semantic_invalid/e700_undeclared.por|-o|${SPIKE_E2E_DIR}/never"
     -DEXPECT_CODE=1
-    "-DEXPECT_STDERR=E700"
+    "-DEXPECT_STDERR=E700.*falhou: 1 erro.Para entender um erro: spike --explain E700"
 )
+
+set(SPIKE_WARNING_SAMPLE "${CMAKE_SOURCE_DIR}/tests/programs/warnings/w001_unused_variable.por")
+
+spike_add_expect_test(warnings_are_shown_on_success
+    -DPROGRAM=$<TARGET_FILE:spike>
+    "-DARGS=${SPIKE_WARNING_SAMPLE}|-o|${SPIKE_E2E_DIR}/warning_shown"
+    -DEXPECT_CODE=0
+    "-DEXPECT_STDERR=aviso.W001..*idade.*ok:.*gerado"
+    "-DEXPECT_FILE=${SPIKE_E2E_DIR}/warning_shown${SPIKE_EXE_SUFFIX}"
+)
+
+spike_add_expect_test(no_warnings_flag_hides_warnings
+    -DPROGRAM=$<TARGET_FILE:spike>
+    "-DARGS=${SPIKE_WARNING_SAMPLE}|--no-warnings|-o|${SPIKE_E2E_DIR}/warning_hidden"
+    -DEXPECT_CODE=0
+    "-DEXPECT_STDERR=^ok:.*gerado"
+)
+
+spike_add_expect_test(warnings_as_errors_stops_compilation
+    -DPROGRAM=$<TARGET_FILE:spike>
+    "-DARGS=${SPIKE_WARNING_SAMPLE}|--warnings-as-errors|-o|${SPIKE_E2E_DIR}/warning_fails"
+    -DEXPECT_CODE=1
+    "-DEXPECT_STDERR=aviso.W001..*1 aviso e '--warnings-as-errors'"
+    "-DEXPECT_NO_FILE=${SPIKE_E2E_DIR}/warning_fails${SPIKE_EXE_SUFFIX}"
+)
+
+spike_add_expect_test(warnings_as_errors_wins_over_no_warnings
+    -DPROGRAM=$<TARGET_FILE:spike>
+    "-DARGS=${SPIKE_WARNING_SAMPLE}|--no-warnings|--warnings-as-errors|-o|${SPIKE_E2E_DIR}/warning_both"
+    -DEXPECT_CODE=1
+    "-DEXPECT_STDERR=aviso.W001."
+)
+
+file(GLOB SPIKE_EXAMPLE_PROGRAMS CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/examples/*.por")
+foreach(program IN LISTS SPIKE_EXAMPLE_PROGRAMS)
+    get_filename_component(program_name "${program}" NAME_WE)
+    spike_add_expect_test(example_without_warnings_${program_name}
+        -DPROGRAM=$<TARGET_FILE:spike>
+        "-DARGS=${program}|--warnings-as-errors|-o|${SPIKE_E2E_DIR}/examples/${program_name}"
+        -DEXPECT_CODE=0
+    )
+endforeach()

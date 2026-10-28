@@ -1,0 +1,4 @@
+erro[E001]: caractere desconhecido 'é'
+   3 |   média : real
+     |    ^
+     = dica: nomes de variáveis não podem ter acento, use 'media' em vez de 'média'.

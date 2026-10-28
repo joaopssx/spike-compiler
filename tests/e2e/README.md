@@ -19,6 +19,10 @@ Then reconfigure (`cmake -S . -B build`). The case shows up as `e2e_<folder>` in
 
 Work the expected output out by hand from the program, not by running Spike and copying what it printed. A case copied from the compiler's own output only proves that the compiler agrees with itself.
 
+## Runtime errors
+
+`tests/e2e/runtime_errors/<name>/` holds one case per runtime error code (`r001_div_by_zero` and so on) plus the call stack cases. They are ordinary cases, named `e2e_runtime_<folder>` in CTest. Their `expected_err.txt` lists the whole message: the header, ` --> program.por:N` (the runner always compiles a file named `program.por`), the source line, the `chamado de` lines and the hint.
+
 ## Compile errors
 
 Programs that must not compile go in `tests/e2e_errors/<name>/`, with `program.por`, `expected_diag.txt` and optionally `expected_code.txt` (defaults to `1`). `expected_diag.txt` lists lines that must appear in stderr, in order, with colors removed. Include the source line and the caret line, so the test also checks that the arrow points at the right column:

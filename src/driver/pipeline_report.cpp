@@ -1,5 +1,7 @@
 #include "driver/pipeline_internal.hpp"
 #include "spike/colors.hpp"
+#include "spike/error_catalog.hpp"
+#include "spike/summary.hpp"
 
 #include <algorithm>
 #include <cstdio>
@@ -50,6 +52,39 @@ void Reporter::add_phase(const std::string& name, double ms) {
 
 void Reporter::finish() const {
     if (timing_) std::cerr << format_time_table(phases_, total_.ms()) << std::flush;
+}
+
+const std::vector<PhaseTime>& Reporter::phases() const {
+    return phases_;
+}
+
+double Reporter::total_ms() const {
+    return total_.ms();
+}
+
+void Reporter::record(const Diagnostics& diagnostics) {
+    if (first_code_.empty()) first_code_ = diagnostics.first_error_code();
+    errors_ += diagnostics.error_count();
+    warnings_ += diagnostics.warning_count();
+}
+
+void Reporter::record_error(const std::string& code) {
+    if (first_code_.empty()) first_code_ = code;
+    ++errors_;
+}
+
+std::string Reporter::with_counts(const std::string& message) const {
+    if (warnings_ == 0) return message;
+    return message + ", " + success_counts(errors_, warnings_);
+}
+
+void Reporter::print_failure() const {
+    if (errors_ == 0) return;
+    std::cerr << red(bold(failure_summary(errors_, warnings_))) << "\n";
+    if (find_error(first_code_) != nullptr) {
+        std::cerr << explain_suggestion(first_code_) << "\n";
+    }
+    std::cerr << std::flush;
 }
 
 std::string count_text(std::size_t count, const char* singular, const char* plural) {

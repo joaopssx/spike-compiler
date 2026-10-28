@@ -122,6 +122,44 @@ DriverError compiler_failed_error(const std::string& compiler_output) {
     return error;
 }
 
+int compiler_error_line(const std::string& compiler_output, const std::string& source_name) {
+    const std::string marker = source_name + ":";
+    std::size_t at = compiler_output.find(marker);
+    while (at != std::string::npos) {
+        const bool name_starts_here =
+            at == 0 || std::string("\n/\\ \"'").find(compiler_output[at - 1]) != std::string::npos;
+        std::size_t digit = at + marker.size();
+        int line = 0;
+        while (digit < compiler_output.size() && line < 1000000 &&
+               std::isdigit(static_cast<unsigned char>(compiler_output[digit]))) {
+            line = line * 10 + (compiler_output[digit] - '0');
+            ++digit;
+        }
+        if (name_starts_here && line > 0) return line;
+        at = compiler_output.find(marker, at + 1);
+    }
+    return 0;
+}
+
+void point_to_source(DriverError& error, const std::string& compiler_output,
+                     const std::string& source_name, const std::string& source) {
+    const int line = compiler_error_line(compiler_output, source_name);
+    if (line == 0) return;
+    error.message += " para a linha " + std::to_string(line) + " de " + source_name;
+    error.location = source_name + ":" + std::to_string(line);
+    error.source_line = line;
+    std::size_t start = 0;
+    for (int i = 1; i < line && start != std::string::npos; ++i) {
+        start = source.find('\n', start);
+        if (start != std::string::npos) ++start;
+    }
+    if (start == std::string::npos || start > source.size()) return;
+    const std::size_t end = source.find('\n', start);
+    std::string text = source.substr(start, end == std::string::npos ? end : end - start);
+    if (!text.empty() && text.back() == '\r') text.pop_back();
+    error.source_text = text;
+}
+
 DriverError write_failed_error(const std::string& path, const std::string& reason) {
     DriverError error;
     error.code = "E904";

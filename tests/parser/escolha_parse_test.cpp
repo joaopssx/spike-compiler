@@ -61,7 +61,7 @@ void test_escolha_with_only_outrocaso_is_valid() {
 void test_missing_caso_is_e810() {
     auto r = parse_source(with_body("  escolha x\n    x <- 1\n    caso 1\n  fimescolha\n"));
     SPIKE_EXPECT(r.diag_output.find("[E810]") != std::string::npos);
-    SPIKE_EXPECT(r.diag_output.find(":6:5") != std::string::npos);
+    SPIKE_EXPECT(r.diag_output.find(":5:12") != std::string::npos);
 }
 
 void test_missing_fimescolha_is_e811() {

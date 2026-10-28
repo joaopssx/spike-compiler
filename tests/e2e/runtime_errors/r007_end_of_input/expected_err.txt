@@ -1,0 +1,6 @@
+erro de execução[R007]: a entrada acabou antes de leia() conseguir ler 'b'
+ --> program.por:6
+     |
+   6 |   leia(b)
+     |
+     = dica: o programa pediu mais valores do que a entrada tinha; confira quantas vezes o 'leia' é executado

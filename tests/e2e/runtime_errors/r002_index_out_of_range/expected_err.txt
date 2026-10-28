@@ -1,0 +1,6 @@
+erro de execução[R002]: índice 4 fora do vetor 'v' (válido: 1 a 3)
+ --> program.por:7
+     |
+   7 |   v[i] <- 1
+     |
+     = dica: o índice precisa estar entre os limites declarados; confira o laço ou a conta que calcula o índice

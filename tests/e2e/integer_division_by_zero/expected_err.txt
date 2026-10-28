@@ -1,2 +1,2 @@
 erro de execução[R001]: divisão por zero
-  --> linha 8
+ --> program.por:8

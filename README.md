@@ -58,9 +58,12 @@ erro[E700]: variável 'meida' não foi declarada
    8 | fimalgoritmo
      |
      = dica: declare 'meida' na seção var.
+
+falhou: 1 erro
+Para entender um erro: spike --explain E700
 ```
 
-Every error code is explained, with an example, in [docs/errors.md](docs/errors.md).
+Every error code is explained, with an example, in [docs/errors.md](docs/errors.md). The same text is built into Spike: `spike --explain E700` prints it in the terminal, and `spike --explain` lists every code.
 
 ## Installing
 
@@ -114,11 +117,17 @@ The compiler ends up in `build/spike` (`build\spike.exe` on Windows). Run it fro
 | `spike programa.por --time` | Shows how long each step took. |
 | `spike programa.por --verbose` | Describes each step as it happens. |
 | `spike programa.por --ast` | Prints the program's syntax tree and does not compile. |
+| `spike programa.por --no-warnings` | Hides the warnings (`aviso[W001]` and friends). |
+| `spike programa.por --warnings-as-errors` | Stops the compilation, with exit code 1, when there is any warning. |
 | `spike check programa.por` | Only checks the program for errors. Does not need a C compiler. |
 | `spike tokens programa.por` | Lists the tokens of the file (for debugging). |
+| `spike dev programa.por` | Runs every phase and writes the tokens, syntax tree, symbol table, expression types, generated C and phase times to `programa.dev/`. Nothing is written when the program has errors. |
+| `spike fetch` | Shows Spike's version, the system, the C compiler it found and whether the temporary folder is writable. Paste its output when asking for help. Exits with 3 when something is missing. |
 | `spike --help`, `spike --version` | Help and version. |
 
 Flags can be combined: `spike programa.por --c --time -o saida/prog`.
+
+`spike random`, a generator of random Portugol programs, is planned for v1.0. Today it only says so and exits with 2.
 
 Exit codes: 0 when everything worked, 1 when the program has errors, 2 when the command line is wrong, 3 when the C compiler is missing or fails. A compiled program that stops on a runtime error, such as a division by zero, exits with 101.
 

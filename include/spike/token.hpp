@@ -109,6 +109,7 @@ namespace spike
         std::string lexeme;
         int line = 1;
         int col = 1;
+        int length = 0; // characters in the source text (quotes included)
     };
 
     // Returns the textual name of a TokenType (e.g. "NUMBER", "ALGORITMO").

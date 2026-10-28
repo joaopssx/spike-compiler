@@ -16,9 +16,10 @@ bool Parser::parse_case_labels(CaseClause& clause) {
     const Token& keyword = previous();
     if (is_at_end() || peek().line != keyword.line || check(TokenType::CASO) ||
         check(TokenType::OUTROCASO) || check(TokenType::FIM_ESCOLHA)) {
-        diags_.error("E813", "valor esperado depois de 'caso'", keyword.line, keyword.col + 4,
-                     "escreva um valor (caso 1), uma lista (caso 2, 3) ou um intervalo "
-                     "(caso 4 ate 6).");
+        const SourcePos pos = error_after(keyword);
+        report("E813", "valor esperado depois de 'caso'", pos.line, pos.col,
+               "escreva um valor (caso 1), uma lista (caso 2, 3) ou um intervalo "
+               "(caso 4 ate 6).");
         return false;
     }
     do {
@@ -43,8 +44,8 @@ StmtPtr Parser::parse_escolha() {
                         TokenType::FIM_ALGORITMO};
     if (!check(TokenType::CASO) && !check(TokenType::OUTROCASO) &&
         !check(TokenType::FIM_ESCOLHA)) {
-        const Token& t = peek();
-        diags_.error("E810", "'caso' esperado depois de 'escolha'", t.line, t.col, kHintEscolha);
+        const SourcePos t = expected_pos();
+        report("E810", "'caso' esperado depois de 'escolha'", t.line, t.col, kHintEscolha);
         parse_stmt_list(stops);
     }
 
@@ -57,8 +58,8 @@ StmtPtr Parser::parse_escolha() {
         if (match(TokenType::CASO)) {
             const Token caso = previous();
             if (s.has_default) {
-                diags_.error("E812", "'caso' depois de 'outrocaso'", caso.line, caso.col,
-                             "'outrocaso' precisa ser o último bloco do 'escolha'.");
+                report("E812", "'caso' depois de 'outrocaso'", caso.line, caso.col,
+                       "'outrocaso' precisa ser o último bloco do 'escolha'.");
             }
             CaseClause clause;
             clause.line = caso.line;
@@ -72,8 +73,8 @@ StmtPtr Parser::parse_escolha() {
             const Token outro = previous();
             StmtList body = parse_stmt_list(stops);
             if (s.has_default) {
-                diags_.error("E812", "'outrocaso' repetido", outro.line, outro.col,
-                             "um 'escolha' tem no máximo um 'outrocaso', no fim.");
+                report("E812", "'outrocaso' repetido", outro.line, outro.col,
+                       "um 'escolha' tem no máximo um 'outrocaso', no fim.");
                 continue;
             }
             s.has_default = true;
@@ -83,13 +84,12 @@ StmtPtr Parser::parse_escolha() {
         break;
     }
     if (!closed) {
-        const Token& t = peek();
-        diags_.error("E811", "'fimescolha' não encontrado", t.line, t.col,
-                     "feche o 'escolha' com 'fimescolha'.");
+        report("E811", "'fimescolha' não encontrado", keyword.line, keyword.col,
+               "feche o 'escolha' com 'fimescolha'.");
     }
     if (s.cases.empty() && !s.has_default) {
-        diags_.error("E814", "'escolha' sem nenhum caso", keyword.line, keyword.col,
-                     kHintEscolha);
+        report("E814", "'escolha' sem nenhum caso", keyword.line, keyword.col,
+               kHintEscolha);
     }
     return make_stmt(std::move(s));
 }

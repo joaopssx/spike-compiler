@@ -1,2 +1,2 @@
 erro de execução[R006]: o passo do 'para' não pode ser zero
-  --> linha 6
+ --> program.por:6
