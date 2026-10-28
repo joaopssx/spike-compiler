@@ -1,0 +1,204 @@
+name: release
+
+on:
+  push:
+    tags: ["v*.*.*"]
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Build and upload the packages as artifacts, but do not create the release
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    name: verify version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Tag, CMakeLists.txt and CHANGELOG.md agree
+        id: version
+        shell: bash
+        env:
+          REF_TYPE: ${{ github.ref_type }}
+          REF_NAME: ${{ github.ref_name }}
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
+        run: |
+          version=$(sed -n 's/^project(Spike VERSION \([0-9][0-9.]*\).*/\1/p' CMakeLists.txt)
+          if [ -z "$version" ]; then
+            echo "::error::could not read 'project(Spike VERSION ...)' from CMakeLists.txt"
+            exit 1
+          fi
+          if [ "$REF_TYPE" = "tag" ]; then
+            if [ "${REF_NAME#v}" != "$version" ]; then
+              echo "::error::tag $REF_NAME does not match PROJECT_VERSION $version in CMakeLists.txt"
+              exit 1
+            fi
+          elif [ "$DRY_RUN" != "true" ]; then
+            echo "::error::a real release must run from a tag (push 'v$version'); use dry_run on a branch"
+            exit 1
+          fi
+          if ! cmake -DVERSION="$version" -P scripts/extract_changelog.cmake > /dev/null; then
+            echo "::error::CHANGELOG.md needs a '## [$version]' section before releasing"
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "Releasing Spike $version"
+
+  build:
+    name: ${{ matrix.target }}
+    needs: verify
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: linux-x86_64
+            os: ubuntu-22.04
+            cmake_args: '"-DCMAKE_EXE_LINKER_FLAGS=-static-libstdc++ -static-libgcc"'
+          - target: macos-arm64
+            os: macos-latest
+          - target: macos-x86_64
+            os: macos-15-intel
+          - target: windows-x86_64
+            os: windows-latest
+            cmake_args: -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded
+    env:
+      VERSION: ${{ needs.verify.outputs.version }}
+      PACKAGE: spike-${{ needs.verify.outputs.version }}-${{ matrix.target }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # Same as ci.yml: Spike is built with MSVC, the generated C is compiled with MinGW-w64 GCC.
+      - name: Find MinGW-w64 GCC (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $gcc = "C:\mingw64\bin\gcc.exe"
+          if (-not (Test-Path $gcc)) {
+            $found = Get-Command gcc -ErrorAction SilentlyContinue
+            if ($found) { $gcc = $found.Source }
+          }
+          if (-not (Test-Path $gcc)) { throw "no MinGW-w64 GCC on the image" }
+          "$(Split-Path $gcc)" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          "SPIKE_TEST_ARGS=-DSPIKE_TEST_CC=$gcc" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Configure
+        shell: bash
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release ${{ matrix.cmake_args }} ${SPIKE_TEST_ARGS:-}
+
+      - name: Build
+        shell: bash
+        run: cmake --build build --config Release -j
+
+      - name: Test
+        shell: bash
+        run: ctest --test-dir build -C Release --output-on-failure --parallel 4
+
+      - name: Package (Linux and macOS)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          mkdir -p "dist/$PACKAGE"
+          cp build/spike LICENSE README.md CHANGELOG.md "dist/$PACKAGE/"
+          cp -R examples "dist/$PACKAGE/examples"
+          tar -C dist -czf "dist/$PACKAGE.tar.gz" "$PACKAGE"
+          rm -rf "dist/$PACKAGE"
+          if [ "$RUNNER_OS" = "Linux" ]; then ldd build/spike; else otool -L build/spike; fi
+
+      - name: Package (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $folder = "dist/$env:PACKAGE"
+          New-Item -ItemType Directory -Force $folder | Out-Null
+          Copy-Item build/Release/spike.exe, LICENSE, README.md, CHANGELOG.md $folder
+          Copy-Item -Recurse examples "$folder/examples"
+          Compress-Archive -Path $folder -DestinationPath "dist/$env:PACKAGE.zip"
+          Remove-Item -Recurse -Force $folder
+
+      - name: Smoke test the unpacked package (Linux and macOS)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          smoke="$RUNNER_TEMP/smoke"
+          rm -rf "$smoke" && mkdir -p "$smoke"
+          tar -C "$smoke" -xzf "dist/$PACKAGE.tar.gz"
+          cd "$smoke/$PACKAGE"
+          ./spike --version | grep -F "Spike $VERSION"
+          ./spike examples/hello.por --run | tee hello.txt
+          grep -q "mundo" hello.txt
+
+      - name: Smoke test the unpacked package (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $smoke = Join-Path $env:RUNNER_TEMP "smoke"
+          if (Test-Path $smoke) { Remove-Item -Recurse -Force $smoke }
+          Expand-Archive "dist/$env:PACKAGE.zip" -DestinationPath $smoke
+          Set-Location (Join-Path $smoke $env:PACKAGE)
+          $version = ./spike.exe --version | Out-String
+          if ($version -notmatch [regex]::Escape("Spike $env:VERSION")) { throw "wrong version: $version" }
+          $out = ./spike.exe examples/hello.por --run | Out-String
+          Write-Host $out
+          if ($LASTEXITCODE -ne 0 -or $out -notmatch "mundo") { throw "hello.por did not run" }
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: package-${{ matrix.target }}
+          path: dist/${{ env.PACKAGE }}.*
+          if-no-files-found: error
+
+  publish:
+    name: publish release
+    needs: [verify, build]
+    if: github.event_name == 'push' || inputs.dry_run == false
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      VERSION: ${{ needs.verify.outputs.version }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: package-*
+          path: dist
+          merge-multiple: true
+
+      - name: Checksums
+        run: |
+          cd dist
+          sha256sum spike-* > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+
+      - name: Release notes
+        run: |
+          cat > notes.md <<'EOF'
+          Download the package for your system, unpack it and put `spike` (or `spike.exe`) in a folder on your PATH. Check the download against `SHA256SUMS.txt`.
+
+          **Windows:** after unpacking, run `spike setup` once. It downloads a C compiler (about 64 MB) that Spike needs to build executables; Linux and macOS use the system compiler (`spike setup` shows how to install it).
+
+          EOF
+          cmake -DVERSION="$VERSION" -DOUTPUT=changes.md -P scripts/extract_changelog.cmake
+          cat changes.md >> notes.md
+          cat notes.md
+
+      - name: Create the release
+        run: |
+          prerelease=""
+          case "$VERSION" in 0.*) prerelease="--prerelease" ;; esac
+          gh release create "v$VERSION" dist/* --verify-tag --title "Spike $VERSION" \
+            --notes-file notes.md $prerelease

@@ -81,6 +81,18 @@ To move to a newer w64devkit:
 3. Update all five values in `toolchain_pins.hpp` in one commit, and check that the archive still unpacks to `w64devkit/bin/gcc.exe` (the release Dockerfile packs `$PREFIX=/w64devkit`).
 4. Run the manual CI job (Actions, "CI", Run workflow, `windows_setup` checked), which runs the real `spike setup` on Windows.
 
+## Releases
+
+`.github/workflows/release.yml` runs on a pushed tag `vX.Y.Z` and by hand (Actions, "release", Run workflow). The manual run defaults to `dry_run`: it builds, tests and packages everything and uploads the packages as artifacts, but creates no release. A real release only comes from a tag.
+
+- `verify` reads `project(Spike VERSION ...)` from `CMakeLists.txt`, checks that the tag without the `v` matches it, and that `CHANGELOG.md` has a `## [X.Y.Z]` section (`scripts/extract_changelog.cmake`).
+- `build` runs on `ubuntu-22.04` (glibc 2.35, so the binary also runs on Debian 12), `macos-latest` (arm64), `macos-15-intel` (x86_64; GitHub's last Intel macOS image, expected until about 2027) and `windows-latest`. Linux links `libstdc++` and `libgcc` statically; Windows uses the static MSVC runtime (`CMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded`), so `spike.exe` needs only system DLLs. Each job runs `ctest`, builds `spike-X.Y.Z-<system>-<arch>.(zip|tar.gz)` and then unpacks it elsewhere and runs `spike --version` and `examples/hello.por`.
+- `publish` (the only job with `contents: write`) writes `SHA256SUMS.txt`, takes the notes from the changelog section plus a note that Windows needs `spike setup`, and runs `gh release create --verify-tag`. Versions `0.x` are marked as pre-releases.
+
+A fully static Linux binary (`-static`) was left out: glibc warns against it, Spike gains nothing because it calls the system C compiler, which brings glibc anyway, and building on an older glibc already covers the common distributions.
+
+To release: bump `project(... VERSION ...)`, rename `## [Unreleased]` in `CHANGELOG.md` to `## [X.Y.Z] - date`, commit, run the workflow by hand with `dry_run`, and only then push the tag.
+
 ## Code generation notes
 
 - `generate_c` takes a `CodegenOptions{source, emit_line_directives, c_file_name}`. `source` is the `.por` text; its lines (with `\r\n` already turned into `\n`) become `spike_source_lines` at the top of the C file, so a runtime error can show the line. That array is the only copy of the source in the C file.

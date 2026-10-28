@@ -2,9 +2,42 @@
 
 Este guia ainda está sendo escrito; a versão completa chega junto com a v0.4.
 
-## 1. Instalar o Spike
+## 1. Baixar o Spike
 
-Por enquanto o Spike é compilado a partir do código: veja "Installing" no [README](../README.md).
+Os pacotes prontos ficam na [página de Releases](https://github.com/joaopssx/spike-compiler/releases). Escolha o do seu sistema:
+
+- Windows: `spike-<versão>-windows-x86_64.zip`
+- Linux: `spike-<versão>-linux-x86_64.tar.gz` (Ubuntu 22.04, Debian 12 ou mais novos)
+- Mac com chip Apple (M1 em diante): `spike-<versão>-macos-arm64.tar.gz`
+- Mac com processador Intel: `spike-<versão>-macos-x86_64.tar.gz`
+
+Cada pacote tem o `spike`, a licença, o README, o CHANGELOG e a pasta `examples/`.
+
+### Windows
+
+1. Baixe o `.zip`, clique com o botão direito, escolha "Extrair tudo" e mova a pasta para um lugar fixo, como `C:\Spike`.
+2. Coloque essa pasta no `PATH`: menu Iniciar, "Editar as variáveis de ambiente da sua conta", `Path`, Novo.
+3. Abra um terminal novo e rode `spike setup` uma vez. **Sem isso o Spike não gera executáveis no Windows**: ele baixa o compilador C (cerca de 64 MB) e confere o arquivo antes de usar.
+
+### Linux e macOS
+
+```
+tar -xzf spike-<versão>-linux-x86_64.tar.gz
+sudo cp spike-<versão>-linux-x86_64/spike /usr/local/bin/
+spike setup
+```
+
+Troque o nome do arquivo pelo do seu sistema. No macOS, se aparecer "não pode ser aberto", veja [a FAQ](faq.md).
+
+### Conferir o download
+
+A página de cada versão tem o `SHA256SUMS.txt`, com a "impressão digital" de cada pacote. Calcule a do arquivo que você baixou e compare:
+
+- Windows (PowerShell): `Get-FileHash spike-<versão>-windows-x86_64.zip`
+- Linux: `sha256sum spike-<versão>-linux-x86_64.tar.gz`
+- macOS: `shasum -a 256 spike-<versão>-macos-arm64.tar.gz`
+
+Se for diferente, apague o arquivo e baixe de novo.
 
 ## 2. Instalar um compilador C
 

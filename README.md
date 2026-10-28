@@ -65,9 +65,32 @@ Para entender um erro: spike --explain E700
 
 Every error code is explained, with an example, in [docs/errors.md](docs/errors.md). The same text is built into Spike: `spike --explain E700` prints it in the terminal, and `spike --explain` lists every code.
 
-## Installing
+## Downloading Spike
 
-There are no installers yet. You build Spike from source, and you need a C compiler (GCC or Clang) installed, because Spike uses it to produce the executable.
+Ready-made packages are on the [Releases page](https://github.com/joaopssx/spike-compiler/releases): `spike-<version>-windows-x86_64.zip`, `spike-<version>-linux-x86_64.tar.gz`, `spike-<version>-macos-arm64.tar.gz` (Apple Silicon) and `spike-<version>-macos-x86_64.tar.gz` (Intel Macs). Each one holds `spike`, the license, this README, the changelog and the `examples/` folder. `SHA256SUMS.txt` lists the checksum of every package.
+
+**Windows**
+
+1. Download the `.zip`, right-click it, choose "Extract All" and move the folder somewhere permanent, such as `C:\Spike`.
+2. Add that folder to your `PATH` (Start menu, "Edit environment variables for your account", `Path`, New).
+3. Open a new terminal and run `spike setup` once. It downloads the C compiler Spike needs (about 64 MB) and checks it before using it.
+4. Check the download, if you like: `Get-FileHash spike-<version>-windows-x86_64.zip` in PowerShell must print the hash listed in `SHA256SUMS.txt`.
+
+**Linux and macOS**
+
+```
+tar -xzf spike-<version>-linux-x86_64.tar.gz
+sudo cp spike-<version>-linux-x86_64/spike /usr/local/bin/
+spike setup
+```
+
+`spike setup` tells you whether a C compiler is already installed and, if not, prints the command for your system (`xcode-select --install` on macOS). To check the download, compare `sha256sum <package>` (Linux) or `shasum -a 256 <package>` (macOS) with the line in `SHA256SUMS.txt`. macOS may block a downloaded `spike` the first time; [docs/faq.md](docs/faq.md) explains how to allow it.
+
+The Linux package runs on distributions with glibc 2.35 or newer (Ubuntu 22.04, Debian 12 and later).
+
+## Installing from source
+
+You can also build Spike yourself. You need a C compiler (GCC or Clang) installed, because Spike uses it to produce the executable.
 
 **Debian / Ubuntu**
 
