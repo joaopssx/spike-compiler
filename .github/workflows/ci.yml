@@ -41,7 +41,7 @@ jobs:
           - name: windows
             os: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Pick compilers (Linux and macOS)
         if: runner.os != 'Windows'
@@ -107,7 +107,7 @@ jobs:
       CXX: clang++
       UBSAN_OPTIONS: print_stacktrace=1
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Configure
         run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DSPIKE_SANITIZE=ON
@@ -135,7 +135,7 @@ jobs:
     name: checks
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Files stay under 300 lines
         run: cmake -DSOURCE_DIR="$GITHUB_WORKSPACE" -P cmake/check_file_sizes.cmake
@@ -149,7 +149,7 @@ jobs:
     if: github.event_name == 'workflow_dispatch' && inputs.windows_setup
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Build spike
         shell: bash
