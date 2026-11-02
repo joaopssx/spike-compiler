@@ -153,7 +153,7 @@ jobs:
           Write-Host $out
           if ($LASTEXITCODE -ne 0 -or $out -notmatch "mundo") { throw "hello.por did not run" }
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: package-${{ matrix.target }}
           path: dist/${{ env.PACKAGE }}.*
