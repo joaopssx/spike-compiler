@@ -4,8 +4,13 @@ All notable changes to Spike are recorded here. The format follows [Keep a Chang
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-11-02
+
 ### Added
 
+- Documentation for students, in Portuguese: a getting-started guide (install, first program, how to read an error), a tutorial with nine short lessons and exercises, a page for every command and flag (`docs/cli.md`) and a FAQ. `CONTRIBUTING.md` and a rewritten `docs/internals.md` cover working on Spike itself.
+- The examples in the documentation are tested: `spike_doctest` (CTest `docs_examples`) compiles every `portugol` block, runs every `portugol-run` block against its `input` and `output`, and checks that every `portugol-error` block fails with its code.
+- `docs/language.md` gained a table of limits and a section on the differences from VisuAlg. A test checks that its table of built-in functions lists every signature the compiler knows.
 - Suggestions in error hints: a misspelled variable, procedure, function, built-in, command, type or closing word gets `você quis dizer '...'?` (E700, E780, E300, E104), and words and symbols from C, Java and Python (`print`, `if`, `true`, `!=`, `&&`, `;`, `x = 5`, `x++`) get a hint with the Portugol way. `==` in a comparison is the new E203. A misspelled closing word such as `fimsi` counts as `fimse`, so it no longer causes a second error.
 - Release packages: pushing a `vX.Y.Z` tag builds, tests and packages Spike for Windows (x86_64), Linux (x86_64) and macOS (arm64 and x86_64), and publishes them on GitHub Releases with `SHA256SUMS.txt`. The workflow can also run by hand as a dry run.
 - `spike setup`: on Windows it downloads a portable GCC (w64devkit) into `%LOCALAPPDATA%\Spike`, checks its pinned SHA-256 before running anything from it (E905 deletes a file that does not match), and Spike finds it from then on. On Linux it prints the install command for the distribution, and on macOS `xcode-select --install`. `--check`, `--force`, `--remove` and `--yes` are available. New errors E905, E906 and E907.
@@ -90,5 +95,6 @@ The first version that produces programs you can run. `spike programa.por` now g
 - Input that starts with a UTF-8 byte order mark, as written by Notepad or piped from PowerShell, is read correctly.
 - `-o` pointing to a folder that does not exist yet now creates the folder instead of failing.
 
-[Unreleased]: https://github.com/joaopssx/spike-compiler/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/joaopssx/spike-compiler/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/joaopssx/spike-compiler/compare/v0.2.0...v0.4.0
 [0.2.0]: https://github.com/joaopssx/spike-compiler/releases/tag/v0.2.0

@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(Spike VERSION 0.2.0 LANGUAGES CXX)
+project(Spike VERSION 0.4.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -378,3 +378,4 @@ include(tests/process.cmake)
 include(tests/compile.cmake)
 include(tests/commands.cmake)
 include(tests/e2e.cmake)
+include(tests/docs.cmake)

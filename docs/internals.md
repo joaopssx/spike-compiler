@@ -1,6 +1,95 @@
 # Spike internals
 
-Notes for people working on the compiler itself. The user-facing language is described in `language.md`; the C runtime in `runtime.md`.
+Notes for people working on the compiler itself. The user-facing language is described in `language.md`; the C runtime in `runtime.md`; how to send a change in `CONTRIBUTING.md`.
+
+## Pipeline
+
+```mermaid
+flowchart LR
+    A[".por file"] --> R["read_file<br/>BOM, CRLF, Windows-1252"]
+    R --> L["Lexer<br/>tokens"]
+    L --> P["Parser<br/>AST"]
+    P --> S["SemanticAnalyzer<br/>symbols, expr types, constants"]
+    S --> G["generate_c<br/>C source + runtime"]
+    G --> C["C compiler<br/>gcc / clang via run_process"]
+    C --> E["executable"]
+```
+
+Every phase has the same shape: it takes its input, collects problems in a `Diagnostics` object, and exposes `had_error()` and `diagnostics()`. The driver (`src/driver/compile_pipeline.cpp`) runs the phases in order and stops after the first phase with errors. `spike check` stops after the analyzer, `--ast` after the parser, `spike tokens` after the lexer.
+
+## Folder map
+
+| Folder | What lives there |
+| --- | --- |
+| `include/spike/` | public headers of `spike_core` (one per module) |
+| `src/io/` | reading the source file: UTF-8 check, BOM, line endings, Windows-1252 conversion (W010) |
+| `src/lexer/` | tokens; `lexer_core` (main loop, comments) and `lexer_scan` (numbers, texts, names) |
+| `src/parser/` | recursive descent, one file per construct, plus `parser_recovery` |
+| `src/ast/` | the AST enums and `ast_printer` (`--ast`) |
+| `src/semantic/` | symbol table, types, constants, control flow checks, warnings |
+| `src/builtins/` | the single table of built-in functions, read by the analyzer and the generator |
+| `src/codegen/` | the C generator, one file per kind of statement |
+| `src/diagnostics/` | `Diagnostics`, the source view with the arrow, suggestions, UTF-8 helpers |
+| `src/driver/` | the pipeline, the C compiler driver, output paths, `--time` |
+| `src/process/` | `run_process`, `find_executable`, `get_env`, `TempDir` |
+| `src/cli/`, `src/commands/` | argument parsing, help, colors, console setup, `fetch`, `dev`, `--explain` |
+| `src/setup/` | `spike setup` and the pinned w64devkit download |
+| `src/platform/`, `src/util/` | UTF-8 arguments on Windows, SHA-256 |
+| `runtime/` | the C99 runtime, header-only, embedded in every generated program |
+| `cmake/` | build helpers: runtime and error catalog embedding, size and doc checks |
+| `tools/` | `spike_doctest`, which tests the examples in the docs |
+| `tests/` | unit tests per module, programs, e2e cases, runtime tests in C |
+
+## Modules
+
+- **Lexer** (`Lexer(source, filename).tokenize()`). Turns text into tokens ending in `END_OF_FILE`. Keywords ignore case. It keeps scanning after an error, so every lexical error shows up in one run, but the compilation stops before the parser if there was any.
+- **Parser** (`Parser(tokens, filename, source).parse()`). Builds a `Program`. It recovers from errors (see below), so it never stops at the first one.
+- **Semantic analyzer** (`SemanticAnalyzer(program, filename, source).analyze()`). Resolves names, computes the type of every expression, evaluates constants, checks calls against signatures and emits the warnings. It does not change the AST.
+- **Builtins** (`builtins.hpp`). `BuiltinSig{name, params, result, c_name, takes_line}`. The analyzer uses `find_builtin` to type a call (exact types first, then `inteiro` to `real`); the generator uses `c_name` and `takes_line` to emit it.
+- **C generator** (`generate_c`). Only runs on a program that passed the analyzer. It never prints anything; it returns `CodegenResult{ok, c_source, error_code, ...}`.
+- **Driver**. Finds the C compiler, writes the C into a `TempDir`, compiles it, moves the executable, runs it for `--run`, and prints the `ok:` or `falhou:` summary.
+
+## AST and the type map
+
+The AST (`include/spike/ast.hpp`) has no virtual classes. `Expr` and `Stmt` are small structs that hold a `std::variant` of node types (`BinaryExpr`, `CallExpr`, `SeStmt`, `ParaStmt`...) plus `line` and `col`. Children are `std::unique_ptr` (`ExprPtr`, `StmtPtr`, `StmtList`), built with `make_expr` and `make_stmt`. Code that walks the tree uses `std::visit` or `std::get_if`.
+
+`Program` holds `consts`, `globals`, `procedures` (functions are procedures with a `return_type`) and `body`.
+
+The analyzer's results live outside the tree:
+
+- `expr_types()`: `unordered_map<const Expr*, TypeKind>`, one entry for every expression it visited (`Invalid` for those with errors).
+- `symbols()`: the `SymbolTable`, keyed by the lowercase name.
+- `constants()`: the value of each constant, computed at compile time.
+
+Because the type map is keyed by node addresses, the `Program` must not move or change after the analysis. The generator reads the type of each expression from the map instead of computing it again, so both phases always agree.
+
+## How the generator and the runtime fit
+
+The runtime (`runtime/*.h`) is plain C99, header-only, every function `static inline`, every name prefixed `spike_` or `SPIKE_`. At build time `cmake/embed_runtime.cmake` concatenates the headers into a byte array (`build/generated/runtime_text.cpp`). The generator writes that text at the top of every C file, followed by the program:
+
+1. A comment `/* Gerado pelo Spike <version> a partir de <file> */`.
+2. The runtime.
+3. `spike_source_lines`, the lines of the `.por`, used by runtime errors.
+4. Globals `v_<name>` with their default value, prototypes, then procedures `p_<name>` and functions `f_<name>`.
+5. `main`, which calls `spike_init()`, runs the body, and ends with `spike_flush()` and `spike_cleanup()`.
+
+The generated code never uses a C operator whose behaviour can be undefined: `+ - *` on integers call `spike_add_int` and friends, `/` calls `spike_div_real` with the line, `div` and `mod` check for zero, an index goes through `spike_index`. Anything that can fail at run time receives the `.por` line and calls `spike_fail`, which prints the `erro de execução[R...]` message and exits with 101. That is why the executable needs nothing but the C library.
+
+## Diagnostic format
+
+```
+erro[E700]: variável 'notaa' não foi declarada
+ --> media.por:8:12
+     |
+   7 |   escreval("Média: ", (nota1 + nota2) / 2)
+   8 |   escreval(notaa)
+     |            ^
+   9 | fimalgoritmo
+     |
+     = dica: você quis dizer 'nota1'? Declare 'notaa' na seção var.
+```
+
+`Diagnostics::error(code, message, line, col, hint)` stores the entry; `print_all()` draws it. The header is `erro[...]` or `aviso[...]`, the location is `file:line:col`, the source view shows one line of context on each side, and the hint is optional. Codes are grouped by phase (E0xx lexer, E1xx-E6xx parser, E7xx analyzer, E8xx newer parser constructs, E9xx generator and driver, Wxxx warnings, Rxxx runtime). Every code has an entry in `errors.md`, which is also compiled into `spike --explain`.
 
 ## Process execution
 
@@ -32,7 +121,7 @@ If the program cannot be found or started, `launched` is false and `launch_error
 
 `include/spike/cc_driver.hpp`.
 
-- `find_c_compiler(bundled_dir)` looks in this order: the `SPIKE_CC` environment variable (if set and invalid, the search stops and the result is E902, because the user asked for that compiler); `bundled_dir/bin/{gcc,clang,cc}`, for the compiler that will ship with Spike; then `cc`, `gcc`, `clang` in `PATH` (`gcc`, `clang` on Windows). `kind` comes from the file name.
+- `find_c_compiler(bundled_dir)` looks in this order: the `SPIKE_CC` environment variable (if set and invalid, the search stops and the result is E902, because the user asked for that compiler); the compiler recorded by `spike setup` in `%LOCALAPPDATA%\Spike\toolchain.txt`; `bundled_dir/bin/{gcc,clang,cc}`; then `cc`, `gcc`, `clang` in `PATH` (`gcc`, `clang` on Windows). `kind` comes from the file name.
 - `compile_c` runs `[compiler, -O2 or -O0, -std=c99, -o, output, c_file, -lm]` with both output streams captured. It never adds `-Werror`: warnings in generated code are Spike's problem, not the student's.
 - Errors come back as data (`DriverError{code, message, hint, details}`); the CLI prints them. E902: no compiler. E903: the compiler rejected the generated C, which is always a Spike bug; `details` holds the first 20 lines of compiler output. E904: a file could not be written.
 
@@ -112,3 +201,62 @@ The cost shows up when a text grows inside a loop: `t <- t + "x"` repeated n tim
 ## Temporary files
 
 `TempDir` (`include/spike/temp_dir.hpp`) creates a uniquely named folder under the system temp directory (`spike-<pid>-<random>`) and deletes it with everything inside when it goes out of scope, even on an error path. The generated `.c` (with `#line`) lives there; with `--c` a version without `#line` is written next to the executable.
+
+## Adding a feature to the language
+
+Every language feature follows the checklist in `CLAUDE.md`, in this order. The commit that added `div`, `mod` and `^` (`3956b3c`, "feat: add div, mod and power operators") is a good model, because it touches every layer:
+
+1. **Spec.** `docs/language.md`: the precedence table got `div`, `mod` and `^`, and the rules for each (`div` cuts toward zero, `^` groups right to left, `-2 ^ 2` is `-4`).
+2. **Lexer.** New tokens `DIV`, `MOD` and `CARET` in `token.hpp`, the two keywords in the lexer's keyword table and `^` in its symbol scanner. A test makes sure a longer word that starts the same way (`dividir`, `modo`) is still a name.
+3. **AST.** `BinaryOp::IntDiv`, `Mod` and `Pow` in `ast_enums.hpp`, with `to_string` for the printer.
+4. **Parser.** `parser_expr.cpp` got a new precedence level for `^` (right-associative) and put `div` and `mod` next to `*` and `/`. `tests/parser/expr_power_test.cpp` checks the tree for each tricky case.
+5. **Analyzer.** `semantic_types.cpp`: `div` and `mod` take two `inteiro` (a `real` is E710), `^` always gives `real`. A file in `tests/programs/semantic_invalid/` (`e710_mod_with_real.por`) covers the error.
+6. **Generator.** `codegen_expr.cpp` emits `spike_div_int`, `spike_mod_int` and `spike_pow` with the line, never the bare C operator.
+7. **Runtime.** `spike_runtime_core.h` got those functions (zero divisor is R001, an invalid power is R005), with tests in `tests/runtime/runtime_test.c` and a line in `docs/runtime.md`.
+8. **Examples and e2e.** `examples/operators.por`, e2e cases `operators`, `integer_div_by_zero` and `power_invalid` with the output computed by hand, and an `e2e_errors` case for E710.
+9. **Error docs.** `docs/errors.md` updated for the codes involved.
+10. **Changelog.** `CHANGELOG.md`, with `div` and `mod` under "Changed" because they became reserved words.
+11. **CLAUDE.md**, when the structure, the rules or the codes change.
+
+A new statement also needs its synchronization points in `parser_recovery.cpp`: its closing word goes into `is_closing_keyword` and its opening word into `is_statement_keyword`, so a block left open gives one error, at the word that opened it.
+
+## Running the tests
+
+```
+cmake -S . -B build
+cmake --build build -j
+ctest --test-dir build --output-on-failure
+```
+
+On Windows with MSYS2, add `-G Ninja` to the first command and put `C:\msys64\ucrt64\bin` first in `PATH`.
+
+| What | How |
+| --- | --- |
+| Everything | `ctest --test-dir build --output-on-failure` |
+| Unit tests only | `build/spike_tests` (prints `all tests passed`); `build/spike_tests lexer parser` runs only the groups whose name contains a filter |
+| End-to-end programs | `ctest --test-dir build -L e2e` (see `tests/e2e/README.md`) |
+| Examples in the docs | `ctest --test-dir build -R docs_examples` |
+| Sanitizers | configure with `-DSPIKE_SANITIZE=ON` (GCC or Clang) |
+| File sizes and error docs | `check_file_sizes` and `error_docs_consistency`, both in CTest |
+
+Tests that compile generated C need a C compiler; `SPIKE_TEST_CC` chooses it. Without one, those tests are skipped (e2e exits with 77) and `docs_examples` only runs `spike check` on the `portugol-run` blocks.
+
+**Fuzzers.** Not written yet; they arrive with prompt 069. The plan is a libFuzzer target per phase (lexer, parser, analyzer, generator) under `tests/fuzz/`, built only with Clang and `-DSPIKE_FUZZ=ON`, with a seed corpus from `examples/` and `tests/programs/`. This section will say how to run them.
+
+## Decisions and why
+
+| Decision | Why |
+| --- | --- |
+| Compile to C instead of interpreting | A standalone executable is one of Spike's three promises, and the student can read the C with `--c`. |
+| AST with `std::variant`, no virtual classes | Every pass is a `std::visit`, the compiler checks that each node type is handled, and nodes stay plain data. |
+| Types in a side map, not in the AST | The parser output never changes after parsing; the analyzer and the generator share one answer for each expression. |
+| Runtime as embedded header-only C | The generated C file is self-contained: one file, one compiler call, nothing to link but `-lm`. |
+| No `system()` or `popen()` | File names chosen by students must never be read by a shell (see "Why no shell"). |
+| `escolha` becomes `if` / `else if` | A C `switch` would make `interrompa` leave the `escolha` instead of the loop. |
+| `inteiro` is 64 bits; `/` always gives `real` | Fewer surprises for beginners: `7 / 2` is `3.5`, as in math class (decision 5). |
+| Names are ASCII only | Portable C names and no encoding trouble in identifiers; accents still work in texts and comments (decision 7). |
+| Texts are never freed one by one | Simple generated C with no ownership; the cost is only visible in long loops that grow a text (see "Text memory"). |
+| `spike setup` downloads only on request, with a pinned SHA-256 | Nothing is downloaded behind the student's back, and a tampered file is never run. |
+| One commit per prompt, files under 300 lines | Small, reviewable changes; a file that grows past the limit is split by topic. |
+
+Product decisions (audience, dialect, platforms) are in `decisions.md`.

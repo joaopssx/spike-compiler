@@ -14,7 +14,7 @@ Spike compiles Portugol, the pseudo-language used to teach programming in Brazil
 
 `media.por`:
 
-```
+```portugol-run
 algoritmo "media"
 var
   nota1, nota2, media : real
@@ -32,38 +32,73 @@ inicio
 fimalgoritmo
 ```
 
-```
-$ spike media.por
-ok: gerado 'media' (compilado em 0.4s)
-$ ./media
-Primeira nota: 8
-Segunda nota: 6,5
-Aprovado com média 7.25
+With `8` and `6,5` as input:
+
+```input
+8
+6,5
 ```
 
-Real numbers can be typed with a comma or a point. On Windows the executable is `media.exe`.
+the program prints
+
+```output
+Primeira nota: Segunda nota: Aprovado com média 7.25
+```
+
+On screen, each number you type shows up after its question. Real numbers can be typed with a comma or a point. Compiling it:
+
+```
+spike media.por
+```
+
+```
+ok: gerado 'media.exe' (compilado em 0.4s)
+```
+
+Then run `media.exe` (or `./media` on Linux and macOS). It works on any computer, with or without Spike.
 
 ## What errors look like
 
-A typo in a variable name (`meida` instead of `media`):
+A typo in a variable name (`notaa` instead of `nota1`):
+
+```portugol-error E700
+algoritmo "media"
+var
+  nota1, nota2 : real
+inicio
+  nota1 <- 7
+  nota2 <- 8.5
+  escreval("Média: ", (nota1 + nota2) / 2)
+  escreval(notaa)
+fimalgoritmo
+```
 
 ```
-$ spike erro.por
-erro[E700]: variável 'meida' não foi declarada
- --> erro.por:7:24
+erro[E700]: variável 'notaa' não foi declarada
+ --> media.por:8:12
      |
-   6 |   media <- (nota1 + nota2) / 2
-   7 |   escreval("Média: ", meida)
-     |                        ^
-   8 | fimalgoritmo
+   7 |   escreval("Média: ", (nota1 + nota2) / 2)
+   8 |   escreval(notaa)
+     |            ^
+   9 | fimalgoritmo
      |
-     = dica: declare 'meida' na seção var.
+     = dica: você quis dizer 'nota1'? Declare 'notaa' na seção var.
 
 falhou: 1 erro
 Para entender um erro: spike --explain E700
 ```
 
 Every error code is explained, with an example, in [docs/errors.md](docs/errors.md). The same text is built into Spike: `spike --explain E700` prints it in the terminal, and `spike --explain` lists every code.
+
+## Documentation
+
+For students, in Portuguese:
+
+- [Primeiros passos](docs/getting-started.md): install, first program, reading an error.
+- [Tutorial](docs/tutorial/README.md): nine short lessons with exercises.
+- [Comandos e flags](docs/cli.md), [perguntas frequentes](docs/faq.md) and the [catálogo de erros](docs/errors.md).
+
+Reference and internals, in English: [the language](docs/language.md), [the C runtime](docs/runtime.md), [how the compiler works](docs/internals.md) and [how to contribute](CONTRIBUTING.md).
 
 ## Downloading Spike
 
@@ -148,9 +183,11 @@ The compiler ends up in `build/spike` (`build\spike.exe` on Windows). Run it fro
 | `spike tokens programa.por` | Lists the tokens of the file (for debugging). |
 | `spike dev programa.por` | Runs every phase and writes the tokens, syntax tree, symbol table, expression types, generated C and phase times to `programa.dev/`. Nothing is written when the program has errors. |
 | `spike fetch` | Shows Spike's version, the system, the C compiler it found and whether the temporary folder is writable. Paste its output when asking for help. Exits with 3 when something is missing. |
+| `spike setup` | Installs a C compiler (Windows) or prints the command that installs one (Linux, macOS). `--check`, `--force`, `--remove`, `--yes`. |
+| `spike --explain E700` | Explains an error code; without a code, lists them all. |
 | `spike --help`, `spike --version` | Help and version. |
 
-Flags can be combined: `spike programa.por --c --time -o saida/prog`.
+Flags can be combined: `spike programa.por --c --time -o saida/prog`. `--color=auto|always|never` works with every command. Every flag, exit code and environment variable is in [docs/cli.md](docs/cli.md).
 
 `spike random`, a generator of random Portugol programs, is planned for v1.0. Today it only says so and exits with 2.
 
@@ -158,27 +195,27 @@ Exit codes: 0 when everything worked, 1 when the program has errors, 2 when the 
 
 ## The language
 
-Spike follows the VisuAlg dialect. The full reference is [docs/language.md](docs/language.md).
+Spike follows the VisuAlg dialect. The full reference is [docs/language.md](docs/language.md), with a section on where Spike differs from VisuAlg.
 
-What works today: the types `inteiro`, `real`, `caractere` and `logico`; variables; arithmetic, comparisons, `e`, `ou`, `nao` and joining texts with `+`; `escreva`, `escreval` and `leia`; `se`/`senao`, `enquanto`, `repita ... ate` and `para ... passo`. Names ignore upper and lower case. `/` always gives a real number.
-
-Planned next, with the syntax already proposed in the reference: `div`, `mod` and `^`, constants, `interrompa`, `escolha`, vectors and matrices, procedures and functions, and built-in functions such as `raiz`, `abs` and `tamanho`.
+- Types `inteiro` (64 bits), `real`, `caractere` and `logico`; constants; vectors and matrices up to 3 dimensions.
+- Arithmetic with `+ - * /`, `div`, `mod` and `^`; comparisons; `e`, `ou`, `nao`; joining texts with `+`. `/` always gives a real number.
+- `escreva`, `escreval`, `leia`, `se`/`senao`, `escolha`, `enquanto`, `repita ... ate`, `para ... passo` and `interrompa`.
+- Procedures and functions, with parameters by value or by reference (`var`) and recursion.
+- 28 built-in functions for math and text, such as `raiz`, `arredonda`, `aleatorio`, `tamanho` and `maiusculo`.
+- Names ignore upper and lower case.
 
 ## Status
 
-**v0.2.** Spike compiles programs with variables, expressions, `se`, `enquanto`, `repita`, `para`, `leia` and `escreva`. It checks names and types before generating code, and a compiled program stops with a clear message on division by zero, invalid input or a `para` with step zero.
+**v0.4.** The whole language above compiles to a standalone executable on Windows, Linux and macOS. Spike checks names and types before generating code, explains every error in Portuguese with a hint, warns about likely mistakes, and a compiled program stops with a clear message (and the line of the `.por`) on runtime errors such as division by zero or an index outside a vector. `spike setup` installs the C compiler on Windows, and every tagged version is built, tested and published for the three systems.
 
 What comes next:
 
-- **v0.3:** the rest of the language listed above, warnings, and better recovery after the first error.
-- **v0.4:** a C compiler bundled with Spike, installers for Windows, Linux and macOS, and automated builds on all three.
-- **Later:** a VS Code extension, a formatter and a playground in the browser.
+- **v0.5:** a VS Code extension, a formatter and fuzzing.
+- **v1.0:** an interpreter and a REPL, a playground in the browser and a language server.
 
 ## Contributing
 
-Issues and pull requests are welcome at [github.com/joaopssx/spike-compiler](https://github.com/joaopssx/spike-compiler/issues).
-
-Build and run the tests:
+Issues and pull requests are welcome at [github.com/joaopssx/spike-compiler](https://github.com/joaopssx/spike-compiler/issues). [CONTRIBUTING.md](CONTRIBUTING.md) explains how to build, run the tests, the code style and how to report a bug.
 
 ```
 cmake -S . -B build
@@ -186,7 +223,7 @@ cmake --build build -j
 ctest --test-dir build --output-on-failure
 ```
 
-On Windows with MSYS2, add `-G Ninja` to the first command. `ctest --test-dir build -L e2e` runs only the end-to-end tests, which compile real programs and compare their output with the expected one. To add one, see [tests/e2e/README.md](tests/e2e/README.md). How the compiler works inside is in [docs/internals.md](docs/internals.md).
+On Windows with MSYS2, add `-G Ninja` to the first command.
 
 ## License
 

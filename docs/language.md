@@ -8,7 +8,7 @@ Sections marked **proposed** describe syntax that does not exist yet. They are w
 
 - Spike is for students taking their first programming course. When a rule could go either way, it goes the way that surprises a beginner less.
 - The dialect follows VisuAlg (`algoritmo`, `var`, `inicio`, `<-`, `fimalgoritmo`). Where Spike differs or adds something, this file says so.
-- A program compiles to a standalone executable. Spike turns it into C and calls a C compiler (GCC or Clang). Today that compiler has to be installed; from v0.4 Spike will ship with its own, so the student installs nothing else.
+- A program compiles to a standalone executable. Spike turns it into C and calls a C compiler (GCC or Clang). On Windows, `spike setup` downloads and installs one; on Linux and macOS it prints the command that installs the system's compiler.
 - Windows, Linux and macOS get the same level of support: same features, installer and tests on all three.
 - Integers are 64 bits. `/` always produces a real number (`7 / 2` is `3.5`); `div` is integer division.
 - Keywords and names ignore case. Names use ASCII letters only.
@@ -44,7 +44,7 @@ fimalgoritmo
 - Letters with accents (`média`, `ação`) are not allowed. They produce E001, and the hint suggests writing the name without the accent.
 - Names ignore case: `Idade`, `idade` and `IDADE` are the same variable. Error messages show the name as it was declared.
 - A name cannot be a keyword. Keywords also ignore case, and `caracter` is accepted as a spelling of `caractere`.
-- Each name is declared once. Declaring the same name twice is an error (checked from v0.2).
+- Each name is declared once. Declaring the same name twice is error E701.
 
 ## Types
 
@@ -56,8 +56,8 @@ fimalgoritmo
 | `logico` | `verdadeiro` or `falso` | | `falso` |
 
 - Every variable starts with its default value, so a program never reads garbage.
-- Reading a variable before the program assigns it is still almost always a mistake. The compiler warns about it (from v0.3); it is not an error.
-- Integer overflow is not checked yet. The result wraps around, as in C.
+- Reading a variable before the program assigns it is still almost always a mistake. The compiler warns about it (W002); it is not an error.
+- Integer overflow is not checked yet. `+`, `-` and `*` wrap around in two's complement, always the same way on every system (in plain C, signed overflow is undefined).
 
 ## Literals
 
@@ -100,7 +100,7 @@ From the loosest binding to the tightest:
 - `+` between two texts joins them: `"Olá, " + nome`.
 - `logico` does not convert to or from anything.
 
-## Commands available today
+## Commands
 
 ### Assignment
 
@@ -160,7 +160,7 @@ fimpara
 - The counter must be an `inteiro` variable. The start, end and step must be `inteiro`.
 - Start, end and step are evaluated once, before the loop begins.
 - Without `passo`, the step is 1. With a positive step the loop runs while `i <= fim`; with a negative step, while `i >= fim`. A step of 0 is runtime error R006.
-- Assigning to the counter inside the loop (with `<-` or `leia`) is allowed, as in VisuAlg, but it is almost always a mistake. The compiler warns about it (from v0.3).
+- Assigning to the counter inside the loop (with `<-` or `leia`) is allowed, as in VisuAlg, but it is almost always a mistake. The compiler warns about it (W004).
 - `passo 0` written as a literal is a compile error, because the loop would never end. A step that only turns out to be 0 while the program runs is runtime error R006.
 - The end and the step are fixed when the loop starts. Changing the variables they came from inside the loop has no effect. Changing the counter itself does: the next pass continues from the new value.
 - After the loop, the counter holds the first value that failed the test (`11` in the example above).
@@ -347,7 +347,7 @@ fimfuncao
 - The value of `retorne` is what follows it on the same line. A `retorne` with nothing after it on its line has no value.
 - A call works anywhere a value of the function's type does: `escreval(fatorial(5))`, `se primo(n) entao`, `maximo(maximo(a, b), c)`. A function can also be called as a command on its own line; the value is then discarded.
 - Functions and procedures share one set of names (E783). Calling a procedure inside an expression is E784, since it has no value; so is using a function name without parentheses (`x <- fatorial`).
-- A function that may reach `fimfuncao` without passing through a `retorne` is not a compile error, because Spike cannot always tell whether that path really happens. If it happens while the program runs, the program stops with R009: `a função 'sinal' terminou sem retornar um valor`. The analyzer keeps the list of functions that may end that way, for a future warning.
+- A function that may reach `fimfuncao` without passing through a `retorne` is not a compile error, because Spike cannot always tell whether that path really happens. If it happens while the program runs, the program stops with R009: `a função 'sinal' terminou sem retornar um valor`. The compiler warns about functions that may end that way (W006).
 - `funcao`, `fimfuncao` and `retorne` are reserved words.
 - In the generated C, a function becomes `static spike_int f_fatorial(spike_int v_n)`, with the prototypes of every procedure and function first. Each `retorne` stores its value in a temporary, `spike_result`, then leaves.
 
@@ -382,62 +382,18 @@ q <- divide(17, 5, resto) + resto
 
 - Variables declared in the program's `var` section are global: the main body and every procedure and function can use them.
 - Parameters and the variables in the `var` section of a procedure or function are local: they exist only inside it, and every call starts them again with the default value of their type. Using a local name outside its procedure is E700.
-- A local name may repeat a global one (variable or constant). Inside the procedure, the name refers to the local; outside, to the global. A future warning will point these out.
+- A local name may repeat a global one (variable or constant). Inside the procedure, the name refers to the local; outside, to the global. The compiler warns about it (W005).
 - Two names in the same scope are E701: two globals, two parameters, two locals, or a parameter and a local.
 - A local vector holds at most 10 thousand elements (E775), since it lives on the stack while the procedure runs. Larger vectors belong in the program's `var` section.
 - Using a name that was not declared is an error.
 
 ## Language roadmap (proposed)
 
-Each item below is **proposed**. The syntax is final only when the feature ships, in v0.3.
+Each item below is **proposed**. The syntax is final only when the feature ships.
 
 | Feature | Proposed syntax |
 | --- | --- |
 | Initial value | `x : inteiro <- 5` in the `var` section |
-
-```
-algoritmo "roadmap"
-const
-  PI = 3.14159
-  MAX = 10
-var
-  notas : vetor[1..MAX] de real
-  tabela : vetor[1..3, 1..3] de inteiro
-  total : inteiro <- 0
-
-procedimento troca(var a, b: inteiro)
-var
-  aux : inteiro
-inicio
-  aux <- a
-  a <- b
-  b <- aux
-fimprocedimento
-
-funcao area(raio: real): real
-inicio
-  retorne PI * raio ^ 2
-fimfuncao
-
-inicio
-  escolha total
-  caso 1
-    escreval("um")
-  caso 2, 3
-    escreval("dois ou três")
-  outrocaso
-    escreval("outro")
-  fimescolha
-  enquanto verdadeiro faca
-    total <- total + 1
-    se total mod 7 = 0 entao
-      interrompa
-    fimse
-  fimenquanto
-fimalgoritmo
-```
-
-- Parameters work as in procedures and functions today: names of the same type share a group (`a, b: inteiro`), groups are separated by commas, and `var` before a group makes those parameters by reference.
 
 ## Future ideas
 
@@ -513,4 +469,31 @@ A compiled program stops at the first runtime error. It prints a message in Port
 | R010 | `aleatorio` got a first number greater than the second |
 | R011 | a text function got a position or code out of range: `copia` starting below 1, `ord` of an empty text, `chr` outside 1 to 1114111 |
 
-The numbering is proposed and becomes final in v0.3.
+Warnings (W001-W010) are listed in `errors.md`. They never stop the compilation, unless `--warnings-as-errors` is given.
+
+## Limits
+
+| What | Limit | What happens past it |
+| --- | --- | --- |
+| `inteiro` | 64 bits: -9223372036854775808 to 9223372036854775807 | a literal too large is a compile error; `+ - *` wrap around |
+| `real` | C `double`, about 15 significant digits | written with up to 10 significant digits |
+| `caractere` | any length, limited by memory | R008 when memory runs out |
+| Global vector or matrix | 10 million elements in total | E775 |
+| Local vector (inside a procedure or function) | 10 thousand elements | E775 |
+| Dimensions of a vector | 3 | E826 |
+| Calls in progress (recursion) | 10000 | R008 |
+| Nested blocks and parentheses | 256 levels | E202 |
+| Errors shown per compilation | 20 | `(mais N erros omitidos)` |
+
+## Differences from VisuAlg
+
+Spike follows VisuAlg closely, so most VisuAlg exercises compile as they are. The main differences:
+
+- **It is a compiler, not an interpreter.** The result is an executable that runs without Spike. There is no step-by-step debugger and no variable panel; `--c` shows the generated C instead.
+- **Names use ASCII letters only.** `média` is error E001; write `media`.
+- **`/` always gives `real`**, and a `real` never goes into an `inteiro` without `trunca` or `arredonda`. VisuAlg is the same on `/`, but Spike is strict about every conversion.
+- **No formatting in `escreva`.** `escreva(x:5:2)` is not supported; reals are written with up to 10 significant digits.
+- **Some VisuAlg commands do not exist:** `limpatela`, `pausa`, `timer`, `eco`, `cronometro`, `debug`, `arquivo` and the `aleatorio` command that fills `leia` with random values. Spike's `aleatorio(a, b)` is a function that returns a number.
+- **Different built-ins:** power is `pot` or `^` (VisuAlg's `exp(b, e)` is power; Spike's `exp(x)` is e raised to x). `%` is not an operator; use `mod`.
+- **No initial value in `var`** (`x : inteiro <- 5`), and a whole vector cannot be a parameter yet (E788).
+- **Extras:** 64-bit integers, `escolha` with ranges (`caso 2 ate 6`), `retorne` in procedures, matrices up to 3 dimensions, warnings, and runtime errors that name the line of the `.por`.

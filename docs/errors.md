@@ -1998,7 +1998,7 @@ erro[E901]: comando ainda não suportado pelo gerador: '...'
 **Como corrigir:**
 - No Linux: `sudo apt install build-essential` (ou instale o `clang`).
 - No macOS: `xcode-select --install`.
-- No Windows: instale o MinGW-w64 (por exemplo pelo MSYS2) e coloque a pasta `bin` dele no `PATH`, ou defina `SPIKE_CC` com o caminho do `gcc.exe`.
+- No Windows: rode `spike setup`, que baixa e instala um compilador C para o Spike. Quem já tem um GCC (do MSYS2, por exemplo) pode colocar a pasta `bin` dele no `PATH` ou definir `SPIKE_CC` com o caminho do `gcc.exe`.
 - Se você definiu `SPIKE_CC`, confira o caminho ou apague a variável.
 
 ```

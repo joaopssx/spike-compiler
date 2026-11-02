@@ -4,6 +4,9 @@
 #include "spike/builtins.hpp"
 #include "spike/symbol_table.hpp"
 
+#include <fstream>
+#include <iostream>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -69,11 +72,27 @@ void test_signature_text() {
                  "copia(caractere, inteiro, inteiro): caractere");
 }
 
+void test_language_reference_lists_every_signature() {
+    std::ifstream in(std::string(SPIKE_SOURCE_DIR) + "/docs/language.md", std::ios::binary);
+    std::stringstream buffer;
+    buffer << in.rdbuf();
+    const std::string reference = buffer.str();
+    SPIKE_EXPECT(!reference.empty());
+    for (const auto& sig : spike::all_builtins()) {
+        const std::string text = spike::signature_text(sig);
+        const std::string call = "`" + text.substr(0, text.find("):") + 1) + "`";
+        const bool listed = reference.find(call) != std::string::npos;
+        if (!listed) std::cerr << "  docs/language.md does not list " << call << "\n";
+        SPIKE_EXPECT(listed);
+    }
+}
+
 } // namespace
 
 namespace spike_tests {
 
 void run_builtins_tests() {
+    test_language_reference_lists_every_signature();
     test_signatures_are_unique();
     test_overloads_are_never_ambiguous();
     test_exact_match_wins_over_conversion();

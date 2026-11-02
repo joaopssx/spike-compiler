@@ -6,7 +6,7 @@ endif()
 set(limit 300)
 
 set(patterns "")
-foreach(folder IN ITEMS src include tests runtime cmake)
+foreach(folder IN ITEMS src include tests runtime cmake tools)
     foreach(extension IN ITEMS cpp hpp c h)
         list(APPEND patterns "${SOURCE_DIR}/${folder}/*.${extension}")
     endforeach()
